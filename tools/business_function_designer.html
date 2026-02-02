@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InsightMigration - 業務関数設計ツール</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', 'Yu Gothic UI', 'Meiryo', sans-serif; background: #0f1923; color: #e0e0e0; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, #1a2940 0%, #0d3b66 100%); padding: 16px 32px; display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #2196F3; }
+  .header h1 { font-size: 20px; color: #fff; }
+  .header .brand { color: #64B5F6; font-size: 13px; }
+
+  /* Tabs */
+  .tabs { display: flex; background: #152233; border-bottom: 1px solid #2a3a4e; }
+  .tab { padding: 12px 28px; cursor: pointer; color: #90a4ae; font-size: 14px; border-bottom: 3px solid transparent; transition: all 0.2s; }
+  .tab:hover { color: #fff; background: #1a2d42; }
+  .tab.active { color: #64B5F6; border-bottom-color: #2196F3; background: #1a2d42; }
+
+  /* Main layout */
+  .main { padding: 24px 32px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* Step 1: Business Requirements */
+  .req-area { width: 100%; min-height: 220px; background: #1a2940; border: 1px solid #2a3a4e; border-radius: 8px; color: #e0e0e0; padding: 16px; font-size: 14px; line-height: 1.8; resize: vertical; }
+  .req-area:focus { outline: none; border-color: #2196F3; }
+
+  .btn { padding: 12px 32px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: linear-gradient(135deg, #1976D2, #2196F3); color: #fff; }
+  .btn-primary:hover { background: linear-gradient(135deg, #1565C0, #1E88E5); transform: translateY(-1px); }
+  .btn-secondary { background: #2a3a4e; color: #90CAF9; border: 1px solid #37474f; }
+  .btn-secondary:hover { background: #37474f; }
+  .btn-success { background: linear-gradient(135deg, #2E7D32, #43A047); color: #fff; }
+  .btn-success:hover { background: linear-gradient(135deg, #1B5E20, #2E7D32); }
+
+  .action-bar { margin-top: 16px; display: flex; gap: 12px; align-items: center; }
+
+  /* Step 2: IPO Boxes */
+  .ipo-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+  .ipo-box { background: #1a2940; border-radius: 10px; padding: 20px; border: 2px solid #2a3a4e; min-height: 180px; }
+  .ipo-box.input-box { border-color: #1976D2; }
+  .ipo-box.output-box { border-color: #2E7D32; }
+  .ipo-box.process-box { grid-column: 1 / -1; border-color: #F57C00; }
+
+  .ipo-label { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .ipo-label .icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .input-box .icon { background: #1976D2; }
+  .output-box .icon { background: #2E7D32; }
+  .process-box .icon { background: #F57C00; }
+
+  .ipo-items { display: flex; flex-direction: column; gap: 8px; }
+  .ipo-item { background: #0f1923; border: 1px solid #2a3a4e; border-radius: 6px; padding: 10px 14px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.15s; }
+  .ipo-item:hover { border-color: #64B5F6; background: #152233; }
+  .ipo-item .item-name { flex: 1; }
+  .ipo-item .item-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #2a3a4e; color: #90CAF9; }
+
+  /* Step 3: Architecture */
+  .arch-panel { display: grid; grid-template-columns: 260px 1fr; gap: 20px; margin-top: 16px; }
+  .module-list { background: #1a2940; border-radius: 10px; padding: 16px; border: 1px solid #2a3a4e; }
+  .module-list h3 { font-size: 13px; color: #64B5F6; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .module-item { padding: 10px 12px; background: #0f1923; border: 1px solid #2a3a4e; border-radius: 6px; margin-bottom: 6px; font-size: 13px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
+  .module-item:hover { border-color: #F57C00; background: #1a2d42; }
+  .module-item .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .arch-detail { background: #1a2940; border-radius: 10px; padding: 20px; border: 1px solid #2a3a4e; }
+  .arch-detail h3 { font-size: 14px; color: #fff; margin-bottom: 16px; }
+
+  .obj-config { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .config-field { display: flex; flex-direction: column; gap: 4px; }
+  .config-field label { font-size: 12px; color: #90a4ae; }
+  .config-field select, .config-field input {
+    background: #0f1923; border: 1px solid #2a3a4e; border-radius: 6px;
+    color: #e0e0e0; padding: 8px 12px; font-size: 13px;
+  }
+  .config-field select:focus, .config-field input:focus { outline: none; border-color: #2196F3; }
+
+  /* Flow arrows */
+  .flow-arrow { text-align: center; color: #37474f; font-size: 28px; margin: 8px 0; }
+
+  /* Notification */
+  .notification { position: fixed; top: 20px; right: 20px; background: #1976D2; color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity 0.3s; z-index: 100; }
+  .notification.show { opacity: 1; }
+
+  /* Summary table */
+  .summary-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .summary-table th { background: #152233; color: #64B5F6; text-align: left; padding: 10px 14px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .summary-table td { padding: 10px 14px; border-bottom: 1px solid #1a2940; font-size: 13px; }
+  .summary-table tr:hover td { background: #1a2940; }
+
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge-input { background: #0D47A1; color: #90CAF9; }
+  .badge-output { background: #1B5E20; color: #A5D6A7; }
+  .badge-process { background: #E65100; color: #FFCC80; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: #546e7a; }
+  .empty-state .icon-large { font-size: 48px; margin-bottom: 16px; }
+  .empty-state p { font-size: 14px; }
+
+  .hint { font-size: 12px; color: #546e7a; margin-top: 8px; }
+
+  /* AI animation */
+  .analyzing { display: inline-flex; align-items: center; gap: 8px; color: #64B5F6; font-size: 14px; }
+  .analyzing .dots span { animation: blink 1.4s infinite; font-size: 18px; }
+  .analyzing .dots span:nth-child(2) { animation-delay: 0.2s; }
+  .analyzing .dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink { 0%, 80%, 100% { opacity: 0.2; } 40% { opacity: 1; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔷 業務関数設計ツール</h1>
+  <span class="brand">InsightMigration — Business Function Designer</span>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">① 業務要件</div>
+  <div class="tab" onclick="switchTab(1)">② 機能要件 (IPO分解)</div>
+  <div class="tab" onclick="switchTab(2)">③ アーキテクチャ設計</div>
+  <div class="tab" onclick="switchTab(3)">④ サマリー</div>
+</div>
+
+<div class="main">
+
+  <!-- Step 1: Business Requirements -->
+  <div class="section active" id="sec-0">
+    <h2 style="margin-bottom: 4px;">業務要件の入力</h2>
+    <p class="hint">業務要件をテキストで貼り付けてください。1行1要件、または自由記述でOKです。</p>
+    <div style="margin-top: 16px;">
+      <textarea class="req-area" id="bizReq" placeholder="例:
+毎朝9時にSAPから前日の売上データをダウンロードする
+売上データをCSV形式に変換し、部門コードで分類する
+分類した売上レポートをExcelで作成する
+レポートを部門長にメールで送信する
+エラーが発生した場合は管理者にSlack通知する
+
+※ 自由に記述してください。AIがInput/Process/Outputに自動分解します。"></textarea>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-primary" onclick="analyzeRequirements()">🤖 AI で IPO 分解する</button>
+      <button class="btn btn-secondary" onclick="loadSample()">サンプルを読み込む</button>
+      <span id="analyzeStatus"></span>
+    </div>
+  </div>
+
+  <!-- Step 2: Functional Requirements (IPO) -->
+  <div class="section" id="sec-1">
+    <h2 style="margin-bottom: 4px;">機能要件 — Input / Process / Output</h2>
+    <p class="hint">AIが業務要件をIPOに分解しました。各項目をクリックすると③で詳細設計できます。</p>
+
+    <div class="ipo-container" id="ipoContainer">
+      <div class="ipo-box input-box">
+        <div class="ipo-label"><div class="icon">▶</div> INPUT (入力)</div>
+        <div class="ipo-items" id="inputItems"></div>
+      </div>
+      <div class="ipo-box output-box">
+        <div class="ipo-label"><div class="icon">◀</div> OUTPUT (出力)</div>
+        <div class="ipo-items" id="outputItems"></div>
+      </div>
+      <div class="flow-arrow">▼ PROCESS (処理) ▼</div>
+      <div class="ipo-box process-box">
+        <div class="ipo-label"><div class="icon">⚙</div> PROCESS (処理)</div>
+        <div class="ipo-items" id="processItems"></div>
+      </div>
+    </div>
+
+    <div class="action-bar" style="margin-top: 20px;">
+      <button class="btn btn-primary" onclick="switchTab(2)">③ アーキテクチャ設計へ →</button>
+      <button class="btn btn-secondary" onclick="switchTab(0)">← 業務要件に戻る</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Architecture Design -->
+  <div class="section" id="sec-2">
+    <h2 style="margin-bottom: 4px;">アーキテクチャ設計</h2>
+    <p class="hint">左のモジュール一覧からオブジェクトを選択し、データ形式・型・言語を設定してください。</p>
+
+    <div class="arch-panel">
+      <div class="module-list">
+        <h3>オブジェクト一覧</h3>
+        <div id="moduleList"></div>
+
+        <h3 style="margin-top: 20px;">共通モジュール</h3>
+        <div class="module-item" onclick="applyModule('logger')"><div class="dot" style="background:#F57C00"></div> ログ出力</div>
+        <div class="module-item" onclick="applyModule('error')"><div class="dot" style="background:#E53935"></div> エラーハンドリング</div>
+        <div class="module-item" onclick="applyModule('retry')"><div class="dot" style="background:#7E57C2"></div> リトライ制御</div>
+        <div class="module-item" onclick="applyModule('auth')"><div class="dot" style="background:#00897B"></div> 認証・認可</div>
+        <div class="module-item" onclick="applyModule('config')"><div class="dot" style="background:#5C6BC0"></div> 設定管理</div>
+      </div>
+
+      <div class="arch-detail" id="archDetail">
+        <div class="empty-state">
+          <div class="icon-large">📐</div>
+          <p>左のオブジェクトを選択すると、ここに詳細設定が表示されます</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar" style="margin-top: 20px;">
+      <button class="btn btn-success" onclick="generateSummary()">④ サマリー生成 →</button>
+      <button class="btn btn-secondary" onclick="switchTab(1)">← 機能要件に戻る</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Summary -->
+  <div class="section" id="sec-3">
+    <h2 style="margin-bottom: 4px;">設計サマリー</h2>
+    <p class="hint">業務関数の設計概要です。エクスポートして開発チームに共有できます。</p>
+
+    <div id="summaryContent" style="margin-top: 16px;"></div>
+
+    <div class="action-bar" style="margin-top: 20px;">
+      <button class="btn btn-primary" onclick="exportJSON()">📦 JSON エクスポート</button>
+      <button class="btn btn-secondary" onclick="switchTab(0)">← 最初に戻る</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="notification" id="notification"></div>
+
+<script>
+// --- State ---
+let state = {
+  bizReq: '',
+  inputs: [],
+  outputs: [],
+  processes: [],
+  archConfig: {},  // { objectName: { format, type, language, ... } }
+  commonModules: []
+};
+
+// --- Tab switching ---
+function switchTab(idx) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+  document.querySelectorAll('.section').forEach((s, i) => {
+    s.classList.toggle('active', i === idx);
+  });
+}
+
+// --- Notification ---
+function notify(msg) {
+  const el = document.getElementById('notification');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// --- Load sample ---
+function loadSample() {
+  document.getElementById('bizReq').value = `毎朝9時にSAPから前日の売上データをダウンロードする
+売上データをCSV形式に変換し、部門コードで分類する
+分類した売上レポートをExcelで作成する
+レポートを部門長にメールで送信する
+エラーが発生した場合は管理者にSlack通知する
+月末には月次集計レポートも生成する
+処理件数と処理時間をログに記録する`;
+  notify('サンプル業務要件を読み込みました');
+}
+
+// --- AI IPO Analysis (simulated) ---
+function analyzeRequirements() {
+  const text = document.getElementById('bizReq').value.trim();
+  if (!text) { notify('業務要件を入力してください'); return; }
+
+  const statusEl = document.getElementById('analyzeStatus');
+  statusEl.innerHTML = '<span class="analyzing">分析中<span class="dots"><span>.</span><span>.</span><span>.</span></span></span>';
+
+  setTimeout(() => {
+    const lines = text.split('\n').filter(l => l.trim());
+    state.bizReq = text;
+    state.inputs = [];
+    state.outputs = [];
+    state.processes = [];
+
+    // Simulated AI classification based on keywords
+    const inputKw = ['ダウンロード', '取得', '読み込', '受信', '入力', 'インポート', '抽出', 'スクレイピング', '接続', 'ログイン', 'SAP', 'Oracle', 'DB', 'API', 'ファイル'];
+    const outputKw = ['送信', 'メール', '出力', 'エクスポート', '通知', 'Slack', 'レポート', '作成', '生成', '保存', '書き込', 'アップロード'];
+    const processKw = ['変換', '分類', '集計', '計算', 'フィルタ', '判定', 'チェック', '照合', 'ソート', '加工', 'マッピング', 'ログ', '記録'];
+
+    lines.forEach((line, i) => {
+      const l = line.trim();
+      let scoreI = 0, scoreO = 0, scoreP = 0;
+      inputKw.forEach(k => { if (l.includes(k)) scoreI++; });
+      outputKw.forEach(k => { if (l.includes(k)) scoreO++; });
+      processKw.forEach(k => { if (l.includes(k)) scoreP++; });
+
+      // Detect data objects in the line
+      let dataHint = 'テキスト';
+      if (l.includes('CSV')) dataHint = 'CSV';
+      else if (l.includes('Excel')) dataHint = 'Excel';
+      else if (l.includes('JSON')) dataHint = 'JSON';
+      else if (l.includes('XML')) dataHint = 'XML';
+      else if (l.includes('メール')) dataHint = 'Email';
+      else if (l.includes('SAP')) dataHint = 'SAP接続';
+      else if (l.includes('Oracle')) dataHint = 'DB接続';
+      else if (l.includes('API')) dataHint = 'REST API';
+      else if (l.includes('Slack')) dataHint = 'Webhook';
+      else if (l.includes('ログ')) dataHint = 'ログファイル';
+
+      const obj = { id: i, name: l, hint: dataHint, format: '', type: '', language: '' };
+
+      // Lines can appear in multiple categories
+      if (scoreI > 0 && scoreI >= scoreO && scoreI >= scoreP) {
+        state.inputs.push({ ...obj, category: 'input' });
+      } else if (scoreO > 0 && scoreO >= scoreI && scoreO >= scoreP) {
+        state.outputs.push({ ...obj, category: 'output' });
+      } else if (scoreP > 0) {
+        state.processes.push({ ...obj, category: 'process' });
+      } else {
+        // Default: check position heuristic
+        if (i < lines.length * 0.3) state.inputs.push({ ...obj, category: 'input' });
+        else if (i > lines.length * 0.7) state.outputs.push({ ...obj, category: 'output' });
+        else state.processes.push({ ...obj, category: 'process' });
+      }
+    });
+
+    // If no outputs detected from keywords, check for report/send in process
+    if (state.outputs.length === 0 && state.processes.length > 0) {
+      const last = state.processes.pop();
+      last.category = 'output';
+      state.outputs.push(last);
+    }
+
+    renderIPO();
+    statusEl.innerHTML = '<span style="color:#43A047">✓ 分解完了</span>';
+    switchTab(1);
+    notify(`Input: ${state.inputs.length}件 / Process: ${state.processes.length}件 / Output: ${state.outputs.length}件`);
+  }, 1200);
+}
+
+// --- Render IPO boxes ---
+function renderIPO() {
+  const renderItems = (items, containerId) => {
+    const el = document.getElementById(containerId);
+    el.innerHTML = items.map(item => `
+      <div class="ipo-item" onclick="selectObject('${item.category}', ${item.id})">
+        <span class="item-name">${item.name}</span>
+        <span class="item-tag">${item.hint}</span>
+      </div>
+    `).join('');
+  };
+
+  renderItems(state.inputs, 'inputItems');
+  renderItems(state.outputs, 'outputItems');
+  renderItems(state.processes, 'processItems');
+  renderModuleList();
+}
+
+// --- Module list in architecture tab ---
+function renderModuleList() {
+  const all = [
+    ...state.inputs.map(o => ({ ...o, color: '#1976D2', badge: 'INPUT' })),
+    ...state.outputs.map(o => ({ ...o, color: '#2E7D32', badge: 'OUTPUT' })),
+    ...state.processes.map(o => ({ ...o, color: '#F57C00', badge: 'PROCESS' })),
+  ];
+  const el = document.getElementById('moduleList');
+  el.innerHTML = all.map(o => `
+    <div class="module-item" onclick="selectObject('${o.category}', ${o.id})">
+      <div class="dot" style="background:${o.color}"></div>
+      <span style="flex:1; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${o.name.substring(0, 28)}</span>
+    </div>
+  `).join('');
+}
+
+// --- Select object for architecture config ---
+function selectObject(category, id) {
+  const all = [...state.inputs, ...state.outputs, ...state.processes];
+  const obj = all.find(o => o.category === category && o.id === id);
+  if (!obj) return;
+
+  const key = `${category}_${id}`;
+  const cfg = state.archConfig[key] || { format: obj.hint === 'CSV' ? 'csv' : obj.hint === 'Excel' ? 'excel' : obj.hint === 'JSON' ? 'json' : '', type: '', language: 'python', module: '' };
+
+  const badgeClass = category === 'input' ? 'badge-input' : category === 'output' ? 'badge-output' : 'badge-process';
+  const badgeLabel = category === 'input' ? 'INPUT' : category === 'output' ? 'OUTPUT' : 'PROCESS';
+
+  document.getElementById('archDetail').innerHTML = `
+    <h3><span class="badge ${badgeClass}">${badgeLabel}</span> ${obj.name}</h3>
+    <p class="hint" style="margin-bottom:16px">AI推定: ${obj.hint}</p>
+    <div class="obj-config">
+      <div class="config-field">
+        <label>データ形式</label>
+        <select id="cfg-format" onchange="saveConfig('${key}')">
+          <option value="">-- 選択 --</option>
+          <option value="json" ${cfg.format==='json'?'selected':''}>JSON</option>
+          <option value="csv" ${cfg.format==='csv'?'selected':''}>CSV</option>
+          <option value="excel" ${cfg.format==='excel'?'selected':''}>Excel (.xlsx)</option>
+          <option value="xml" ${cfg.format==='xml'?'selected':''}>XML</option>
+          <option value="text" ${cfg.format==='text'?'selected':''}>テキスト</option>
+          <option value="db" ${cfg.format==='db'?'selected':''}>DB (SQL)</option>
+          <option value="api" ${cfg.format==='api'?'selected':''}>REST API</option>
+          <option value="email" ${cfg.format==='email'?'selected':''}>Email (SMTP)</option>
+          <option value="webhook" ${cfg.format==='webhook'?'selected':''}>Webhook</option>
+          <option value="sap" ${cfg.format==='sap'?'selected':''}>SAP RFC/BAPI</option>
+          <option value="oracle" ${cfg.format==='oracle'?'selected':''}>Oracle PL/SQL</option>
+          <option value="file" ${cfg.format==='file'?'selected':''}>ファイル (バイナリ)</option>
+        </select>
+      </div>
+      <div class="config-field">
+        <label>データ型</label>
+        <select id="cfg-type" onchange="saveConfig('${key}')">
+          <option value="">-- 選択 --</option>
+          <option value="string" ${cfg.type==='string'?'selected':''}>String</option>
+          <option value="number" ${cfg.type==='number'?'selected':''}>Number</option>
+          <option value="dict" ${cfg.type==='dict'?'selected':''}>Dictionary / Object</option>
+          <option value="list" ${cfg.type==='list'?'selected':''}>List / Array</option>
+          <option value="dataframe" ${cfg.type==='dataframe'?'selected':''}>DataFrame</option>
+          <option value="binary" ${cfg.type==='binary'?'selected':''}>Binary / Bytes</option>
+          <option value="bool" ${cfg.type==='bool'?'selected':''}>Boolean</option>
+        </select>
+      </div>
+      <div class="config-field">
+        <label>実装言語</label>
+        <select id="cfg-language" onchange="saveConfig('${key}')">
+          <option value="python" ${cfg.language==='python'?'selected':''}>Python</option>
+          <option value="vba" ${cfg.language==='vba'?'selected':''}>VBA (Excel Macro)</option>
+          <option value="javascript" ${cfg.language==='javascript'?'selected':''}>JavaScript</option>
+          <option value="csharp" ${cfg.language==='csharp'?'selected':''}>C# (.NET)</option>
+          <option value="sql" ${cfg.language==='sql'?'selected':''}>SQL</option>
+          <option value="rpa" ${cfg.language==='rpa'?'selected':''}>RPA (XAML)</option>
+        </select>
+      </div>
+      <div class="config-field">
+        <label>共通モジュール</label>
+        <select id="cfg-module" onchange="saveConfig('${key}')">
+          <option value="">-- なし --</option>
+          <option value="logger" ${cfg.module==='logger'?'selected':''}>ログ出力</option>
+          <option value="error" ${cfg.module==='error'?'selected':''}>エラーハンドリング</option>
+          <option value="retry" ${cfg.module==='retry'?'selected':''}>リトライ制御</option>
+          <option value="auth" ${cfg.module==='auth'?'selected':''}>認証・認可</option>
+          <option value="config" ${cfg.module==='config'?'selected':''}>設定管理</option>
+        </select>
+      </div>
+    </div>
+  `;
+
+  // Auto-switch to architecture tab if on IPO tab
+  if (document.getElementById('sec-1').classList.contains('active')) {
+    switchTab(2);
+  }
+}
+
+function saveConfig(key) {
+  state.archConfig[key] = {
+    format: document.getElementById('cfg-format').value,
+    type: document.getElementById('cfg-type').value,
+    language: document.getElementById('cfg-language').value,
+    module: document.getElementById('cfg-module').value,
+  };
+  notify('設定を保存しました');
+}
+
+function applyModule(moduleName) {
+  if (!state.commonModules.includes(moduleName)) {
+    state.commonModules.push(moduleName);
+  }
+  notify(`共通モジュール「${moduleName}」を適用`);
+}
+
+// --- Generate Summary ---
+function generateSummary() {
+  const formatLabel = { json:'JSON', csv:'CSV', excel:'Excel', xml:'XML', text:'テキスト', db:'DB(SQL)', api:'REST API', email:'Email', webhook:'Webhook', sap:'SAP', oracle:'Oracle', file:'ファイル' };
+  const langLabel = { python:'Python', vba:'VBA', javascript:'JavaScript', csharp:'C#', sql:'SQL', rpa:'RPA(XAML)' };
+  const moduleLabel = { logger:'ログ', error:'エラーハンドリング', retry:'リトライ', auth:'認証', config:'設定管理' };
+
+  const renderRows = (items, category) => {
+    return items.map(item => {
+      const key = `${category}_${item.id}`;
+      const cfg = state.archConfig[key] || {};
+      const badgeClass = category === 'input' ? 'badge-input' : category === 'output' ? 'badge-output' : 'badge-process';
+      const badgeText = category === 'input' ? 'IN' : category === 'output' ? 'OUT' : 'PROC';
+      return `<tr>
+        <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+        <td>${item.name}</td>
+        <td>${formatLabel[cfg.format] || item.hint}</td>
+        <td>${langLabel[cfg.language] || '-'}</td>
+        <td>${moduleLabel[cfg.module] || '-'}</td>
+      </tr>`;
+    }).join('');
+  };
+
+  const html = `
+    <div style="background:#1a2940; border-radius:10px; padding:20px; border:1px solid #2a3a4e;">
+      <h3 style="color:#64B5F6; margin-bottom:4px;">業務関数定義書</h3>
+      <p class="hint">InsightMigration Business Function Designer</p>
+      <table class="summary-table" style="margin-top:16px;">
+        <thead>
+          <tr><th>種別</th><th>要件</th><th>データ形式</th><th>言語</th><th>共通モジュール</th></tr>
+        </thead>
+        <tbody>
+          ${renderRows(state.inputs, 'input')}
+          ${renderRows(state.processes, 'process')}
+          ${renderRows(state.outputs, 'output')}
+        </tbody>
+      </table>
+    </div>
+    <div style="background:#1a2940; border-radius:10px; padding:20px; border:1px solid #2a3a4e; margin-top:16px;">
+      <h3 style="color:#64B5F6; margin-bottom:12px;">統計</h3>
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px;">
+        <div style="text-align:center;"><div style="font-size:24px; color:#1976D2; font-weight:bold;">${state.inputs.length}</div><div class="hint">INPUT</div></div>
+        <div style="text-align:center;"><div style="font-size:24px; color:#F57C00; font-weight:bold;">${state.processes.length}</div><div class="hint">PROCESS</div></div>
+        <div style="text-align:center;"><div style="font-size:24px; color:#2E7D32; font-weight:bold;">${state.outputs.length}</div><div class="hint">OUTPUT</div></div>
+        <div style="text-align:center;"><div style="font-size:24px; color:#7E57C2; font-weight:bold;">${Object.keys(state.archConfig).length}</div><div class="hint">設計済</div></div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('summaryContent').innerHTML = html;
+  switchTab(3);
+  notify('サマリーを生成しました');
+}
+
+// --- Export JSON ---
+function exportJSON() {
+  const exportData = {
+    tool: 'InsightMigration Business Function Designer',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    businessRequirements: state.bizReq,
+    functionalRequirements: {
+      inputs: state.inputs.map(i => ({ ...i, config: state.archConfig[`input_${i.id}`] || {} })),
+      processes: state.processes.map(p => ({ ...p, config: state.archConfig[`process_${p.id}`] || {} })),
+      outputs: state.outputs.map(o => ({ ...o, config: state.archConfig[`output_${o.id}`] || {} })),
+    },
+    commonModules: state.commonModules,
+    architecture: state.archConfig,
+  };
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `business_function_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  notify('JSONファイルをエクスポートしました');
+}
+</script>
+
+</body>
+</html>
