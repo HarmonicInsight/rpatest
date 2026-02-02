@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HMM AI Agent Architecture — 自動化アーキテクチャ設計</title>
+<style>
+  @media print { body { background:#fff !important; } .no-print { display:none; } }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Yu Gothic','Meiryo','Segoe UI',sans-serif; background:#f5f7fa; color:#1a1a2e; line-height:1.8; }
+
+  .cover {
+    background:linear-gradient(135deg,#0d1b2a 0%,#1b2a4a 40%,#162447 100%);
+    color:#fff; min-height:60vh; display:flex; flex-direction:column;
+    justify-content:center; align-items:center; text-align:center; padding:60px 40px;
+  }
+  .cover .label { font-size:14px; letter-spacing:6px; text-transform:uppercase; color:#64B5F6; margin-bottom:24px; }
+  .cover h1 { font-size:42px; font-weight:800; letter-spacing:2px; margin-bottom:8px; }
+  .cover h1 span { color:#64B5F6; }
+  .cover .subtitle { font-size:20px; color:#90CAF9; margin-bottom:40px; font-weight:300; }
+  .cover .divider { width:80px; height:3px; background:linear-gradient(90deg,#1976D2,#64B5F6); margin:24px auto; border-radius:2px; }
+  .cover .meta { font-size:14px; color:#546e7a; }
+  .cover .badge { display:inline-block; background:rgba(33,150,243,0.2); border:1px solid rgba(33,150,243,0.3); padding:4px 16px; border-radius:20px; font-size:13px; color:#90CAF9; margin-bottom:24px; }
+
+  .content { max-width:920px; margin:0 auto; padding:60px 40px; }
+  h2 { font-size:26px; color:#0d1b2a; margin:48px 0 8px; padding-bottom:12px; border-bottom:3px solid #1976D2; }
+  h2 .num { color:#1976D2; margin-right:8px; }
+  h3 { font-size:18px; color:#1b2a4a; margin:28px 0 12px; }
+  h4 { font-size:15px; color:#37474f; margin:16px 0 8px; }
+  p { margin-bottom:16px; font-size:15px; }
+  ul, ol { margin:12px 0 20px 24px; font-size:15px; }
+  li { margin-bottom:6px; }
+  table { width:100%; border-collapse:collapse; margin:20px 0; font-size:14px; }
+  th { background:#1b2a4a; color:#fff; padding:12px 16px; text-align:left; font-size:13px; }
+  td { padding:12px 16px; border-bottom:1px solid #e0e0e0; }
+  tr:nth-child(even) td { background:#f8f9fa; }
+  blockquote { border-left:4px solid #1976D2; padding:16px 24px; margin:24px 0; background:#f8f9fa; font-style:italic; font-size:16px; color:#37474f; }
+  code { background:#e3f2fd; color:#1565C0; padding:2px 8px; border-radius:4px; font-size:13px; }
+
+  .callout { border-radius:10px; padding:24px 28px; margin:24px 0; }
+  .callout-insight { background:#e3f2fd; border-left:5px solid #1976D2; }
+  .callout-warning { background:#fff3e0; border-left:5px solid #F57C00; }
+  .callout-success { background:#e8f5e9; border-left:5px solid #2E7D32; }
+  .callout-dark { background:#0d1b2a; color:#e0e0e0; border-left:5px solid #64B5F6; }
+  .callout .callout-title { font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .callout-insight .callout-title { color:#1565C0; }
+  .callout-warning .callout-title { color:#E65100; }
+  .callout-success .callout-title { color:#1B5E20; }
+  .callout-dark .callout-title { color:#64B5F6; }
+
+  .tag { display:inline-block; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:600; margin:0 4px 4px 0; }
+  .tag-ai { background:#e3f2fd; color:#1565C0; }
+  .tag-human { background:#fff3e0; color:#E65100; }
+  .tag-auto { background:#e8f5e9; color:#2E7D32; }
+  .tag-event { background:#f3e5f5; color:#7B1FA2; }
+
+  .footer { text-align:center; padding:40px; color:#90a4ae; font-size:13px; border-top:1px solid #e0e0e0; margin-top:60px; }
+</style>
+</head>
+<body>
+
+<!-- ===== COVER ===== -->
+<div class="cover">
+  <div class="label">HarmonicInsight System Architecture</div>
+  <div class="badge">v0.1 Draft — 2026.02</div>
+  <h1>HMM <span>AI Agent</span> Architecture</h1>
+  <div class="subtitle">Claude Opus による完全自動マイグレーション管理システム</div>
+  <div class="divider"></div>
+  <div class="meta">Harmonic Migration Method — AI Agent Functional Design<br>HarmonicInsight / FPT Consulting Japan</div>
+</div>
+
+<div class="content">
+
+<!-- ==================== Section 1 ==================== -->
+<h2><span class="num">01</span> コンセプト</h2>
+
+<blockquote>
+  管理者は「統括指揮官」として全体を把握し、意思決定だけに集中する。<br>
+  AIエージェント（Claude Opus）が管理者の「手足」として、<br>
+  要件確認、進捗追跡、催促、品質チェック、レポーティングを自律的に実行する。
+</blockquote>
+
+<h3>1.1 基本思想</h3>
+
+<p>
+  従来のマイグレーションプロジェクトでは、PM・リーダーが自ら進捗を確認し、メールを書き、
+  催促し、レポートを作成していました。HMM AI Agentでは、<strong>これらの定型的な管理業務を
+  Claude Opus が30分間隔で自律的に実行</strong>します。
+</p>
+
+<!-- Architecture overview -->
+<div style="background:#0d1b2a; border-radius:12px; padding:32px 20px; margin:28px 0;">
+  <div style="text-align:center; color:#64B5F6; font-size:14px; font-weight:700; letter-spacing:2px; margin-bottom:24px;">
+    HMM AI Agent — 全体アーキテクチャ
+  </div>
+  <div style="display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;">
+    <!-- Manager -->
+    <div style="background:linear-gradient(135deg,#E65100,#F57C00); border-radius:12px; padding:16px 20px; min-width:140px; text-align:center;">
+      <div style="font-size:24px; margin-bottom:4px;">&#x1F451;</div>
+      <div style="font-size:14px; color:#fff; font-weight:700;">管理者（あなた）</div>
+      <div style="font-size:11px; color:#FFCC80; margin-top:4px;">意思決定・承認<br>戦略判断のみ</div>
+    </div>
+
+    <div style="font-size:24px; color:#64B5F6;">&#x2194;</div>
+
+    <!-- AI Agent -->
+    <div style="background:linear-gradient(135deg,#0D47A1,#1565C0); border:2px solid #1976D2; border-radius:12px; padding:16px 24px; min-width:200px; text-align:center; box-shadow:0 0 20px rgba(33,150,243,0.3);">
+      <div style="font-size:24px; margin-bottom:4px;">&#x1F916;</div>
+      <div style="font-size:14px; color:#fff; font-weight:700;">Claude Opus Agent</div>
+      <div style="font-size:11px; color:#90CAF9; margin-top:8px;">
+        30分間隔で自律稼働<br>
+        イベント駆動で即時対応
+      </div>
+      <div style="display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin-top:10px;">
+        <span style="background:rgba(255,255,255,0.15); padding:2px 8px; border-radius:6px; font-size:10px; color:#90CAF9;">進捗監視</span>
+        <span style="background:rgba(255,255,255,0.15); padding:2px 8px; border-radius:6px; font-size:10px; color:#90CAF9;">催促</span>
+        <span style="background:rgba(255,255,255,0.15); padding:2px 8px; border-radius:6px; font-size:10px; color:#90CAF9;">品質チェック</span>
+        <span style="background:rgba(255,255,255,0.15); padding:2px 8px; border-radius:6px; font-size:10px; color:#90CAF9;">レポート</span>
+      </div>
+    </div>
+
+    <div style="font-size:24px; color:#64B5F6;">&#x2194;</div>
+
+    <!-- Targets -->
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:8px 16px; font-size:12px; color:#e0e0e0; text-align:center;">
+        &#x1F4BB; ボット管理シート<br><span style="color:#90a4ae; font-size:10px;">(コンサルタント向け)</span>
+      </div>
+      <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:8px 16px; font-size:12px; color:#e0e0e0; text-align:center;">
+        &#x1F310; 顧客ポータル<br><span style="color:#90a4ae; font-size:10px;">(レビュー・UAT)</span>
+      </div>
+      <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:8px 16px; font-size:12px; color:#e0e0e0; text-align:center;">
+        &#x1F4E7; メール / Chat<br><span style="color:#90a4ae; font-size:10px;">(Teams / Slack)</span>
+      </div>
+      <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:8px 16px; font-size:12px; color:#e0e0e0; text-align:center;">
+        &#x2699; Orchestrator API<br><span style="color:#90a4ae; font-size:10px;">(aKaBot / UiPath)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3>1.2 病院オペレーションに学ぶ — 役割分担の本質</h3>
+
+<div class="callout callout-insight">
+  <div class="callout-title">Hospital Operations Analogy</div>
+  <p style="margin:0; line-height:2;">
+    病院は、命に関わるからこそ究極の効率と最大限のケアを両立する組織です。<br>
+    日常のケアを担う<strong>看護師</strong>、手術を執刀する<strong>外科医</strong>、
+    専門領域を担う<strong>麻酔科医</strong>——それぞれの役割が明確に分かれ、
+    必要なときに必要な人が必要な対応をする。<br><br>
+    マイグレーションプロジェクトも同じ「役割分担の集合体」です:
+  </p>
+</div>
+
+<!-- Hospital analogy diagram -->
+<div style="background:#0d1b2a; border-radius:12px; padding:28px 20px; margin:20px 0;">
+  <div style="text-align:center; color:#64B5F6; font-size:13px; font-weight:700; letter-spacing:2px; margin-bottom:20px;">
+    病院モデル → HMM AI Agent モデル
+  </div>
+  <div style="display:flex; gap:24px; justify-content:center; flex-wrap:wrap;">
+    <!-- Hospital side -->
+    <div style="flex:1; min-width:280px; max-width:380px;">
+      <div style="text-align:center; font-size:14px; color:#F57C00; font-weight:700; margin-bottom:12px;">&#x1F3E5; 病院</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:10px 14px; font-size:12px; color:#e0e0e0;">
+          <strong style="color:#FFCC80;">院長・主治医</strong> — 方針決定、最終判断
+        </div>
+        <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:10px 14px; font-size:12px; color:#e0e0e0;">
+          <strong style="color:#90CAF9;">看護師</strong> — 日常ケア、バイタルチェック、投薬管理
+        </div>
+        <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:10px 14px; font-size:12px; color:#e0e0e0;">
+          <strong style="color:#A5D6A7;">外科医・麻酔科医</strong> — 専門的な処置、手術
+        </div>
+        <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:10px 14px; font-size:12px; color:#e0e0e0;">
+          <strong style="color:#CE93D8;">医療事務</strong> — 受付、記録、報告書
+        </div>
+      </div>
+    </div>
+    <!-- Arrow -->
+    <div style="display:flex; align-items:center; font-size:28px; color:#64B5F6;">&#x27A1;</div>
+    <!-- HMM side -->
+    <div style="flex:1; min-width:280px; max-width:380px;">
+      <div style="text-align:center; font-size:14px; color:#1976D2; font-weight:700; margin-bottom:12px;">&#x1F3ED; HMM AI Agent</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:10px 14px; font-size:12px; color:#e0e0e0;">
+          <strong style="color:#FFCC80;">統括管理者</strong> — 意思決定、承認、戦略判断
+        </div>
+        <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:10px 14px; font-size:12px; color:#e0e0e0;">
+          <strong style="color:#90CAF9;">AI Agent（Claude Opus）</strong> — 日常巡回、催促、フォローアップ
+        </div>
+        <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:10px 14px; font-size:12px; color:#e0e0e0;">
+          <strong style="color:#A5D6A7;">移行コンサルタント</strong> — IPO変換、技術的な移行作業
+        </div>
+        <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:10px 14px; font-size:12px; color:#e0e0e0;">
+          <strong style="color:#CE93D8;">AI Agent（レポート）</strong> — 日報、週報、ステータス集計
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:16px; font-size:12px; color:#78909c; line-height:1.8;">
+    病院が命を守るために効率化を極めるように、<br>
+    HMM AI Agentは移行品質を守りながら管理効率を最大化する
+  </div>
+</div>
+
+<p>
+  病院では看護師が定期的にバイタルチェック（巡回）を行い、異常があれば医師に報告します。
+  同様に、AI Agentが30分間隔でボットの進捗を巡回チェックし、滞留や異常を検知すれば管理者にエスカレーションします。
+  看護師が日常ケアを担うことで医師が手術や重要な判断に集中できるように、
+  <strong>AI Agentが日常管理を自律実行することで、管理者は戦略的な意思決定だけに集中</strong>できます。
+</p>
+
+<h3>1.3 人間とAIの役割分担</h3>
+
+<table>
+  <tr><th>分類</th><th>業務</th><th>実行者</th><th>頻度</th></tr>
+  <tr>
+    <td rowspan="4"><strong>AI自律実行</strong><br><span class="tag tag-auto">完全自動</span></td>
+    <td>ボットステータスの定期チェック</td><td>Claude Opus</td><td>30分間隔</td>
+  </tr>
+  <tr><td>レビュー未回答者への催促メッセージ</td><td>Claude Opus</td><td>イベント駆動</td></tr>
+  <tr><td>テスト進捗の確認・フォローアップ</td><td>Claude Opus</td><td>イベント駆動</td></tr>
+  <tr><td>日次進捗レポートの自動生成</td><td>Claude Opus</td><td>毎日 17:00</td></tr>
+  <tr>
+    <td rowspan="3"><strong>AI提案→人間承認</strong><br><span class="tag tag-ai">AI</span><span class="tag tag-human">承認</span></td>
+    <td>ブロック解除の対応策提案</td><td>AI提案 → 管理者承認</td><td>発生時</td>
+  </tr>
+  <tr><td>スケジュール遅延時の優先度変更提案</td><td>AI提案 → 管理者承認</td><td>週次</td></tr>
+  <tr><td>顧客追加要望のスコープ判断</td><td>AI分析 → 管理者判断</td><td>発生時</td></tr>
+  <tr>
+    <td rowspan="3"><strong>人間のみ</strong><br><span class="tag tag-human">管理者</span></td>
+    <td>プロジェクト方針の決定</td><td>管理者</td><td>随時</td>
+  </tr>
+  <tr><td>顧客との最終合意・承認</td><td>管理者</td><td>マイルストーン時</td></tr>
+  <tr><td>チームメンバーの評価・アサイン変更</td><td>管理者</td><td>随時</td></tr>
+</table>
+
+<!-- ==================== Section 2 ==================== -->
+<h2><span class="num">02</span> システム構成</h2>
+
+<h3>2.1 コンポーネント一覧</h3>
+
+<table>
+  <tr><th>コンポーネント</th><th>種類</th><th>説明</th><th>技術</th></tr>
+  <tr>
+    <td><strong>HMM Agent Core</strong></td>
+    <td>バックエンド</td>
+    <td>30分間隔の定期実行エンジン。イベントキュー処理。</td>
+    <td>Python + Claude API (Opus)</td>
+  </tr>
+  <tr>
+    <td><strong>Bot Management DB</strong></td>
+    <td>データストア</td>
+    <td>ボット一覧、ステータス、チケット、修正ログ</td>
+    <td>SQLite / PostgreSQL</td>
+  </tr>
+  <tr>
+    <td><strong>管理者ダッシュボード</strong></td>
+    <td>Web UI</td>
+    <td>管理者向け全体統括画面 + AI対話パネル</td>
+    <td>HTML/JS (既存の拡張)</td>
+  </tr>
+  <tr>
+    <td><strong>顧客ポータル</strong></td>
+    <td>Web UI</td>
+    <td>レビュー回答、UATテスト、チャット</td>
+    <td>HTML/JS (既存の拡張)</td>
+  </tr>
+  <tr>
+    <td><strong>通知エンジン</strong></td>
+    <td>サービス</td>
+    <td>メール/Teams/Slack への通知送信</td>
+    <td>SMTP / Webhook API</td>
+  </tr>
+  <tr>
+    <td><strong>Orchestrator Connector</strong></td>
+    <td>コネクタ</td>
+    <td>aKaBot/UiPath Orchestrator API連携</td>
+    <td>REST API Client</td>
+  </tr>
+  <tr>
+    <td><strong>イベントキュー</strong></td>
+    <td>キュー</td>
+    <td>AI が処理すべきイベントの一時保管</td>
+    <td>Redis / ファイルベース</td>
+  </tr>
+</table>
+
+<h3>2.2 システム構成図</h3>
+
+<div style="background:#0d1b2a; border-radius:12px; padding:28px 20px; margin:28px 0;">
+  <div style="text-align:center; color:#64B5F6; font-size:13px; font-weight:700; letter-spacing:2px; margin-bottom:20px;">
+    システム構成図
+  </div>
+
+  <!-- Layers -->
+  <div style="display:flex; flex-direction:column; gap:12px; max-width:700px; margin:0 auto;">
+
+    <!-- Layer: Human -->
+    <div style="border:2px solid #F57C00; border-radius:12px; padding:16px;">
+      <div style="font-size:11px; color:#FFCC80; font-weight:700; letter-spacing:1px; margin-bottom:10px;">HUMAN LAYER</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <div style="background:#1a2940; border:1px solid #F57C00; border-radius:8px; padding:8px 14px; font-size:12px; color:#FFCC80; flex:1; text-align:center; min-width:120px;">
+          &#x1F451; 管理者<br><span style="font-size:10px; color:#90a4ae;">ダッシュボード + AI対話</span>
+        </div>
+        <div style="background:#1a2940; border:1px solid #546e7a; border-radius:8px; padding:8px 14px; font-size:12px; color:#e0e0e0; flex:1; text-align:center; min-width:120px;">
+          &#x1F465; コンサルタント<br><span style="font-size:10px; color:#90a4ae;">ボット管理シート</span>
+        </div>
+        <div style="background:#1a2940; border:1px solid #546e7a; border-radius:8px; padding:8px 14px; font-size:12px; color:#e0e0e0; flex:1; text-align:center; min-width:120px;">
+          &#x1F465; 顧客担当者<br><span style="font-size:10px; color:#90a4ae;">顧客ポータル</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center; color:#546e7a; font-size:16px;">&#x2B07; &#x2B06;</div>
+
+    <!-- Layer: AI Agent -->
+    <div style="border:2px solid #1976D2; border-radius:12px; padding:16px; box-shadow:0 0 15px rgba(33,150,243,0.15);">
+      <div style="font-size:11px; color:#64B5F6; font-weight:700; letter-spacing:1px; margin-bottom:10px;">AI AGENT LAYER (Claude Opus)</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px;">
+        <div style="background:#0D47A1; border-radius:8px; padding:10px; text-align:center; font-size:11px; color:#90CAF9;">
+          <strong style="color:#fff;">Scheduler</strong><br>30分定期実行<br>cron / APScheduler
+        </div>
+        <div style="background:#0D47A1; border-radius:8px; padding:10px; text-align:center; font-size:11px; color:#90CAF9;">
+          <strong style="color:#fff;">Event Processor</strong><br>イベント駆動処理<br>Webhook受信
+        </div>
+        <div style="background:#0D47A1; border-radius:8px; padding:10px; text-align:center; font-size:11px; color:#90CAF9;">
+          <strong style="color:#fff;">Decision Engine</strong><br>状況分析・判断<br>Claude Opus API
+        </div>
+        <div style="background:#0D47A1; border-radius:8px; padding:10px; text-align:center; font-size:11px; color:#90CAF9;">
+          <strong style="color:#fff;">Action Executor</strong><br>通知送信・更新<br>メール/Chat/DB
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center; color:#546e7a; font-size:16px;">&#x2B07; &#x2B06;</div>
+
+    <!-- Layer: Data & Integration -->
+    <div style="border:2px solid #546e7a; border-radius:12px; padding:16px;">
+      <div style="font-size:11px; color:#90a4ae; font-weight:700; letter-spacing:1px; margin-bottom:10px;">DATA & INTEGRATION LAYER</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <div style="background:#1a2940; border:1px solid #546e7a; border-radius:8px; padding:8px 14px; font-size:12px; color:#e0e0e0; flex:1; text-align:center; min-width:100px;">
+          &#x1F4BE; Bot DB<br><span style="font-size:10px; color:#90a4ae;">ステータス・ログ</span>
+        </div>
+        <div style="background:#1a2940; border:1px solid #546e7a; border-radius:8px; padding:8px 14px; font-size:12px; color:#e0e0e0; flex:1; text-align:center; min-width:100px;">
+          &#x1F4E8; Event Queue<br><span style="font-size:10px; color:#90a4ae;">未処理イベント</span>
+        </div>
+        <div style="background:#1a2940; border:1px solid #546e7a; border-radius:8px; padding:8px 14px; font-size:12px; color:#e0e0e0; flex:1; text-align:center; min-width:100px;">
+          &#x1F4E7; 通知エンジン<br><span style="font-size:10px; color:#90a4ae;">SMTP / Webhook</span>
+        </div>
+        <div style="background:#1a2940; border:1px solid #546e7a; border-radius:8px; padding:8px 14px; font-size:12px; color:#e0e0e0; flex:1; text-align:center; min-width:100px;">
+          &#x2699; Orchestrator<br><span style="font-size:10px; color:#90a4ae;">aKaBot API</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Section 3 ==================== -->
+<h2><span class="num">03</span> AI Agent の機能設計</h2>
+
+<h3>3.1 定期実行タスク（Scheduler: 30分間隔）</h3>
+
+<div class="callout callout-dark">
+  <div class="callout-title">30分間隔の巡回チェック — AI Agent の基本動作</div>
+  <p style="margin:0; line-height:2; font-size:14px;">
+    Claude Opus が30分ごとにBot Management DBを巡回し、以下のチェックを実行する。<br>
+    異常・要対応を検知した場合、<strong>自律的に判断してアクション</strong>を実行する。<br>
+    重要な判断は管理者に提案し、承認を待つ。
+  </p>
+</div>
+
+<table>
+  <tr><th>チェック項目</th><th>条件</th><th>AIのアクション</th><th>分類</th></tr>
+  <tr>
+    <td><strong>レビュー未回答</strong></td>
+    <td>レビュー依頼から48時間以上未回答</td>
+    <td>担当者にリマインドメッセージ送信<br>「○○様、BOT-015 入金消込処理のレビューをお待ちしております。ご不明点があればお気軽にお申し付けください。」</td>
+    <td><span class="tag tag-auto">自動</span></td>
+  </tr>
+  <tr>
+    <td><strong>レビュー長期未回答</strong></td>
+    <td>レビュー依頼から5営業日以上未回答</td>
+    <td>管理者にエスカレーション通知<br>「BOT-015 のレビューが5日間未回答です。担当者: 佐藤様。電話フォロー推奨。」</td>
+    <td><span class="tag tag-ai">AI通知</span><span class="tag tag-human">管理者判断</span></td>
+  </tr>
+  <tr>
+    <td><strong>実装滞留</strong></td>
+    <td>ステータス「実装中」が3日以上変化なし</td>
+    <td>担当コンサルタントに状況確認<br>「BOT-091 の実装が3日間進捗なしです。ブロッカーがあれば報告してください。」</td>
+    <td><span class="tag tag-auto">自動</span></td>
+  </tr>
+  <tr>
+    <td><strong>テスト未実施</strong></td>
+    <td>ステータス「テスト/UAT」が3日以上変化なし</td>
+    <td>テスト担当者にフォローアップ<br>「○○様、BOT-008 のテスト結果をお待ちしております。お忙しいところ恐れ入りますが、ご確認をお願いいたします。」</td>
+    <td><span class="tag tag-auto">自動</span></td>
+  </tr>
+  <tr>
+    <td><strong>高優先度チケット</strong></td>
+    <td>優先度「高」のチケットが24時間以上未アサイン</td>
+    <td>管理者に通知 + アサイン先を提案<br>「ISSUE-003 (OCR認識率) が未アサインです。山本さんが適任と思われます。」</td>
+    <td><span class="tag tag-ai">AI提案</span><span class="tag tag-human">承認</span></td>
+  </tr>
+  <tr>
+    <td><strong>全体進捗の異常</strong></td>
+    <td>予定進捗率と実績の乖離が10%以上</td>
+    <td>管理者にアラート + 対策案を提示<br>「現在進捗率42%、予定55%。Cランクのボットが滞留。リード自身がCランクに集中する案を提案。」</td>
+    <td><span class="tag tag-ai">AI提案</span><span class="tag tag-human">判断</span></td>
+  </tr>
+  <tr>
+    <td><strong>完了ボットの品質チェック</strong></td>
+    <td>ステータス「完了」に変更された直後</td>
+    <td>IPO等価性テスト結果を自動検証<br>チェックリストに漏れがないか確認</td>
+    <td><span class="tag tag-auto">自動</span></td>
+  </tr>
+</table>
+
+<h3>3.2 イベント駆動タスク（Event Processor）</h3>
+
+<p>以下のイベントが発生した時点で、即座にAI Agentが処理を実行します。</p>
+
+<table>
+  <tr><th>イベント</th><th>トリガー</th><th>AIのアクション</th></tr>
+  <tr>
+    <td><strong>レビュー回答受信</strong></td>
+    <td>顧客がポータルで回答を送信</td>
+    <td>
+      ① 回答内容を分析（承認 / 変更要望 / 問題報告）<br>
+      ② 承認 → ステータスを「実装中」に自動更新、コンサルタントに通知<br>
+      ③ 変更要望 → 要望内容を分析し、IPO定義の修正案を生成、コンサルタントに提示<br>
+      ④ 問題報告 → チケットを自動作成、管理者に通知
+    </td>
+  </tr>
+  <tr>
+    <td><strong>UAT結果受信</strong></td>
+    <td>顧客がポータルでテスト結果を送信</td>
+    <td>
+      ① 合格 → ステータスを「完了」に更新、管理者にサマリー報告<br>
+      ② 不合格 → チケットを自動作成、顧客コメントから問題箇所を特定、修正提案を生成
+    </td>
+  </tr>
+  <tr>
+    <td><strong>チャットメッセージ受信</strong></td>
+    <td>顧客がポータルでチャット送信</td>
+    <td>
+      ① メッセージ内容を分析<br>
+      ② 一般的な質問 → AIが自動回答（IPO定義の説明、ステータス確認等）<br>
+      ③ 技術的な質問 → コンサルタントにルーティング<br>
+      ④ 要件変更に関する質問 → 管理者にエスカレーション
+    </td>
+  </tr>
+  <tr>
+    <td><strong>コンサルタントのステータス更新</strong></td>
+    <td>ボット管理シートでステータス変更</td>
+    <td>
+      ① 「レビュー中」に変更 → 顧客担当者にレビュー依頼メールを自動送信<br>
+      ② 「テスト/UAT」に変更 → 顧客担当者にテスト依頼メールを自動送信<br>
+      ③ 「ブロック」に変更 → 管理者にアラート、ブロック理由の確認
+    </td>
+  </tr>
+  <tr>
+    <td><strong>新規チケット作成</strong></td>
+    <td>チケットが新規作成された</td>
+    <td>
+      ① チケット内容を分析、類似チケットがないか検索<br>
+      ② 適切な担当者を提案<br>
+      ③ 優先度「高」→ 管理者に即時通知
+    </td>
+  </tr>
+</table>
+
+<h3>3.3 レポーティング（自動生成）</h3>
+
+<table>
+  <tr><th>レポート</th><th>頻度</th><th>送信先</th><th>内容</th></tr>
+  <tr>
+    <td><strong>日次進捗レポート</strong></td>
+    <td>毎日 17:00</td>
+    <td>管理者</td>
+    <td>
+      ・本日の完了ボット数<br>
+      ・本日のレビュー回答数<br>
+      ・ブロック/滞留ボット一覧<br>
+      ・明日の予定アクション<br>
+      ・全体進捗率と予定比較
+    </td>
+  </tr>
+  <tr>
+    <td><strong>週次サマリー</strong></td>
+    <td>毎週金曜 16:00</td>
+    <td>管理者 + 顧客PM</td>
+    <td>
+      ・今週の成果（完了ボット数）<br>
+      ・来週の計画<br>
+      ・リスク/課題一覧<br>
+      ・スケジュール遵守率
+    </td>
+  </tr>
+  <tr>
+    <td><strong>コンサルタント別実績</strong></td>
+    <td>毎週月曜 9:00</td>
+    <td>管理者</td>
+    <td>
+      ・担当別の完了数/進行中数<br>
+      ・平均リードタイム（ランク別）<br>
+      ・ブロック率<br>
+      ・品質スコア（UATパス率）
+    </td>
+  </tr>
+  <tr>
+    <td><strong>顧客レスポンス分析</strong></td>
+    <td>毎週月曜 9:00</td>
+    <td>管理者</td>
+    <td>
+      ・部門別レビュー回答率<br>
+      ・平均回答日数<br>
+      ・未回答ボット一覧<br>
+      ・フォローアップ推奨リスト
+    </td>
+  </tr>
+</table>
+
+<!-- ==================== Section 4 ==================== -->
+<h2><span class="num">04</span> AI対話インターフェース（管理者ダッシュボード）</h2>
+
+<h3>4.1 管理者チャットパネル</h3>
+
+<p>
+  管理者はダッシュボード上のチャットパネルからClaude Opusに自然言語で指示・質問ができます。
+  AIは現在のプロジェクト状態（全ボットのステータス、チケット、チャット履歴）を
+  コンテキストとして持っているため、的確な回答と実行が可能です。
+</p>
+
+<div style="background:#fff; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; margin:24px 0; max-width:600px;">
+  <div style="font-size:13px; font-weight:700; color:#1b2a4a; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid #e0e0e0;">
+    &#x1F916; HMM AI Agent — 管理者チャット
+  </div>
+
+  <!-- Chat example -->
+  <div style="display:flex; flex-direction:column; gap:12px;">
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <div style="background:#1976D2; color:#fff; padding:8px 14px; border-radius:12px 12px 2px 12px; font-size:13px; max-width:80%;">
+        今日の状況を教えて
+      </div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <div style="background:#f0f2f5; padding:10px 14px; border-radius:12px 12px 12px 2px; font-size:13px; max-width:85%; line-height:1.7;">
+        <strong>本日の進捗サマリー (2/2 15:30時点)</strong><br>
+        ・完了: 38/120本 (31.7%)<br>
+        ・本日完了: 3本 (BOT-009, BOT-017, BOT-042)<br>
+        ・レビュー待ち: 8本 (うち3本が48時間以上未回答)<br>
+        ・ブロック中: 2本<br><br>
+        <span style="color:#c62828;">&#x26A0; 注意:</span> 経理部 佐藤さんのレビュー回答が5本溜まっています。フォローアップを推奨します。<br>
+        <span style="color:#F57C00;">&#x1F4CB; 提案:</span> Cランク BOT-091 (SAP接続) がブロック中。山本さんのSAP経験を活用してペアで対応する案はいかがですか？
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <div style="background:#1976D2; color:#fff; padding:8px 14px; border-radius:12px 12px 2px 12px; font-size:13px; max-width:80%;">
+        佐藤さんに催促して。あと山本さんにBOT-091をアサインして
+      </div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <div style="background:#f0f2f5; padding:10px 14px; border-radius:12px 12px 12px 2px; font-size:13px; max-width:85%; line-height:1.7;">
+        実行しました:<br>
+        &#x2705; 佐藤さんに催促メールを送信しました（5本分のレビューリンク付き）<br>
+        &#x2705; BOT-091 の担当を山本さんに変更しました<br>
+        &#x2705; 山本さんにSlack通知を送信しました:「BOT-091 SAP接続タイムアウトの対応をお願いします」
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <div style="background:#1976D2; color:#fff; padding:8px 14px; border-radius:12px 12px 2px 12px; font-size:13px; max-width:80%;">
+        来週末までに50%いける？
+      </div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <div style="background:#f0f2f5; padding:10px 14px; border-radius:12px 12px 12px 2px; font-size:13px; max-width:85%; line-height:1.7;">
+        <strong>予測分析:</strong><br>
+        現在のペース (3本/日) → 来週金曜時点で約53本 (44.2%)<br>
+        50%達成には <strong>60本</strong> が必要 → 日平均4.4本に上げる必要があります。<br><br>
+        <strong>達成するための提案:</strong><br>
+        ① Aランク残り12本を今週中に一括処理（レビューが溜まっている分）<br>
+        ② グエンさんのBランク処理をAランクに振り替えて並行処理<br>
+        ③ 顧客レスポンスの高速化（佐藤さん・高橋さんの回答催促）<br><br>
+        ①②で +8本/週が見込めるため、<strong>達成可能性は約70%</strong>です。
+        ボトルネックは顧客レスポンスです。
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3>4.2 管理者が使えるコマンド例</h3>
+
+<table>
+  <tr><th>自然言語コマンド</th><th>AIの実行内容</th></tr>
+  <tr><td>「今日の状況」「進捗教えて」</td><td>本日のサマリーレポートを生成・表示</td></tr>
+  <tr><td>「〇〇さんに催促して」</td><td>未回答のレビュー/テスト一覧付きのリマインドメッセージを送信</td></tr>
+  <tr><td>「BOT-091をXXさんにアサインして」</td><td>担当者変更 + 通知送信</td></tr>
+  <tr><td>「Cランクのボット全部見せて」</td><td>Cランクボットの一覧と現在ステータスを表示</td></tr>
+  <tr><td>「ブロックされてるボットは？」</td><td>ブロック中のボット一覧 + 原因 + 解消提案</td></tr>
+  <tr><td>「来週の計画を立てて」</td><td>現在進捗から来週の最適な作業計画を生成</td></tr>
+  <tr><td>「経理部の回答状況は？」</td><td>部門別のレビュー回答率・UAT進捗を表示</td></tr>
+  <tr><td>「日次レポートを顧客PMに送って」</td><td>カスタマイズした進捗レポートをメール送信</td></tr>
+  <tr><td>「BOT-005のチケット一覧」</td><td>特定ボットに紐づくチケットを一覧表示</td></tr>
+  <tr><td>「全体スケジュールは間に合うか分析して」</td><td>現在のバーンダウンから完了予測日を算出・リスク分析</td></tr>
+</table>
+
+<!-- ==================== Section 5 ==================== -->
+<h2><span class="num">05</span> 顧客チャット（AI応答）</h2>
+
+<h3>5.1 顧客ポータル上のAIチャット</h3>
+
+<p>
+  顧客担当者がポータル上でAIに質問できるチャット機能です。
+  IPO定義の内容確認、ステータスの質問、要件の補足などに<strong>AIが即時応答</strong>します。
+  技術的に深い質問や要件変更は、AIが自動的にコンサルタントまたは管理者にルーティングします。
+</p>
+
+<div style="background:#fff; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; margin:24px 0; max-width:600px;">
+  <div style="font-size:13px; font-weight:700; color:#1b2a4a; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid #e0e0e0;">
+    &#x1F4AC; チャットサポート — 田中様（経理部）
+  </div>
+  <div style="display:flex; flex-direction:column; gap:12px;">
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <div style="background:#1976D2; color:#fff; padding:8px 14px; border-radius:12px 12px 2px 12px; font-size:13px; max-width:80%;">
+        BOT-015 入金消込のIPOで「1対Nの照合」ってどういう意味ですか？
+      </div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <div style="background:#f0f2f5; padding:10px 14px; border-radius:12px 12px 12px 2px; font-size:13px; max-width:85%; line-height:1.7;">
+        田中様、ご質問ありがとうございます。<br><br>
+        「1対Nの照合」とは、1件の入金データに対して複数の請求書を突き合わせるパターンです。<br>
+        例えば、お客様が3件の請求書を1回の振込でまとめて支払った場合：<br>
+        ・入金: 150,000円（1件）<br>
+        ・請求書: 50,000円 + 60,000円 + 40,000円（3件）<br>
+        このような場合に合計金額で照合する処理です。<br><br>
+        現在のIPO定義にこのパターンが含まれていませんでした。追加が必要でしょうか？
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <div style="background:#1976D2; color:#fff; padding:8px 14px; border-radius:12px 12px 2px 12px; font-size:13px; max-width:80%;">
+        はい、うちでは分割払いが結構あるので追加してほしいです
+      </div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <div style="background:#f0f2f5; padding:10px 14px; border-radius:12px 12px 12px 2px; font-size:13px; max-width:85%; line-height:1.7;">
+        承知しました。IPO定義に「1対N照合パターン」を追加する変更要望として記録しました。<br><br>
+        &#x1F4DD; チケット ISSUE-011 を自動作成しました<br>
+        &#x1F4E7; 担当コンサルタント（山本）に通知済みです<br><br>
+        山本が詳細な仕様を確認させていただきますので、少々お待ちください。
+        追加のご質問があればいつでもどうぞ。
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3>5.2 AIチャットの応答ルール</h3>
+
+<table>
+  <tr><th>質問カテゴリ</th><th>AIの処理</th><th>例</th></tr>
+  <tr>
+    <td><strong>IPO内容の質問</strong></td>
+    <td><span class="tag tag-auto">AI自動回答</span><br>DBからIPO定義を取得し、分かりやすく説明</td>
+    <td>「このボットは何をしてるの？」<br>「出力フォーマットは？」</td>
+  </tr>
+  <tr>
+    <td><strong>ステータス確認</strong></td>
+    <td><span class="tag tag-auto">AI自動回答</span><br>現在のステータスと次のステップを回答</td>
+    <td>「BOT-005の進捗は？」<br>「いつ頃テストできる？」</td>
+  </tr>
+  <tr>
+    <td><strong>操作方法の質問</strong></td>
+    <td><span class="tag tag-auto">AI自動回答</span><br>ポータルの使い方を案内</td>
+    <td>「レビューってどうやるの？」<br>「承認ボタンはどこ？」</td>
+  </tr>
+  <tr>
+    <td><strong>要件の補足・変更</strong></td>
+    <td><span class="tag tag-ai">AI記録</span> → <span class="tag tag-human">コンサルタント確認</span><br>チケットを自動作成し、担当者に通知</td>
+    <td>「出力に項目を追加したい」<br>「この条件分岐が足りない」</td>
+  </tr>
+  <tr>
+    <td><strong>不具合・問題報告</strong></td>
+    <td><span class="tag tag-ai">AI記録</span> → <span class="tag tag-human">管理者通知</span><br>チケット作成 + 優先度を自動判定</td>
+    <td>「テストでエラーが出た」<br>「出力結果が間違っている」</td>
+  </tr>
+  <tr>
+    <td><strong>スケジュール・契約の質問</strong></td>
+    <td><span class="tag tag-human">管理者にルーティング</span><br>AIは「担当者に確認します」と回答</td>
+    <td>「納期は変更できますか？」<br>「追加費用はかかる？」</td>
+  </tr>
+</table>
+
+<!-- ==================== Section 6 ==================== -->
+<h2><span class="num">06</span> 管理者通知の設計</h2>
+
+<h3>6.1 通知レベル</h3>
+
+<table>
+  <tr><th>レベル</th><th>条件</th><th>通知方法</th><th>管理者のアクション</th></tr>
+  <tr>
+    <td style="color:#2E7D32; font-weight:700;">INFO</td>
+    <td>定期レポート、完了通知</td>
+    <td>ダッシュボード表示<br>（メール不要）</td>
+    <td>確認のみ（アクション不要）</td>
+  </tr>
+  <tr>
+    <td style="color:#F57C00; font-weight:700;">WARNING</td>
+    <td>滞留検出、レスポンス遅延、進捗遅れ</td>
+    <td>ダッシュボード + メール</td>
+    <td>状況確認、必要に応じてAIに指示</td>
+  </tr>
+  <tr>
+    <td style="color:#c62828; font-weight:700;">CRITICAL</td>
+    <td>ブロック発生、高優先度チケット、大幅なスケジュール遅延</td>
+    <td>ダッシュボード + メール + Slack/Teams</td>
+    <td>即時判断が必要</td>
+  </tr>
+  <tr>
+    <td style="color:#1976D2; font-weight:700;">APPROVAL</td>
+    <td>AIの提案に管理者の承認が必要</td>
+    <td>ダッシュボード（承認/却下ボタン付き）</td>
+    <td>承認 or 却下 or 修正指示</td>
+  </tr>
+</table>
+
+<h3>6.2 管理者の1日（AI Agent活用時）</h3>
+
+<div style="background:#0d1b2a; border-radius:12px; padding:28px 20px; margin:28px 0;">
+  <div style="text-align:center; color:#64B5F6; font-size:13px; font-weight:700; letter-spacing:2px; margin-bottom:20px;">
+    管理者の1日 — AI Agent がある場合
+  </div>
+  <div style="display:flex; flex-direction:column; gap:8px; max-width:550px; margin:0 auto;">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="background:#1976D2; color:#fff; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; min-width:60px; text-align:center;">9:00</div>
+      <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:10px 16px; flex:1; font-size:13px; color:#e0e0e0;">
+        ダッシュボードを開く。AIが「おはようございます。昨日3本完了、本日の推奨アクション3件」と報告。<br>
+        <span style="color:#90a4ae; font-size:11px;">所要: 5分</span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="background:#2E7D32; color:#fff; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; min-width:60px; text-align:center;">9:10</div>
+      <div style="background:#1a2940; border:1px solid #2E7D32; border-radius:8px; padding:10px 16px; flex:1; font-size:13px; color:#A5D6A7;">
+        AIの提案を3件承認（催促メール送信、アサイン変更、優先度変更）。クリックするだけ。<br>
+        <span style="color:#90a4ae; font-size:11px;">所要: 3分</span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="background:#546e7a; color:#fff; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; min-width:60px; text-align:center;">9:15</div>
+      <div style="background:#1a2940; border:1px solid #546e7a; border-radius:8px; padding:10px 16px; flex:1; font-size:13px; color:#e0e0e0;">
+        他の業務に集中。AIが自律的に催促、フォローアップ、ステータス更新を実行中。<br>
+        <span style="color:#90a4ae; font-size:11px;">管理者: 別の仕事</span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="background:#F57C00; color:#fff; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; min-width:60px; text-align:center;">11:30</div>
+      <div style="background:#1a2940; border:1px solid #F57C00; border-radius:8px; padding:10px 16px; flex:1; font-size:13px; color:#FFCC80;">
+        Slack通知:「CRITICAL: BOT-091 SAP接続でテスト環境が落ちています。情シスへの連絡を推奨。」<br>
+        → 管理者: 情シスに電話<br>
+        <span style="color:#90a4ae; font-size:11px;">所要: 10分</span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="background:#546e7a; color:#fff; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; min-width:60px; text-align:center;">13:00</div>
+      <div style="background:#1a2940; border:1px solid #546e7a; border-radius:8px; padding:10px 16px; flex:1; font-size:13px; color:#e0e0e0;">
+        昼食後にダッシュボード確認。「午前中に2本レビュー回答あり。1本は承認、1本は変更要望。変更要望のIPO修正案を生成済み。」<br>
+        <span style="color:#90a4ae; font-size:11px;">所要: 3分</span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="background:#1976D2; color:#fff; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; min-width:60px; text-align:center;">15:00</div>
+      <div style="background:#1a2940; border:1px solid #1976D2; border-radius:8px; padding:10px 16px; flex:1; font-size:13px; color:#90CAF9;">
+        AIに「来週の顧客報告用の資料を作って」と指示。AIが週次レポートを自動生成。<br>
+        <span style="color:#90a4ae; font-size:11px;">所要: 5分</span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="background:#2E7D32; color:#fff; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; min-width:60px; text-align:center;">17:00</div>
+      <div style="background:#1a2940; border:1px solid #2E7D32; border-radius:8px; padding:10px 16px; flex:1; font-size:13px; color:#A5D6A7;">
+        AI日次レポート自動送信。管理者は確認して退勤。<br>
+        <span style="color:#90a4ae; font-size:11px;">所要: 2分</span>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:20px;">
+    <span style="color:#64B5F6; font-size:14px; font-weight:700;">管理者の実作業: 約30分/日</span><br>
+    <span style="color:#90a4ae; font-size:12px;">残りの時間は他のプロジェクトや戦略的業務に使える</span>
+  </div>
+</div>
+
+<!-- ==================== Section 7 ==================== -->
+<h2><span class="num">07</span> 技術実装の指針</h2>
+
+<h3>7.1 Claude Opus API 利用設計</h3>
+
+<table>
+  <tr><th>用途</th><th>API呼び出し頻度</th><th>トークン目安</th><th>備考</th></tr>
+  <tr>
+    <td>30分巡回チェック</td>
+    <td>48回/日</td>
+    <td>~2,000 tokens/回</td>
+    <td>DB状態をサマリー化して渡す</td>
+  </tr>
+  <tr>
+    <td>イベント処理</td>
+    <td>~30回/日</td>
+    <td>~3,000 tokens/回</td>
+    <td>コンテキスト + 判断 + アクション</td>
+  </tr>
+  <tr>
+    <td>顧客チャット応答</td>
+    <td>~50回/日</td>
+    <td>~2,000 tokens/回</td>
+    <td>IPO定義をコンテキストに含む</td>
+  </tr>
+  <tr>
+    <td>管理者チャット</td>
+    <td>~20回/日</td>
+    <td>~5,000 tokens/回</td>
+    <td>全プロジェクト状態をコンテキストに</td>
+  </tr>
+  <tr>
+    <td>レポート生成</td>
+    <td>2-3回/日</td>
+    <td>~10,000 tokens/回</td>
+    <td>分析が必要なため大きめ</td>
+  </tr>
+  <tr>
+    <td colspan="2" style="font-weight:700; text-align:right;">1日あたり合計</td>
+    <td colspan="2" style="font-weight:700;">~350,000 tokens/日（Input + Output）</td>
+  </tr>
+</table>
+
+<h3>7.2 Agentのツール定義（Tool Use）</h3>
+
+<p>Claude Opus に渡す Tool は以下の通りです。各ツールはPython関数として実装し、
+Claude API の Tool Use 機能で呼び出します。</p>
+
+<table>
+  <tr><th>Tool名</th><th>説明</th><th>パラメータ</th></tr>
+  <tr>
+    <td><code>get_bot_status</code></td>
+    <td>ボットのステータス一覧を取得</td>
+    <td>filter_status, filter_rank, filter_consultant</td>
+  </tr>
+  <tr>
+    <td><code>update_bot_status</code></td>
+    <td>ボットのステータスを更新</td>
+    <td>bot_id, new_status, comment</td>
+  </tr>
+  <tr>
+    <td><code>assign_consultant</code></td>
+    <td>担当コンサルタントを変更</td>
+    <td>bot_id, consultant_name</td>
+  </tr>
+  <tr>
+    <td><code>send_notification</code></td>
+    <td>メール/Chat通知を送信</td>
+    <td>to, subject, body, channel (email/slack/teams)</td>
+  </tr>
+  <tr>
+    <td><code>create_ticket</code></td>
+    <td>チケットを新規作成</td>
+    <td>title, body, bot_id, type, priority, assignee</td>
+  </tr>
+  <tr>
+    <td><code>update_ticket</code></td>
+    <td>チケットを更新</td>
+    <td>ticket_id, status, assignee, comment</td>
+  </tr>
+  <tr>
+    <td><code>get_review_status</code></td>
+    <td>レビュー回答状況を取得</td>
+    <td>department, owner, days_pending</td>
+  </tr>
+  <tr>
+    <td><code>get_uat_status</code></td>
+    <td>UATテスト状況を取得</td>
+    <td>department, owner</td>
+  </tr>
+  <tr>
+    <td><code>generate_report</code></td>
+    <td>レポートを生成</td>
+    <td>report_type (daily/weekly/consultant/customer)</td>
+  </tr>
+  <tr>
+    <td><code>get_project_metrics</code></td>
+    <td>プロジェクト全体のKPIを取得</td>
+    <td>（なし）</td>
+  </tr>
+  <tr>
+    <td><code>search_similar_tickets</code></td>
+    <td>類似チケットを検索</td>
+    <td>query_text</td>
+  </tr>
+  <tr>
+    <td><code>get_bot_ipo</code></td>
+    <td>ボットのIPO定義を取得</td>
+    <td>bot_id</td>
+  </tr>
+  <tr>
+    <td><code>add_modification_log</code></td>
+    <td>修正ログを追記</td>
+    <td>bot_id, mod_type, text</td>
+  </tr>
+  <tr>
+    <td><code>escalate_to_manager</code></td>
+    <td>管理者にエスカレーション</td>
+    <td>level (warning/critical), subject, details, proposed_action</td>
+  </tr>
+</table>
+
+<h3>7.3 System Prompt の設計方針</h3>
+
+<div class="callout callout-dark">
+  <div class="callout-title">Claude Opus Agent — System Prompt概要</div>
+  <p style="margin:0; font-size:14px; line-height:2;">
+    あなたはHarmonic Migration Method (HMM) プロジェクトのAIアシスタントです。<br>
+    管理者の「手足」として、マイグレーションプロジェクトの日常管理を自律的に実行します。<br><br>
+    <strong>あなたの役割:</strong><br>
+    ・ボットの進捗状況を常に監視し、滞留や異常を検知<br>
+    ・顧客担当者へのフォローアップ（催促、質問回答、フィードバック確認）<br>
+    ・コンサルタントへの情報提供（レビュー回答通知、テスト結果通知）<br>
+    ・管理者への報告（日次/週次レポート、アラート、提案）<br><br>
+    <strong>行動原則:</strong><br>
+    ・定型的なフォローアップは自律的に実行してよい<br>
+    ・顧客への連絡は丁寧な日本語ビジネス文体で（「お忙しいところ恐れ入ります」等）<br>
+    ・コンサルタントへの連絡は簡潔に（事実ベース）<br>
+    ・管理者への報告は判断材料と提案を含める<br>
+    ・スコープ変更・スケジュール変更・費用に関わる判断は必ず管理者に確認<br>
+    ・不明な点は推測せず、適切な担当者に確認する
+  </p>
+</div>
+
+<!-- ==================== Section 8 ==================== -->
+<h2><span class="num">08</span> 開発ロードマップ</h2>
+
+<table>
+  <tr><th>フェーズ</th><th>期間</th><th>内容</th><th>成果物</th></tr>
+  <tr>
+    <td><strong>Phase 1</strong><br>基盤構築</td>
+    <td>1-2週間</td>
+    <td>
+      ・Bot Management DB の構築<br>
+      ・既存HTML管理シートのDB連携<br>
+      ・基本的なAgent Core（スケジューラ）
+    </td>
+    <td>
+      DB + API サーバー<br>
+      30分巡回チェックの動作
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Phase 2</strong><br>通知・自動化</td>
+    <td>1-2週間</td>
+    <td>
+      ・通知エンジン（メール/Slack）<br>
+      ・イベント駆動処理<br>
+      ・レビュー催促の自動化<br>
+      ・ステータス変更時の自動通知
+    </td>
+    <td>
+      自動催促メール送信<br>
+      イベント処理パイプライン
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Phase 3</strong><br>AI対話</td>
+    <td>2-3週間</td>
+    <td>
+      ・管理者チャットパネル<br>
+      ・顧客チャット（AI自動応答）<br>
+      ・Tool Use 実装（14ツール）<br>
+      ・コンテキスト管理
+    </td>
+    <td>
+      管理者: 自然言語で指示<br>
+      顧客: AIにチャットで質問
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Phase 4</strong><br>レポーティング</td>
+    <td>1週間</td>
+    <td>
+      ・日次/週次レポート自動生成<br>
+      ・バーンダウンチャート<br>
+      ・予測分析
+    </td>
+    <td>
+      自動レポートメール<br>
+      予測ダッシュボード
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Phase 5</strong><br>統合・最適化</td>
+    <td>1-2週間</td>
+    <td>
+      ・Orchestrator API連携<br>
+      ・全コンポーネント統合テスト<br>
+      ・パフォーマンス最適化<br>
+      ・運用マニュアル
+    </td>
+    <td>
+      統合システム完成<br>
+      運用開始
+    </td>
+  </tr>
+</table>
+
+<div class="callout callout-success">
+  <div class="callout-title">実現可能性</div>
+  <p style="margin:0; line-height:2;">
+    Phase 1-2 は既存のHTML管理ツール群をバックエンド化する作業が中心。<br>
+    Phase 3 が最もインパクトが大きく、Claude Opus の Tool Use 機能がそのまま活用できる。<br>
+    全体で <strong>6-10週間</strong> で実用レベルのシステムが構築可能。<br><br>
+    <strong>最小構成（Phase 1-2のみ）でも十分に価値がある:</strong><br>
+    ・30分間隔の自動チェック + 催促メール自動送信だけで、レビューサポート1名分の工数を削減<br>
+    ・管理者の日次確認が30分→5分に短縮
+  </p>
+</div>
+
+<!-- ==================== Section 9 ==================== -->
+<h2><span class="num">09</span> SaaS ビジネスモデル — ボット管理サービス</h2>
+
+<h3>9.1 課金モデル</h3>
+
+<div class="callout callout-insight">
+  <div class="callout-title">Pricing: 1万円 / ボット / 月</div>
+  <p style="margin:0; line-height:2;">
+    マイグレーション対象のボット1本あたり月額1万円のサブスクリプション。<br>
+    AI Agent による自動監視・催促・レポート生成・チケット管理を含む。<br>
+    ボットが自動化する業務の人件費（月数十万円）と比較して圧倒的にリーズナブル。
+  </p>
+</div>
+
+<table>
+  <tr><th>規模</th><th>ボット数</th><th>月額（MRR）</th><th>年額（ARR）</th><th>含まれるサービス</th></tr>
+  <tr>
+    <td><strong>Small</strong></td>
+    <td>20本</td>
+    <td style="font-weight:700; color:#1976D2;">20万円</td>
+    <td>240万円</td>
+    <td>統合管理、AI監視、レポート</td>
+  </tr>
+  <tr>
+    <td><strong>Medium</strong></td>
+    <td>120本</td>
+    <td style="font-weight:700; color:#1976D2;">120万円</td>
+    <td>1,440万円</td>
+    <td>上記 + AI対話、チケット管理</td>
+  </tr>
+  <tr>
+    <td><strong>Large</strong></td>
+    <td>500本</td>
+    <td style="font-weight:700; color:#1976D2;">500万円</td>
+    <td>6,000万円</td>
+    <td>上記 + カスタムレポート、SLA</td>
+  </tr>
+</table>
+
+<h3>9.2 サービス提供内容</h3>
+
+<table>
+  <tr><th>カテゴリ</th><th>内容</th><th>提供形態</th></tr>
+  <tr>
+    <td><strong>統合管理ダッシュボード</strong></td>
+    <td>移行元分析 ↔ 移行先開発のマッピング管理、進捗可視化、部門別・ランク別・コンサルタント別サマリー</td>
+    <td>Web (Vercel)</td>
+  </tr>
+  <tr>
+    <td><strong>AI Agent 自動監視</strong></td>
+    <td>30分間隔の進捗チェック、滞留検知、自動催促メール、異常アラート</td>
+    <td>Claude Opus API</td>
+  </tr>
+  <tr>
+    <td><strong>チケット管理</strong></td>
+    <td>バグ報告、機能要望、UAT フィードバック、コメントスレッド</td>
+    <td>Web (Vercel)</td>
+  </tr>
+  <tr>
+    <td><strong>顧客ポータル</strong></td>
+    <td>レビュー回答、UATテスト、AI チャット質問</td>
+    <td>Web (Vercel)</td>
+  </tr>
+  <tr>
+    <td><strong>自動レポート</strong></td>
+    <td>日次進捗、週次サマリー、月次経営レポート</td>
+    <td>メール / PDF</td>
+  </tr>
+  <tr>
+    <td><strong>管理者AIチャット</strong></td>
+    <td>自然言語による状況確認、指示、分析依頼</td>
+    <td>Web チャット</td>
+  </tr>
+</table>
+
+<h3>9.3 収益シミュレーション</h3>
+
+<!-- Revenue diagram -->
+<div style="background:#0d1b2a; border-radius:12px; padding:28px 24px; margin:20px 0;">
+  <div style="text-align:center; color:#64B5F6; font-size:13px; font-weight:700; letter-spacing:2px; margin-bottom:20px;">
+    SaaS 収益成長シナリオ
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; text-align:center;">
+    <div style="background:#1a2940; border-radius:10px; padding:16px;">
+      <div style="font-size:11px; color:#90a4ae;">Year 1 Q1-Q2</div>
+      <div style="font-size:10px; color:#78909c; margin:4px 0;">パイロット 3社</div>
+      <div style="font-size:22px; font-weight:800; color:#64B5F6;">60本</div>
+      <div style="font-size:12px; color:#A5D6A7; font-weight:700;">月60万円</div>
+    </div>
+    <div style="background:#1a2940; border-radius:10px; padding:16px;">
+      <div style="font-size:11px; color:#90a4ae;">Year 1 Q3-Q4</div>
+      <div style="font-size:10px; color:#78909c; margin:4px 0;">拡大 8社</div>
+      <div style="font-size:22px; font-weight:800; color:#64B5F6;">300本</div>
+      <div style="font-size:12px; color:#A5D6A7; font-weight:700;">月300万円</div>
+    </div>
+    <div style="background:#1a2940; border-radius:10px; padding:16px;">
+      <div style="font-size:11px; color:#90a4ae;">Year 2</div>
+      <div style="font-size:10px; color:#78909c; margin:4px 0;">成長 20社</div>
+      <div style="font-size:22px; font-weight:800; color:#64B5F6;">1,000本</div>
+      <div style="font-size:12px; color:#A5D6A7; font-weight:700;">月1,000万円</div>
+    </div>
+    <div style="background:#1a2940; border-radius:10px; padding:16px;">
+      <div style="font-size:11px; color:#90a4ae;">Year 3</div>
+      <div style="font-size:10px; color:#78909c; margin:4px 0;">スケール 50社</div>
+      <div style="font-size:22px; font-weight:800; color:#64B5F6;">3,000本</div>
+      <div style="font-size:12px; color:#A5D6A7; font-weight:700;">月3,000万円</div>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:16px; font-size:12px; color:#78909c;">
+    マイグレーション完了後も保守・運用管理として継続課金 → ストック型収益
+  </div>
+</div>
+
+<h3>9.4 コスト構造</h3>
+
+<table>
+  <tr><th>コスト項目</th><th>月額目安（120本規模）</th><th>備考</th></tr>
+  <tr>
+    <td>Claude Opus API</td>
+    <td>~5万円</td>
+    <td>~350Kトークン/日 × 30日</td>
+  </tr>
+  <tr>
+    <td>Vercel Pro</td>
+    <td>~3万円</td>
+    <td>Pro plan + Bandwidth + Cron</td>
+  </tr>
+  <tr>
+    <td>Supabase</td>
+    <td>~1万円</td>
+    <td>Pro plan (DB + Auth + Storage)</td>
+  </tr>
+  <tr>
+    <td>メール配信 (SendGrid等)</td>
+    <td>~0.5万円</td>
+    <td>通知・催促メール</td>
+  </tr>
+  <tr>
+    <td style="font-weight:700;">合計</td>
+    <td style="font-weight:700; color:#c62828;">~10万円</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td style="font-weight:700;">粗利（120本の場合）</td>
+    <td style="font-weight:700; color:#2E7D32;">~110万円 (粗利率92%)</td>
+    <td>MRR 120万円 - コスト10万円</td>
+  </tr>
+</table>
+
+<div class="callout callout-success">
+  <div class="callout-title">ストック型ビジネスの優位性</div>
+  <p style="margin:0; line-height:2;">
+    <strong>マイグレーション期間中:</strong> 移行管理ツール + AI Agent として月額課金<br>
+    <strong>マイグレーション完了後:</strong> 保守管理・監視ツールとして継続課金（チャーン率が低い）<br>
+    <strong>追加収益:</strong> 新規ボット追加時に自動的にMRR増加（1本追加 = +1万円/月）<br><br>
+    ボットは一度導入すると簡単には廃止されない → <strong>高いLTV（顧客生涯価値）</strong>を実現
+  </p>
+</div>
+
+<!-- ==================== Section 10 ==================== -->
+<h2><span class="num">10</span> まとめ — AI Agent が実現する世界</h2>
+
+<div class="callout callout-dark">
+  <div class="callout-title">HMM + AI Agent = 完全自動マイグレーションファクトリー</div>
+  <p style="margin:0; line-height:2.2; font-size:14px;">
+    <strong>1. 管理者は「指揮官」に徹する</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;日常のフォローアップ・催促・レポート作成はAIが自律実行。管理者は意思決定だけに集中。<br><br>
+    <strong>2. 顧客対応の大部分はAIが処理</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;IPOの質問、ステータス確認、操作方法——定型的な問い合わせはAIが即時応答。人間は複雑な要件変更だけ対応。<br><br>
+    <strong>3. コンサルタントは技術作業に集中</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;催促や進捗報告の手間がゼロに。AIが必要な情報を必要なタイミングで届ける。<br><br>
+    <strong>4. プロジェクト全体が「工場」として自律稼働</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;30分間隔で品質チェック、滞留検知、リソース最適化。人間が見逃す問題もAIがキャッチ。<br><br>
+    <strong>5. 120本のマイグレーションを管理者1人 + AI で統括管理</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;従来のPM 1名 + 管理スタッフ 2-3名の業務を、管理者 1名 + AI Agent で実現。
+  </p>
+</div>
+
+<blockquote>
+  ハーモニックマイグレーションは「新生工場」を建てる方法論であり、<br>
+  AI Agentはその工場の「自動制御システム」である。<br>
+  工場が自動で品質チェックし、異常を検知し、報告する——<br>
+  人間は工場長として、戦略と最終判断だけに集中すればいい。
+</blockquote>
+
+</div>
+
+<div class="footer">
+  <strong>HMM AI Agent Architecture v0.1</strong><br>
+  Copyright &copy; 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.<br>
+  Confidential — Internal Use Only
+</div>
+
+</body>
+</html>
