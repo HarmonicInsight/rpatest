@@ -1019,7 +1019,166 @@ Claude API の Tool Use 機能で呼び出します。</p>
 </div>
 
 <!-- ==================== Section 9 ==================== -->
-<h2><span class="num">09</span> まとめ — AI Agent が実現する世界</h2>
+<h2><span class="num">09</span> SaaS ビジネスモデル — ボット管理サービス</h2>
+
+<h3>9.1 課金モデル</h3>
+
+<div class="callout callout-insight">
+  <div class="callout-title">Pricing: 1万円 / ボット / 月</div>
+  <p style="margin:0; line-height:2;">
+    マイグレーション対象のボット1本あたり月額1万円のサブスクリプション。<br>
+    AI Agent による自動監視・催促・レポート生成・チケット管理を含む。<br>
+    ボットが自動化する業務の人件費（月数十万円）と比較して圧倒的にリーズナブル。
+  </p>
+</div>
+
+<table>
+  <tr><th>規模</th><th>ボット数</th><th>月額（MRR）</th><th>年額（ARR）</th><th>含まれるサービス</th></tr>
+  <tr>
+    <td><strong>Small</strong></td>
+    <td>20本</td>
+    <td style="font-weight:700; color:#1976D2;">20万円</td>
+    <td>240万円</td>
+    <td>統合管理、AI監視、レポート</td>
+  </tr>
+  <tr>
+    <td><strong>Medium</strong></td>
+    <td>120本</td>
+    <td style="font-weight:700; color:#1976D2;">120万円</td>
+    <td>1,440万円</td>
+    <td>上記 + AI対話、チケット管理</td>
+  </tr>
+  <tr>
+    <td><strong>Large</strong></td>
+    <td>500本</td>
+    <td style="font-weight:700; color:#1976D2;">500万円</td>
+    <td>6,000万円</td>
+    <td>上記 + カスタムレポート、SLA</td>
+  </tr>
+</table>
+
+<h3>9.2 サービス提供内容</h3>
+
+<table>
+  <tr><th>カテゴリ</th><th>内容</th><th>提供形態</th></tr>
+  <tr>
+    <td><strong>統合管理ダッシュボード</strong></td>
+    <td>移行元分析 ↔ 移行先開発のマッピング管理、進捗可視化、部門別・ランク別・コンサルタント別サマリー</td>
+    <td>Web (Vercel)</td>
+  </tr>
+  <tr>
+    <td><strong>AI Agent 自動監視</strong></td>
+    <td>30分間隔の進捗チェック、滞留検知、自動催促メール、異常アラート</td>
+    <td>Claude Opus API</td>
+  </tr>
+  <tr>
+    <td><strong>チケット管理</strong></td>
+    <td>バグ報告、機能要望、UAT フィードバック、コメントスレッド</td>
+    <td>Web (Vercel)</td>
+  </tr>
+  <tr>
+    <td><strong>顧客ポータル</strong></td>
+    <td>レビュー回答、UATテスト、AI チャット質問</td>
+    <td>Web (Vercel)</td>
+  </tr>
+  <tr>
+    <td><strong>自動レポート</strong></td>
+    <td>日次進捗、週次サマリー、月次経営レポート</td>
+    <td>メール / PDF</td>
+  </tr>
+  <tr>
+    <td><strong>管理者AIチャット</strong></td>
+    <td>自然言語による状況確認、指示、分析依頼</td>
+    <td>Web チャット</td>
+  </tr>
+</table>
+
+<h3>9.3 収益シミュレーション</h3>
+
+<!-- Revenue diagram -->
+<div style="background:#0d1b2a; border-radius:12px; padding:28px 24px; margin:20px 0;">
+  <div style="text-align:center; color:#64B5F6; font-size:13px; font-weight:700; letter-spacing:2px; margin-bottom:20px;">
+    SaaS 収益成長シナリオ
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; text-align:center;">
+    <div style="background:#1a2940; border-radius:10px; padding:16px;">
+      <div style="font-size:11px; color:#90a4ae;">Year 1 Q1-Q2</div>
+      <div style="font-size:10px; color:#78909c; margin:4px 0;">パイロット 3社</div>
+      <div style="font-size:22px; font-weight:800; color:#64B5F6;">60本</div>
+      <div style="font-size:12px; color:#A5D6A7; font-weight:700;">月60万円</div>
+    </div>
+    <div style="background:#1a2940; border-radius:10px; padding:16px;">
+      <div style="font-size:11px; color:#90a4ae;">Year 1 Q3-Q4</div>
+      <div style="font-size:10px; color:#78909c; margin:4px 0;">拡大 8社</div>
+      <div style="font-size:22px; font-weight:800; color:#64B5F6;">300本</div>
+      <div style="font-size:12px; color:#A5D6A7; font-weight:700;">月300万円</div>
+    </div>
+    <div style="background:#1a2940; border-radius:10px; padding:16px;">
+      <div style="font-size:11px; color:#90a4ae;">Year 2</div>
+      <div style="font-size:10px; color:#78909c; margin:4px 0;">成長 20社</div>
+      <div style="font-size:22px; font-weight:800; color:#64B5F6;">1,000本</div>
+      <div style="font-size:12px; color:#A5D6A7; font-weight:700;">月1,000万円</div>
+    </div>
+    <div style="background:#1a2940; border-radius:10px; padding:16px;">
+      <div style="font-size:11px; color:#90a4ae;">Year 3</div>
+      <div style="font-size:10px; color:#78909c; margin:4px 0;">スケール 50社</div>
+      <div style="font-size:22px; font-weight:800; color:#64B5F6;">3,000本</div>
+      <div style="font-size:12px; color:#A5D6A7; font-weight:700;">月3,000万円</div>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:16px; font-size:12px; color:#78909c;">
+    マイグレーション完了後も保守・運用管理として継続課金 → ストック型収益
+  </div>
+</div>
+
+<h3>9.4 コスト構造</h3>
+
+<table>
+  <tr><th>コスト項目</th><th>月額目安（120本規模）</th><th>備考</th></tr>
+  <tr>
+    <td>Claude Opus API</td>
+    <td>~5万円</td>
+    <td>~350Kトークン/日 × 30日</td>
+  </tr>
+  <tr>
+    <td>Vercel Pro</td>
+    <td>~3万円</td>
+    <td>Pro plan + Bandwidth + Cron</td>
+  </tr>
+  <tr>
+    <td>Supabase</td>
+    <td>~1万円</td>
+    <td>Pro plan (DB + Auth + Storage)</td>
+  </tr>
+  <tr>
+    <td>メール配信 (SendGrid等)</td>
+    <td>~0.5万円</td>
+    <td>通知・催促メール</td>
+  </tr>
+  <tr>
+    <td style="font-weight:700;">合計</td>
+    <td style="font-weight:700; color:#c62828;">~10万円</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td style="font-weight:700;">粗利（120本の場合）</td>
+    <td style="font-weight:700; color:#2E7D32;">~110万円 (粗利率92%)</td>
+    <td>MRR 120万円 - コスト10万円</td>
+  </tr>
+</table>
+
+<div class="callout callout-success">
+  <div class="callout-title">ストック型ビジネスの優位性</div>
+  <p style="margin:0; line-height:2;">
+    <strong>マイグレーション期間中:</strong> 移行管理ツール + AI Agent として月額課金<br>
+    <strong>マイグレーション完了後:</strong> 保守管理・監視ツールとして継続課金（チャーン率が低い）<br>
+    <strong>追加収益:</strong> 新規ボット追加時に自動的にMRR増加（1本追加 = +1万円/月）<br><br>
+    ボットは一度導入すると簡単には廃止されない → <strong>高いLTV（顧客生涯価値）</strong>を実現
+  </p>
+</div>
+
+<!-- ==================== Section 10 ==================== -->
+<h2><span class="num">10</span> まとめ — AI Agent が実現する世界</h2>
 
 <div class="callout callout-dark">
   <div class="callout-title">HMM + AI Agent = 完全自動マイグレーションファクトリー</div>

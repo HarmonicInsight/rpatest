@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HMM SaaS Architecture — Vercel + Next.js 設計書</title>
+<style>
+  @media print { body { background:#fff !important; } .no-print { display:none; } }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Yu Gothic','Meiryo','Segoe UI',sans-serif; background:#f5f7fa; color:#1a1a2e; line-height:1.8; }
+
+  .cover {
+    background:linear-gradient(135deg,#000000 0%,#1a1a2e 40%,#16213e 100%);
+    color:#fff; min-height:60vh; display:flex; flex-direction:column;
+    justify-content:center; align-items:center; text-align:center; padding:60px 40px;
+  }
+  .cover .label { font-size:14px; letter-spacing:6px; text-transform:uppercase; color:#00E676; margin-bottom:24px; }
+  .cover h1 { font-size:42px; font-weight:800; letter-spacing:2px; margin-bottom:8px; }
+  .cover h1 span { color:#00E676; }
+  .cover .subtitle { font-size:20px; color:#81C784; margin-bottom:40px; font-weight:300; }
+  .cover .divider { width:80px; height:3px; background:linear-gradient(90deg,#00E676,#69F0AE); margin:24px auto; border-radius:2px; }
+  .cover .meta { font-size:14px; color:#546e7a; }
+  .cover .badge { display:inline-block; background:rgba(0,230,118,0.15); border:1px solid rgba(0,230,118,0.3); padding:4px 16px; border-radius:20px; font-size:13px; color:#69F0AE; margin-bottom:24px; }
+
+  .content { max-width:940px; margin:0 auto; padding:60px 40px; }
+  h2 { font-size:26px; color:#1a1a2e; margin:48px 0 8px; padding-bottom:12px; border-bottom:3px solid #00E676; }
+  h2 .num { color:#00C853; margin-right:8px; }
+  h3 { font-size:18px; color:#1a1a2e; margin:28px 0 12px; }
+  h4 { font-size:15px; color:#37474f; margin:16px 0 8px; }
+  p { margin-bottom:16px; font-size:15px; }
+  ul, ol { margin:12px 0 20px 24px; font-size:15px; }
+  li { margin-bottom:6px; }
+  table { width:100%; border-collapse:collapse; margin:20px 0; font-size:14px; }
+  th { background:#1a1a2e; color:#fff; padding:12px 16px; text-align:left; font-size:13px; }
+  td { padding:12px 16px; border-bottom:1px solid #e0e0e0; }
+  tr:nth-child(even) td { background:#f8f9fa; }
+  blockquote { border-left:4px solid #00E676; padding:16px 24px; margin:24px 0; background:#f1f8e9; font-style:italic; font-size:16px; color:#33691e; }
+  code { background:#e8f5e9; color:#1B5E20; padding:2px 8px; border-radius:4px; font-size:13px; font-family:'Fira Code','Consolas',monospace; }
+  pre { background:#1a1a2e; color:#e0e0e0; padding:20px 24px; border-radius:10px; overflow-x:auto; margin:16px 0; font-size:13px; line-height:1.7; font-family:'Fira Code','Consolas',monospace; }
+  pre .comment { color:#546e7a; }
+  pre .keyword { color:#69F0AE; }
+  pre .string { color:#FFD54F; }
+  pre .type { color:#64B5F6; }
+
+  .callout { border-radius:10px; padding:24px 28px; margin:24px 0; }
+  .callout-insight { background:#e8f5e9; border-left:5px solid #00C853; }
+  .callout-warning { background:#fff3e0; border-left:5px solid #F57C00; }
+  .callout-dark { background:#1a1a2e; color:#e0e0e0; border-left:5px solid #00E676; }
+  .callout-tech { background:#e3f2fd; border-left:5px solid #1976D2; }
+  .callout .callout-title { font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .callout-insight .callout-title { color:#1B5E20; }
+  .callout-warning .callout-title { color:#E65100; }
+  .callout-dark .callout-title { color:#00E676; }
+  .callout-tech .callout-title { color:#1565C0; }
+
+  .tech-stack { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin:20px 0; }
+  .tech-card { background:#fff; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-top:4px solid #e0e0e0; text-align:center; }
+  .tech-card .tech-icon { font-size:32px; margin-bottom:8px; }
+  .tech-card .tech-name { font-size:15px; font-weight:700; color:#1a1a2e; }
+  .tech-card .tech-role { font-size:12px; color:#546e7a; margin-top:4px; }
+  .tech-card .tech-detail { font-size:11px; color:#90a4ae; margin-top:8px; line-height:1.6; }
+
+  .footer {
+    background:#1a1a2e; color:#78909c; text-align:center; padding:32px 40px; font-size:13px; line-height:2;
+  }
+
+  @media (max-width:768px) {
+    .content { padding:32px 20px; }
+    .cover h1 { font-size:28px; }
+    .tech-stack { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== COVER ===== -->
+<div class="cover">
+  <div class="badge">Technical Architecture</div>
+  <div class="label">Harmonic Migration Method</div>
+  <h1>HMM <span>SaaS</span> Architecture</h1>
+  <div class="subtitle">Vercel + Next.js + Supabase + Claude Opus</div>
+  <div class="divider"></div>
+  <div class="meta">
+    HarmonicInsight / FPT Consulting Japan<br>
+    Version 0.1 — February 2026
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ==================== Section 1 ==================== -->
+<h2><span class="num">01</span> SaaS化の目的</h2>
+
+<blockquote>
+  HMM Migration Tracker を Web SaaS として提供し、<br>
+  ボット1本あたり月額1万円のサブスクリプションで継続的な収益を実現する。
+</blockquote>
+
+<p>
+  現在の HTML ベースのプロトタイプ（Migration Tracker、Bot Management Sheet、Customer Portal）を
+  本格的な Web アプリケーションとして構築する。Vercel + Next.js のモダンスタックにより、
+  高速なデプロイと優れた DX（Developer Experience）を実現する。
+</p>
+
+<div class="callout callout-insight">
+  <div class="callout-title">SaaS化の3つのメリット</div>
+  <p style="margin:0; line-height:2;">
+    <strong>1. マルチテナント:</strong> 1つのシステムで複数の顧客プロジェクトを管理<br>
+    <strong>2. 継続課金:</strong> マイグレーション完了後も保守管理ツールとして課金継続<br>
+    <strong>3. スケーラビリティ:</strong> Vercel の Edge Network + Supabase の自動スケール
+  </p>
+</div>
+
+<!-- ==================== Section 2 ==================== -->
+<h2><span class="num">02</span> テクノロジースタック</h2>
+
+<div class="tech-stack">
+  <div class="tech-card" style="border-top-color:#000;">
+    <div class="tech-icon">&#9650;</div>
+    <div class="tech-name">Vercel</div>
+    <div class="tech-role">ホスティング & デプロイ</div>
+    <div class="tech-detail">Edge Network, Serverless Functions, Cron Jobs, Preview Deployments</div>
+  </div>
+  <div class="tech-card" style="border-top-color:#000;">
+    <div class="tech-icon">&#11208;</div>
+    <div class="tech-name">Next.js 15 (App Router)</div>
+    <div class="tech-role">フロントエンド & API</div>
+    <div class="tech-detail">Server Components, Server Actions, Middleware, Streaming</div>
+  </div>
+  <div class="tech-card" style="border-top-color:#3ECF8E;">
+    <div class="tech-icon">&#9889;</div>
+    <div class="tech-name">Supabase</div>
+    <div class="tech-role">データベース & 認証</div>
+    <div class="tech-detail">PostgreSQL, Row Level Security, Auth, Realtime, Storage</div>
+  </div>
+  <div class="tech-card" style="border-top-color:#D97757;">
+    <div class="tech-icon">&#9679;</div>
+    <div class="tech-name">Claude Opus (Anthropic API)</div>
+    <div class="tech-role">AI Agent</div>
+    <div class="tech-detail">Tool Use, 30分Cron, イベント駆動, チャットUI</div>
+  </div>
+  <div class="tech-card" style="border-top-color:#0070F3;">
+    <div class="tech-icon">&#9993;</div>
+    <div class="tech-name">Resend</div>
+    <div class="tech-role">メール配信</div>
+    <div class="tech-detail">催促メール、レポート配信、通知</div>
+  </div>
+  <div class="tech-card" style="border-top-color:#4A154B;">
+    <div class="tech-icon">&#9638;</div>
+    <div class="tech-name">Stripe</div>
+    <div class="tech-role">課金・決済</div>
+    <div class="tech-detail">サブスクリプション管理、請求書発行</div>
+  </div>
+</div>
+
+<h3>2.1 技術選定理由</h3>
+
+<table>
+  <tr><th>技術</th><th>選定理由</th><th>代替案</th></tr>
+  <tr>
+    <td><strong>Vercel</strong></td>
+    <td>Next.js との最適統合、Cron Jobs でAI Agentのスケジュール実行、グローバルCDN</td>
+    <td>AWS Amplify, Railway</td>
+  </tr>
+  <tr>
+    <td><strong>Next.js App Router</strong></td>
+    <td>Server Components で高速レンダリング、Server Actions でフォーム処理、Middleware で認証</td>
+    <td>Remix, SvelteKit</td>
+  </tr>
+  <tr>
+    <td><strong>Supabase</strong></td>
+    <td>PostgreSQL + Row Level Security でマルチテナント、Realtime でライブ更新、Auth 組込み</td>
+    <td>PlanetScale, Neon</td>
+  </tr>
+  <tr>
+    <td><strong>Claude Opus</strong></td>
+    <td>Tool Use でプログラマティックに操作、日本語品質最高、長文コンテキスト対応</td>
+    <td>GPT-4o (Tool品質で劣る)</td>
+  </tr>
+  <tr>
+    <td><strong>Resend</strong></td>
+    <td>開発者フレンドリーなAPI、React Email でテンプレート管理、Vercel統合</td>
+    <td>SendGrid, AWS SES</td>
+  </tr>
+  <tr>
+    <td><strong>Stripe</strong></td>
+    <td>サブスクリプション管理、従量課金対応、Webhook で自動処理</td>
+    <td>Paddle, Lemonsqueezy</td>
+  </tr>
+</table>
+
+<!-- ==================== Section 3 ==================== -->
+<h2><span class="num">03</span> システムアーキテクチャ</h2>
+
+<!-- Architecture diagram -->
+<div style="background:#1a1a2e; border-radius:12px; padding:32px 24px; margin:24px 0;">
+  <div style="text-align:center; color:#00E676; font-size:13px; font-weight:700; letter-spacing:2px; margin-bottom:24px;">
+    HMM SaaS — システムアーキテクチャ全体図
+  </div>
+
+  <!-- Layer 1: Users -->
+  <div style="margin-bottom:16px;">
+    <div style="font-size:11px; color:#546e7a; letter-spacing:1px; margin-bottom:8px;">USERS</div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+      <div style="flex:1; min-width:140px; background:#263238; border:1px solid #37474f; border-radius:8px; padding:12px; text-align:center;">
+        <div style="font-size:20px;">&#x1F451;</div>
+        <div style="font-size:12px; color:#FFCC80; font-weight:700;">管理者</div>
+        <div style="font-size:10px; color:#78909c;">ダッシュボード<br>AIチャット</div>
+      </div>
+      <div style="flex:1; min-width:140px; background:#263238; border:1px solid #37474f; border-radius:8px; padding:12px; text-align:center;">
+        <div style="font-size:20px;">&#x1F469;&#x200D;&#x1F4BB;</div>
+        <div style="font-size:12px; color:#A5D6A7; font-weight:700;">コンサルタント</div>
+        <div style="font-size:10px; color:#78909c;">ボット管理<br>チケット対応</div>
+      </div>
+      <div style="flex:1; min-width:140px; background:#263238; border:1px solid #37474f; border-radius:8px; padding:12px; text-align:center;">
+        <div style="font-size:20px;">&#x1F464;</div>
+        <div style="font-size:12px; color:#90CAF9; font-weight:700;">顧客担当者</div>
+        <div style="font-size:10px; color:#78909c;">レビュー回答<br>UATテスト</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center; font-size:16px; color:#00E676; margin:8px 0;">&#x25BC;</div>
+
+  <!-- Layer 2: Vercel Edge -->
+  <div style="background:#0d2137; border:2px solid #00E676; border-radius:12px; padding:16px; margin-bottom:16px;">
+    <div style="font-size:11px; color:#00E676; letter-spacing:1px; margin-bottom:12px; font-weight:700;">VERCEL EDGE NETWORK</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:10px;">
+      <div style="background:#1a2940; border-radius:8px; padding:10px; text-align:center;">
+        <div style="font-size:11px; color:#64B5F6; font-weight:700;">Next.js App Router</div>
+        <div style="font-size:10px; color:#78909c;">Server Components<br>Dashboard / Portal</div>
+      </div>
+      <div style="background:#1a2940; border-radius:8px; padding:10px; text-align:center;">
+        <div style="font-size:11px; color:#64B5F6; font-weight:700;">API Routes</div>
+        <div style="font-size:10px; color:#78909c;">/api/bots<br>/api/tickets<br>/api/chat</div>
+      </div>
+      <div style="background:#1a2940; border-radius:8px; padding:10px; text-align:center;">
+        <div style="font-size:11px; color:#64B5F6; font-weight:700;">Middleware</div>
+        <div style="font-size:10px; color:#78909c;">認証チェック<br>テナント分離</div>
+      </div>
+      <div style="background:#1a2940; border-radius:8px; padding:10px; text-align:center;">
+        <div style="font-size:11px; color:#FFD54F; font-weight:700;">Vercel Cron</div>
+        <div style="font-size:10px; color:#78909c;">30分間隔<br>AI Agent 起動</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center; font-size:16px; color:#00E676; margin:8px 0;">&#x25BC;</div>
+
+  <!-- Layer 3: Backend Services -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+    <div style="background:#1B5E20; border-radius:10px; padding:16px; border:1px solid #2E7D32;">
+      <div style="font-size:11px; color:#A5D6A7; font-weight:700; letter-spacing:1px; margin-bottom:8px;">SUPABASE</div>
+      <div style="font-size:11px; color:#C8E6C9; line-height:1.8;">
+        &#9642; PostgreSQL (ボット、チケット、ログ)<br>
+        &#9642; Auth (メール/SSO)<br>
+        &#9642; Row Level Security (テナント分離)<br>
+        &#9642; Realtime (ライブ更新)<br>
+        &#9642; Storage (添付ファイル)
+      </div>
+    </div>
+    <div style="background:#311B92; border-radius:10px; padding:16px; border:1px solid #4527A0;">
+      <div style="font-size:11px; color:#B39DDB; font-weight:700; letter-spacing:1px; margin-bottom:8px;">CLAUDE OPUS AGENT</div>
+      <div style="font-size:11px; color:#D1C4E9; line-height:1.8;">
+        &#9642; Tool Use (14ツール)<br>
+        &#9642; 進捗監視 &amp; 催促<br>
+        &#9642; 管理者チャット<br>
+        &#9642; 顧客AI応答<br>
+        &#9642; レポート自動生成
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 4: External -->
+  <div style="display:flex; gap:12px; flex-wrap:wrap;">
+    <div style="flex:1; min-width:100px; background:#263238; border-radius:8px; padding:10px; text-align:center; font-size:10px; color:#90a4ae;">
+      <strong style="color:#fff;">Stripe</strong><br>課金管理
+    </div>
+    <div style="flex:1; min-width:100px; background:#263238; border-radius:8px; padding:10px; text-align:center; font-size:10px; color:#90a4ae;">
+      <strong style="color:#fff;">Resend</strong><br>メール配信
+    </div>
+    <div style="flex:1; min-width:100px; background:#263238; border-radius:8px; padding:10px; text-align:center; font-size:10px; color:#90a4ae;">
+      <strong style="color:#fff;">Slack API</strong><br>通知連携
+    </div>
+    <div style="flex:1; min-width:100px; background:#263238; border-radius:8px; padding:10px; text-align:center; font-size:10px; color:#90a4ae;">
+      <strong style="color:#fff;">Orchestrator</strong><br>aKaBot / UiPath
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Section 4 ==================== -->
+<h2><span class="num">04</span> データベース設計</h2>
+
+<h3>4.1 マルチテナント戦略</h3>
+
+<p>
+  Supabase の <strong>Row Level Security (RLS)</strong> を使い、
+  全テナントのデータを同一テーブルに格納しつつ、行レベルでアクセスを制御する。
+  テナントIDによる分離は、Supabase Auth の JWT カスタムクレームで自動的に適用される。
+</p>
+
+<h3>4.2 主要テーブル</h3>
+
+<pre>
+<span class="comment">-- テナント（顧客企業）</span>
+<span class="keyword">CREATE TABLE</span> <span class="type">tenants</span> (
+  id          UUID <span class="keyword">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  name        TEXT <span class="keyword">NOT NULL</span>,           <span class="comment">-- 企業名</span>
+  plan        TEXT <span class="keyword">DEFAULT</span> <span class="string">'standard'</span>,  <span class="comment">-- small / standard / enterprise</span>
+  bot_limit   INT <span class="keyword">DEFAULT</span> 500,
+  stripe_customer_id  TEXT,
+  stripe_subscription_id TEXT,
+  created_at  TIMESTAMPTZ <span class="keyword">DEFAULT</span> now()
+);
+
+<span class="comment">-- プロジェクト（1テナントに複数可能）</span>
+<span class="keyword">CREATE TABLE</span> <span class="type">projects</span> (
+  id          UUID <span class="keyword">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  tenant_id   UUID <span class="keyword">REFERENCES</span> tenants(id),
+  name        TEXT <span class="keyword">NOT NULL</span>,           <span class="comment">-- 例: "A社 BizRobo!→aKaBot"</span>
+  src_platform TEXT <span class="keyword">DEFAULT</span> <span class="string">'BizRobo!'</span>,
+  dst_platform TEXT <span class="keyword">DEFAULT</span> <span class="string">'aKaBot'</span>,
+  status      TEXT <span class="keyword">DEFAULT</span> <span class="string">'active'</span>,     <span class="comment">-- active / completed / archived</span>
+  created_at  TIMESTAMPTZ <span class="keyword">DEFAULT</span> now()
+);
+
+<span class="comment">-- ボット（移行単位）</span>
+<span class="keyword">CREATE TABLE</span> <span class="type">bots</span> (
+  id          UUID <span class="keyword">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  project_id  UUID <span class="keyword">REFERENCES</span> projects(id),
+  tenant_id   UUID <span class="keyword">REFERENCES</span> tenants(id),
+  bot_code    TEXT <span class="keyword">NOT NULL</span>,           <span class="comment">-- BOT-001</span>
+  name        TEXT <span class="keyword">NOT NULL</span>,           <span class="comment">-- 売上日報生成</span>
+  department  TEXT,
+  owner       TEXT,                     <span class="comment">-- 顧客側担当者</span>
+  rank        TEXT <span class="keyword">CHECK</span>(rank IN (<span class="string">'A','B','C','D'</span>)),
+  pattern     TEXT,                     <span class="comment">-- 抽出型/変換型/転記型/照合型/通知型/複合型</span>
+  <span class="comment">-- 移行元分析</span>
+  src_status       TEXT <span class="keyword">DEFAULT</span> <span class="string">'not_started'</span>,
+  biz_requirement  TEXT,               <span class="comment">-- 業務要件</span>
+  func_requirement TEXT,               <span class="comment">-- 機能要件</span>
+  ipo_memo         TEXT,               <span class="comment">-- IPO定義メモ</span>
+  src_systems      TEXT[],             <span class="comment">-- 対象システム</span>
+  review_status    TEXT <span class="keyword">DEFAULT</span> <span class="string">'none'</span>,
+  <span class="comment">-- 移行先開発</span>
+  dst_status       TEXT <span class="keyword">DEFAULT</span> <span class="string">'pending'</span>,
+  consultant       TEXT,               <span class="comment">-- 担当コンサルタント</span>
+  estimate_hours   INT,
+  <span class="comment">-- メタ</span>
+  notes       TEXT,
+  created_at  TIMESTAMPTZ <span class="keyword">DEFAULT</span> now(),
+  updated_at  TIMESTAMPTZ <span class="keyword">DEFAULT</span> now()
+);
+
+<span class="comment">-- 修正ログ</span>
+<span class="keyword">CREATE TABLE</span> <span class="type">bot_modifications</span> (
+  id          UUID <span class="keyword">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  bot_id      UUID <span class="keyword">REFERENCES</span> bots(id),
+  tenant_id   UUID <span class="keyword">REFERENCES</span> tenants(id),
+  mod_type    TEXT <span class="keyword">CHECK</span>(mod_type IN (<span class="string">'fix','change','add','note'</span>)),
+  description TEXT <span class="keyword">NOT NULL</span>,
+  author      TEXT,
+  created_at  TIMESTAMPTZ <span class="keyword">DEFAULT</span> now()
+);
+
+<span class="comment">-- チケット</span>
+<span class="keyword">CREATE TABLE</span> <span class="type">tickets</span> (
+  id          UUID <span class="keyword">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  project_id  UUID <span class="keyword">REFERENCES</span> projects(id),
+  tenant_id   UUID <span class="keyword">REFERENCES</span> tenants(id),
+  ticket_code TEXT <span class="keyword">NOT NULL</span>,           <span class="comment">-- ISSUE-001</span>
+  bot_id      UUID <span class="keyword">REFERENCES</span> bots(id),
+  title       TEXT <span class="keyword">NOT NULL</span>,
+  body        TEXT,
+  type        TEXT <span class="keyword">CHECK</span>(type IN (<span class="string">'bug','feature','question','improvement','uat'</span>)),
+  priority    TEXT <span class="keyword">CHECK</span>(priority IN (<span class="string">'low','medium','high'</span>)),
+  status      TEXT <span class="keyword">DEFAULT</span> <span class="string">'open'</span>,
+  assignee    TEXT,
+  reporter    TEXT,
+  created_at  TIMESTAMPTZ <span class="keyword">DEFAULT</span> now(),
+  updated_at  TIMESTAMPTZ <span class="keyword">DEFAULT</span> now()
+);
+
+<span class="comment">-- チケットコメント</span>
+<span class="keyword">CREATE TABLE</span> <span class="type">ticket_comments</span> (
+  id          UUID <span class="keyword">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  ticket_id   UUID <span class="keyword">REFERENCES</span> tickets(id),
+  tenant_id   UUID <span class="keyword">REFERENCES</span> tenants(id),
+  author      TEXT <span class="keyword">NOT NULL</span>,
+  body        TEXT <span class="keyword">NOT NULL</span>,
+  created_at  TIMESTAMPTZ <span class="keyword">DEFAULT</span> now()
+);
+
+<span class="comment">-- AI Agent ログ</span>
+<span class="keyword">CREATE TABLE</span> <span class="type">agent_logs</span> (
+  id          UUID <span class="keyword">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  project_id  UUID <span class="keyword">REFERENCES</span> projects(id),
+  tenant_id   UUID <span class="keyword">REFERENCES</span> tenants(id),
+  action_type TEXT,                     <span class="comment">-- check / remind / report / escalate</span>
+  target_type TEXT,                     <span class="comment">-- bot / ticket / user</span>
+  target_id   UUID,
+  summary     TEXT,
+  details     JSONB,
+  created_at  TIMESTAMPTZ <span class="keyword">DEFAULT</span> now()
+);
+
+<span class="comment">-- RLS ポリシー（全テーブルに適用）</span>
+<span class="keyword">ALTER TABLE</span> bots <span class="keyword">ENABLE ROW LEVEL SECURITY</span>;
+<span class="keyword">CREATE POLICY</span> <span class="string">"tenant_isolation"</span> <span class="keyword">ON</span> bots
+  <span class="keyword">USING</span> (tenant_id = (auth.jwt() -> <span class="string">'app_metadata'</span> ->> <span class="string">'tenant_id'</span>)::uuid);
+</pre>
+
+<!-- ==================== Section 5 ==================== -->
+<h2><span class="num">05</span> Next.js プロジェクト構成</h2>
+
+<pre>
+hmm-saas/
+├── app/
+│   ├── (auth)/
+│   │   ├── login/page.tsx
+│   │   └── signup/page.tsx
+│   ├── (dashboard)/
+│   │   ├── layout.tsx              <span class="comment"># サイドバー + ヘッダー</span>
+│   │   ├── page.tsx                <span class="comment"># 全体概要ダッシュボード</span>
+│   │   ├── mapping/page.tsx        <span class="comment"># マッピングビュー</span>
+│   │   ├── source/page.tsx         <span class="comment"># 移行元分析テーブル</span>
+│   │   ├── destination/page.tsx    <span class="comment"># 移行先開発テーブル</span>
+│   │   ├── tickets/
+│   │   │   ├── page.tsx            <span class="comment"># チケット一覧</span>
+│   │   │   └── [id]/page.tsx       <span class="comment"># チケット詳細</span>
+│   │   ├── consultants/page.tsx    <span class="comment"># コンサルタントビュー</span>
+│   │   ├── chat/page.tsx           <span class="comment"># 管理者AIチャット</span>
+│   │   └── settings/page.tsx       <span class="comment"># プロジェクト設定</span>
+│   ├── portal/                     <span class="comment"># 顧客ポータル（別レイアウト）</span>
+│   │   ├── layout.tsx
+│   │   ├── page.tsx                <span class="comment"># 顧客ダッシュボード</span>
+│   │   ├── review/[botId]/page.tsx <span class="comment"># レビュー回答</span>
+│   │   └── uat/[botId]/page.tsx    <span class="comment"># UATテスト</span>
+│   ├── api/
+│   │   ├── bots/route.ts           <span class="comment"># CRUD</span>
+│   │   ├── tickets/route.ts
+│   │   ├── chat/route.ts           <span class="comment"># AI Chat (streaming)</span>
+│   │   ├── agent/
+│   │   │   └── cron/route.ts       <span class="comment"># Vercel Cron → AI Agent</span>
+│   │   ├── webhooks/
+│   │   │   └── stripe/route.ts     <span class="comment"># Stripe Webhook</span>
+│   │   └── export/route.ts         <span class="comment"># CSV/JSON エクスポート</span>
+│   ├── layout.tsx
+│   └── globals.css
+├── components/
+│   ├── ui/                         <span class="comment"># shadcn/ui コンポーネント</span>
+│   ├── dashboard/
+│   │   ├── OverviewCards.tsx
+│   │   ├── ProgressBars.tsx
+│   │   ├── MappingCard.tsx
+│   │   └── ConsultantCard.tsx
+│   ├── tables/
+│   │   ├── SourceTable.tsx
+│   │   ├── DestTable.tsx
+│   │   └── TicketTable.tsx
+│   └── chat/
+│       ├── ChatPanel.tsx
+│       └── MessageBubble.tsx
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts               <span class="comment"># Browser client</span>
+│   │   ├── server.ts               <span class="comment"># Server client</span>
+│   │   └── admin.ts                <span class="comment"># Service role (Agent用)</span>
+│   ├── agent/
+│   │   ├── core.ts                 <span class="comment"># Agent メインループ</span>
+│   │   ├── tools.ts                <span class="comment"># 14ツール定義</span>
+│   │   ├── scheduler.ts            <span class="comment"># Cron ハンドラ</span>
+│   │   └── prompts.ts              <span class="comment"># System prompt</span>
+│   ├── stripe.ts
+│   ├── resend.ts
+│   └── utils.ts
+├── vercel.json                     <span class="comment"># Cron 設定</span>
+├── middleware.ts                    <span class="comment"># 認証 + テナント分離</span>
+└── package.json
+</pre>
+
+<!-- ==================== Section 6 ==================== -->
+<h2><span class="num">06</span> AI Agent — Vercel Cron 実装</h2>
+
+<h3>6.1 Cron 設定</h3>
+
+<pre>
+<span class="comment">// vercel.json</span>
+{
+  <span class="string">"crons"</span>: [
+    {
+      <span class="string">"path"</span>: <span class="string">"/api/agent/cron"</span>,
+      <span class="string">"schedule"</span>: <span class="string">"*/30 * * * *"</span>
+    }
+  ]
+}
+</pre>
+
+<h3>6.2 Agent Cron ハンドラ</h3>
+
+<pre>
+<span class="comment">// app/api/agent/cron/route.ts</span>
+<span class="keyword">import</span> { Anthropic } <span class="keyword">from</span> <span class="string">'@anthropic-ai/sdk'</span>;
+<span class="keyword">import</span> { createAdminClient } <span class="keyword">from</span> <span class="string">'@/lib/supabase/admin'</span>;
+<span class="keyword">import</span> { AGENT_TOOLS } <span class="keyword">from</span> <span class="string">'@/lib/agent/tools'</span>;
+<span class="keyword">import</span> { SYSTEM_PROMPT } <span class="keyword">from</span> <span class="string">'@/lib/agent/prompts'</span>;
+
+<span class="keyword">export async function</span> GET(req: Request) {
+  <span class="comment">// Verify Vercel Cron secret</span>
+  <span class="keyword">const</span> authHeader = req.headers.get(<span class="string">'authorization'</span>);
+  <span class="keyword">if</span> (authHeader !== <span class="string">`Bearer ${process.env.CRON_SECRET}`</span>)
+    <span class="keyword">return</span> Response.json({ error: <span class="string">'Unauthorized'</span> }, { status: 401 });
+
+  <span class="keyword">const</span> supabase = createAdminClient();
+  <span class="keyword">const</span> anthropic = <span class="keyword">new</span> Anthropic();
+
+  <span class="comment">// Get all active projects</span>
+  <span class="keyword">const</span> { data: projects } = <span class="keyword">await</span> supabase
+    .from(<span class="string">'projects'</span>)
+    .select(<span class="string">'*, tenants(*)'</span>)
+    .eq(<span class="string">'status'</span>, <span class="string">'active'</span>);
+
+  <span class="keyword">for</span> (<span class="keyword">const</span> project <span class="keyword">of</span> projects) {
+    <span class="comment">// Build context for each project</span>
+    <span class="keyword">const</span> context = <span class="keyword">await</span> buildProjectContext(supabase, project);
+
+    <span class="comment">// Run AI Agent with Tool Use</span>
+    <span class="keyword">const</span> response = <span class="keyword">await</span> anthropic.messages.create({
+      model: <span class="string">'claude-opus-4-5-20251101'</span>,
+      max_tokens: 4096,
+      system: SYSTEM_PROMPT,
+      tools: AGENT_TOOLS,
+      messages: [{
+        role: <span class="string">'user'</span>,
+        content: <span class="string">`定期チェック実行。\n\n${context}`</span>
+      }]
+    });
+
+    <span class="comment">// Process tool calls</span>
+    <span class="keyword">await</span> processToolCalls(supabase, anthropic, project, response);
+
+    <span class="comment">// Log agent run</span>
+    <span class="keyword">await</span> supabase.from(<span class="string">'agent_logs'</span>).insert({
+      project_id: project.id,
+      tenant_id: project.tenant_id,
+      action_type: <span class="string">'check'</span>,
+      summary: <span class="string">'30分定期チェック完了'</span>,
+      details: { tokens_used: response.usage }
+    });
+  }
+
+  <span class="keyword">return</span> Response.json({ ok: true, projects: projects?.length });
+}
+</pre>
+
+<h3>6.3 AI Chat — ストリーミング実装</h3>
+
+<pre>
+<span class="comment">// app/api/chat/route.ts</span>
+<span class="keyword">import</span> { Anthropic } <span class="keyword">from</span> <span class="string">'@anthropic-ai/sdk'</span>;
+
+<span class="keyword">export async function</span> POST(req: Request) {
+  <span class="keyword">const</span> { messages, projectId } = <span class="keyword">await</span> req.json();
+  <span class="keyword">const</span> anthropic = <span class="keyword">new</span> Anthropic();
+
+  <span class="comment">// Stream response with Tool Use</span>
+  <span class="keyword">const</span> stream = <span class="keyword">await</span> anthropic.messages.stream({
+    model: <span class="string">'claude-opus-4-5-20251101'</span>,
+    max_tokens: 4096,
+    system: SYSTEM_PROMPT,
+    tools: AGENT_TOOLS,
+    messages
+  });
+
+  <span class="comment">// Return as streaming response</span>
+  <span class="keyword">return new</span> Response(stream.toReadableStream(), {
+    headers: { <span class="string">'Content-Type'</span>: <span class="string">'text/event-stream'</span> }
+  });
+}
+</pre>
+
+<!-- ==================== Section 7 ==================== -->
+<h2><span class="num">07</span> 認証 & マルチテナント</h2>
+
+<h3>7.1 認証フロー</h3>
+
+<table>
+  <tr><th>ユーザー種別</th><th>認証方式</th><th>アクセス範囲</th></tr>
+  <tr>
+    <td><strong>管理者</strong></td>
+    <td>メール + パスワード / Google SSO</td>
+    <td>全ダッシュボード、AIチャット、設定</td>
+  </tr>
+  <tr>
+    <td><strong>コンサルタント</strong></td>
+    <td>メール + パスワード</td>
+    <td>担当ボットの管理、チケット対応</td>
+  </tr>
+  <tr>
+    <td><strong>顧客担当者</strong></td>
+    <td>招待リンク（マジックリンク）</td>
+    <td>顧客ポータルのみ（自部門のボット）</td>
+  </tr>
+</table>
+
+<h3>7.2 Middleware によるテナント分離</h3>
+
+<pre>
+<span class="comment">// middleware.ts</span>
+<span class="keyword">import</span> { createMiddlewareClient } <span class="keyword">from</span> <span class="string">'@supabase/auth-helpers-nextjs'</span>;
+<span class="keyword">import</span> { NextResponse } <span class="keyword">from</span> <span class="string">'next/server'</span>;
+
+<span class="keyword">export async function</span> middleware(req) {
+  <span class="keyword">const</span> res = NextResponse.next();
+  <span class="keyword">const</span> supabase = createMiddlewareClient({ req, res });
+  <span class="keyword">const</span> { data: { session } } = <span class="keyword">await</span> supabase.auth.getSession();
+
+  <span class="comment">// Redirect unauthenticated users to login</span>
+  <span class="keyword">if</span> (!session && !req.nextUrl.pathname.startsWith(<span class="string">'/login'</span>)) {
+    <span class="keyword">return</span> NextResponse.redirect(<span class="keyword">new</span> URL(<span class="string">'/login'</span>, req.url));
+  }
+
+  <span class="comment">// Portal users can only access /portal/*</span>
+  <span class="keyword">const</span> role = session?.user?.app_metadata?.role;
+  <span class="keyword">if</span> (role === <span class="string">'customer'</span> && !req.nextUrl.pathname.startsWith(<span class="string">'/portal'</span>)) {
+    <span class="keyword">return</span> NextResponse.redirect(<span class="keyword">new</span> URL(<span class="string">'/portal'</span>, req.url));
+  }
+
+  <span class="keyword">return</span> res;
+}
+</pre>
+
+<!-- ==================== Section 8 ==================== -->
+<h2><span class="num">08</span> Stripe 課金統合</h2>
+
+<h3>8.1 課金フロー</h3>
+
+<div style="background:#1a1a2e; border-radius:12px; padding:24px; margin:20px 0;">
+  <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:center;">
+    <div style="background:#263238; border-radius:8px; padding:12px 16px; text-align:center; font-size:12px; color:#e0e0e0;">
+      <div style="font-size:10px; color:#78909c;">STEP 1</div>
+      <strong style="color:#69F0AE;">プロジェクト作成</strong><br>
+      ボット数を登録
+    </div>
+    <div style="color:#69F0AE;">&#x2192;</div>
+    <div style="background:#263238; border-radius:8px; padding:12px 16px; text-align:center; font-size:12px; color:#e0e0e0;">
+      <div style="font-size:10px; color:#78909c;">STEP 2</div>
+      <strong style="color:#69F0AE;">Stripe Checkout</strong><br>
+      &#xA5;10,000 &times; N本/月
+    </div>
+    <div style="color:#69F0AE;">&#x2192;</div>
+    <div style="background:#263238; border-radius:8px; padding:12px 16px; text-align:center; font-size:12px; color:#e0e0e0;">
+      <div style="font-size:10px; color:#78909c;">STEP 3</div>
+      <strong style="color:#69F0AE;">Webhook</strong><br>
+      subscription.created
+    </div>
+    <div style="color:#69F0AE;">&#x2192;</div>
+    <div style="background:#263238; border-radius:8px; padding:12px 16px; text-align:center; font-size:12px; color:#e0e0e0;">
+      <div style="font-size:10px; color:#78909c;">STEP 4</div>
+      <strong style="color:#69F0AE;">自動アクティベート</strong><br>
+      AI Agent 稼働開始
+    </div>
+  </div>
+</div>
+
+<h3>8.2 従量課金の仕組み</h3>
+
+<p>
+  Stripe の <strong>Metered Billing</strong> を使い、ボット数の増減に自動対応する:
+</p>
+
+<ul>
+  <li>基本料金: なし（ボット数 &times; 1万円/月の純従量課金）</li>
+  <li>ボット追加時: Stripe の quantity を更新 → 日割り計算で即時課金</li>
+  <li>ボット削除時: quantity 減少 → 次回請求から減額</li>
+  <li>月次請求書: Stripe Invoice で自動発行（PDF対応）</li>
+</ul>
+
+<!-- ==================== Section 9 ==================== -->
+<h2><span class="num">09</span> デプロイ & 運用</h2>
+
+<h3>9.1 環境構成</h3>
+
+<table>
+  <tr><th>環境</th><th>URL</th><th>用途</th><th>ブランチ</th></tr>
+  <tr>
+    <td><strong>Production</strong></td>
+    <td>hmm.harmonicinsight.com</td>
+    <td>本番</td>
+    <td>main</td>
+  </tr>
+  <tr>
+    <td><strong>Staging</strong></td>
+    <td>staging.hmm.harmonicinsight.com</td>
+    <td>検証</td>
+    <td>staging</td>
+  </tr>
+  <tr>
+    <td><strong>Preview</strong></td>
+    <td>*.vercel.app</td>
+    <td>PR プレビュー</td>
+    <td>feature/*</td>
+  </tr>
+</table>
+
+<h3>9.2 CI/CD パイプライン</h3>
+
+<pre>
+<span class="comment"># GitHub Actions + Vercel</span>
+
+git push → GitHub Actions:
+  ├── lint (ESLint + Prettier)
+  ├── type-check (TypeScript)
+  ├── test (Vitest)
+  └── Vercel Auto Deploy:
+      ├── PR → Preview Deployment
+      ├── staging → Staging Deployment
+      └── main → Production Deployment
+</pre>
+
+<h3>9.3 監視 & アラート</h3>
+
+<table>
+  <tr><th>対象</th><th>ツール</th><th>閾値</th></tr>
+  <tr><td>アプリケーション</td><td>Vercel Analytics</td><td>LCP > 2.5s</td></tr>
+  <tr><td>エラー</td><td>Sentry</td><td>Error rate > 1%</td></tr>
+  <tr><td>API レスポンス</td><td>Vercel Speed Insights</td><td>p95 > 3s</td></tr>
+  <tr><td>DB</td><td>Supabase Dashboard</td><td>Connection > 80%</td></tr>
+  <tr><td>AI Agent</td><td>カスタムログ (agent_logs)</td><td>Cron 実行失敗</td></tr>
+  <tr><td>課金</td><td>Stripe Dashboard</td><td>Payment failure</td></tr>
+</table>
+
+<!-- ==================== Section 10 ==================== -->
+<h2><span class="num">10</span> 開発ロードマップ</h2>
+
+<table>
+  <tr><th>フェーズ</th><th>期間</th><th>内容</th><th>マイルストーン</th></tr>
+  <tr>
+    <td><strong>Phase 0</strong><br>プロジェクト初期化</td>
+    <td>1週間</td>
+    <td>
+      Next.js + Supabase セットアップ<br>
+      DB スキーマ作成 + RLS 設定<br>
+      shadcn/ui 導入 + デザインシステム<br>
+      Vercel デプロイ設定
+    </td>
+    <td>空のダッシュボードがデプロイ可能</td>
+  </tr>
+  <tr>
+    <td><strong>Phase 1</strong><br>コア機能</td>
+    <td>2-3週間</td>
+    <td>
+      ダッシュボード（概要、マッピング）<br>
+      移行元分析テーブル<br>
+      移行先開発テーブル<br>
+      ボット CRUD + 修正ログ
+    </td>
+    <td>現在のHTMLツールと同等の機能</td>
+  </tr>
+  <tr>
+    <td><strong>Phase 2</strong><br>チケット & ポータル</td>
+    <td>2週間</td>
+    <td>
+      チケット管理（CRUD + コメント）<br>
+      顧客ポータル（レビュー、UAT）<br>
+      CSV / JSON エクスポート
+    </td>
+    <td>顧客にアクセス権を提供可能</td>
+  </tr>
+  <tr>
+    <td><strong>Phase 3</strong><br>AI Agent</td>
+    <td>2-3週間</td>
+    <td>
+      Vercel Cron + Claude Opus 統合<br>
+      14ツール実装<br>
+      管理者AIチャット（ストリーミング）<br>
+      自動催促メール（Resend）
+    </td>
+    <td>AI Agent が30分間隔で自律稼働</td>
+  </tr>
+  <tr>
+    <td><strong>Phase 4</strong><br>課金 & マルチテナント</td>
+    <td>1-2週間</td>
+    <td>
+      Stripe 統合（サブスクリプション）<br>
+      マルチテナント完全分離テスト<br>
+      招待システム（コンサルタント/顧客）
+    </td>
+    <td>有料サービスとして提供開始可能</td>
+  </tr>
+  <tr>
+    <td><strong>Phase 5</strong><br>最適化 & ローンチ</td>
+    <td>1-2週間</td>
+    <td>
+      パフォーマンス最適化<br>
+      レポート自動生成（PDF）<br>
+      運用マニュアル<br>
+      パイロット顧客のオンボーディング
+    </td>
+    <td>SaaS サービスローンチ</td>
+  </tr>
+</table>
+
+<div class="callout callout-insight">
+  <div class="callout-title">開発総期間: 約8-12週間</div>
+  <p style="margin:0; line-height:2;">
+    Phase 0-1 だけでも社内利用として十分に機能する。<br>
+    Phase 3 の AI Agent 統合が最大の差別化ポイント。<br>
+    Phase 4 の課金統合で SaaS としてのローンチが可能。
+  </p>
+</div>
+
+<!-- ==================== Section 11 ==================== -->
+<h2><span class="num">11</span> まとめ</h2>
+
+<div class="callout callout-dark">
+  <div class="callout-title">HMM SaaS = Migration Factory as a Service</div>
+  <p style="margin:0; line-height:2.2; font-size:14px;">
+    <strong>1. Vercel + Next.js で高速な Web アプリケーション</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;Server Components で高速レンダリング、Edge Network でグローバル配信<br><br>
+    <strong>2. Supabase で堅牢なマルチテナント基盤</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;Row Level Security で完全なテナント分離、Realtime でライブ更新<br><br>
+    <strong>3. Claude Opus で AI Agent が自律稼働</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;Vercel Cron で30分間隔起動、Tool Use で14の管理操作を自動実行<br><br>
+    <strong>4. ボット1本1万円/月の従量課金</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;Stripe Metered Billing で自動課金。粗利率90%超のSaaSビジネス<br><br>
+    <strong>5. マイグレーション完了後も継続収益</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;保守管理ツールとして課金継続。ボットは廃止されにくく高LTVを実現
+  </p>
+</div>
+
+<blockquote>
+  HMMは「新生工場」を建てる方法論。<br>
+  SaaSはその工場の「運用管理プラットフォーム」。<br>
+  AI Agentは工場の「自動制御システム」。<br>
+  ——3つが揃って、完全自動マイグレーションファクトリーが実現する。
+</blockquote>
+
+</div>
+
+<div class="footer">
+  <strong>HMM SaaS Architecture v0.1</strong><br>
+  Copyright &copy; 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.<br>
+  Confidential — Internal Use Only
+</div>
+
+</body>
+</html>
