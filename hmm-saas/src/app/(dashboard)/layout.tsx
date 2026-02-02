@@ -7,20 +7,30 @@ import { useState } from "react";
 type NavItem = { href: string; label: string; icon: string; section?: string };
 
 const nav: NavItem[] = [
-  { href: "/dashboard", label: "ダッシュボード", icon: "📊", section: "概要" },
-  { href: "/bots", label: "ボットマスタ", icon: "🤖", section: "概要" },
-  { href: "/mapping", label: "マッピング", icon: "🔗", section: "移行管理" },
-  { href: "/source", label: "移行元分析", icon: "🔍", section: "移行管理" },
-  { href: "/source-code", label: "ソースコード", icon: "</>" , section: "移行管理" },
-  { href: "/destination", label: "移行先開発", icon: "🛠", section: "移行管理" },
-  { href: "/tickets", label: "チケット", icon: "🎫", section: "運用" },
-  { href: "/activity", label: "アクティビティ", icon: "📋", section: "運用" },
-  { href: "/chat", label: "AIチャット", icon: "💬", section: "運用" },
-  { href: "/consultants", label: "メンバー", icon: "👥", section: "管理" },
-  { href: "/portal/review", label: "顧客ポータル", icon: "🏢", section: "管理" },
-  { href: "/portal/uat", label: "UAT", icon: "✅", section: "管理" },
-  { href: "/export", label: "エクスポート", icon: "📥", section: "管理" },
-  { href: "/settings", label: "設定", icon: "⚙️", section: "管理" },
+  // --- 全体把握 ---
+  { href: "/dashboard", label: "ダッシュボード", icon: "📊", section: "全体把握" },
+  { href: "/bots", label: "ボットマスタ", icon: "🤖", section: "全体把握" },
+  { href: "/consultants", label: "メンバー管理", icon: "👥", section: "全体把握" },
+  // --- Step 1-2: 分析 ---
+  { href: "/source", label: "移行元分析", icon: "🔍", section: "① 分析" },
+  { href: "/source-code", label: "ソースコード", icon: "</>", section: "① 分析" },
+  { href: "/mapping", label: "マッピング", icon: "🔗", section: "① 分析" },
+  // --- Step 3: レビュー ---
+  { href: "/portal/review", label: "仕様レビュー", icon: "📝", section: "② レビュー" },
+  // --- Step 4: AI移行 ---
+  { href: "/migration", label: "AI移行実行", icon: "🚀", section: "③ AI移行" },
+  { href: "/destination", label: "移行先コード", icon: "🛠", section: "③ AI移行" },
+  // --- Step 5: テスト ---
+  { href: "/testing", label: "テスト実行", icon: "🧪", section: "④ テスト" },
+  { href: "/portal/uat", label: "UAT", icon: "✅", section: "④ テスト" },
+  // --- Step 6-7: 運用 ---
+  { href: "/monitoring", label: "稼働モニタ", icon: "📡", section: "⑤ 運用" },
+  { href: "/tickets", label: "チケット", icon: "🎫", section: "⑤ 運用" },
+  { href: "/activity", label: "アクティビティ", icon: "📋", section: "⑤ 運用" },
+  // --- ツール ---
+  { href: "/chat", label: "AIチャット", icon: "💬", section: "ツール" },
+  { href: "/export", label: "エクスポート", icon: "📥", section: "ツール" },
+  { href: "/settings", label: "設定", icon: "⚙️", section: "ツール" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
