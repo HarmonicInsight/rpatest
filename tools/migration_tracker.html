@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HMM Migration Tracker — 統合マイグレーション管理</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Yu Gothic','Meiryo','Segoe UI',sans-serif; background:#f0f2f5; color:#1a1a2e; font-size:14px; }
+
+  /* Header */
+  .header {
+    background:linear-gradient(135deg,#0d1b2a,#1b2a4a);
+    color:#fff; padding:20px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+  }
+  .header h1 { font-size:20px; font-weight:700; letter-spacing:1px; }
+  .header h1 span { color:#64B5F6; }
+  .header-meta { font-size:12px; color:#90a4ae; }
+  .project-name { background:transparent; border:1px solid transparent; color:#fff; font-size:20px; font-weight:700; padding:2px 8px; border-radius:4px; cursor:text; }
+  .project-name:hover { border-color:#64B5F6; }
+  .project-name:focus { outline:none; border-color:#64B5F6; background:rgba(255,255,255,0.1); }
+
+  /* Tabs */
+  .tabs { display:flex; gap:0; padding:0 32px; border-bottom:2px solid #e0e0e0; background:#fff; }
+  .tab {
+    padding:14px 24px; font-size:14px; font-weight:600; color:#546e7a; cursor:pointer;
+    border-bottom:3px solid transparent; margin-bottom:-2px; transition:all 0.15s;
+  }
+  .tab:hover { color:#1976D2; background:#f8f9ff; }
+  .tab.active { color:#1976D2; border-bottom-color:#1976D2; }
+  .tab .cnt {
+    display:inline-block; background:#e0e0e0; color:#546e7a; font-size:11px; font-weight:700;
+    padding:1px 8px; border-radius:10px; margin-left:6px;
+  }
+  .tab.active .cnt { background:#1976D2; color:#fff; }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
+  /* Dashboard */
+  .dashboard {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px;
+    padding:20px 32px;
+  }
+  .card {
+    background:#fff; border-radius:12px; padding:18px; text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06); border-top:4px solid #e0e0e0;
+  }
+  .card-value { font-size:28px; font-weight:800; margin:2px 0; }
+  .card-label { font-size:11px; color:#546e7a; letter-spacing:0.5px; }
+  .card-sub { font-size:10px; color:#90a4ae; margin-top:4px; }
+
+  /* Progress bar */
+  .progress-section { padding:0 32px 16px; }
+  .progress-bar-bg { background:#e0e0e0; border-radius:8px; height:22px; overflow:hidden; display:flex; }
+  .progress-bar-bg > div { height:100%; transition:width 0.3s; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:600; min-width:0; overflow:hidden; }
+  .pb-done { background:#2E7D32; }
+  .pb-test { background:#00838F; }
+  .pb-dev { background:#1565C0; }
+  .pb-review { background:#F57C00; }
+  .pb-ipo { background:#7B1FA2; }
+  .pb-wait { background:#bdbdbd; }
+  .progress-legend { display:flex; gap:14px; margin-top:6px; flex-wrap:wrap; }
+  .progress-legend span { font-size:10px; color:#546e7a; display:flex; align-items:center; gap:4px; }
+  .progress-legend span::before { content:''; width:10px; height:10px; border-radius:3px; display:inline-block; }
+  .legend-wait::before { background:#bdbdbd; }
+  .legend-ipo::before { background:#7B1FA2; }
+  .legend-review::before { background:#F57C00; }
+  .legend-dev::before { background:#1565C0; }
+  .legend-test::before { background:#00838F; }
+  .legend-done::before { background:#2E7D32; }
+
+  /* Toolbar */
+  .toolbar { padding:0 32px 12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .toolbar input, .toolbar select {
+    padding:7px 12px; border:1px solid #d0d0d0; border-radius:8px; font-size:13px; background:#fff;
+  }
+  .toolbar input:focus, .toolbar select:focus { outline:none; border-color:#1976D2; }
+  .toolbar input[type="text"] { width:240px; }
+
+  /* Buttons */
+  .btn { padding:7px 16px; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+  .btn-primary { background:#1976D2; color:#fff; }
+  .btn-primary:hover { background:#1565C0; }
+  .btn-success { background:#2E7D32; color:#fff; }
+  .btn-outline { background:#fff; border:1px solid #d0d0d0; color:#546e7a; }
+  .btn-outline:hover { border-color:#1976D2; color:#1976D2; }
+  .btn-danger { background:#c62828; color:#fff; font-size:11px; }
+  .btn-sm { padding:4px 10px; font-size:12px; }
+
+  /* Table */
+  .table-wrap { padding:0 32px 24px; overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead th {
+    background:#1b2a4a; color:#fff; padding:10px 12px; text-align:left; font-size:11px;
+    letter-spacing:0.5px; white-space:nowrap; cursor:pointer; user-select:none; position:sticky; top:0;
+  }
+  thead th:hover { background:#263d5e; }
+  tbody td { padding:10px 12px; border-bottom:1px solid #eee; vertical-align:top; }
+  tbody tr:hover { background:#f0f7ff; }
+
+  /* Badges */
+  .badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; }
+  .badge-waiting { background:#f5f5f5; color:#757575; }
+  .badge-analysis { background:#f3e5f5; color:#7B1FA2; }
+  .badge-req-done { background:#e8f5e9; color:#2E7D32; }
+  .badge-ipo { background:#f3e5f5; color:#7B1FA2; }
+  .badge-review { background:#fff3e0; color:#E65100; }
+  .badge-dev { background:#e3f2fd; color:#1565C0; }
+  .badge-test { background:#e0f7fa; color:#00695C; }
+  .badge-done { background:#e8f5e9; color:#2E7D32; }
+  .badge-blocked { background:#ffebee; color:#c62828; }
+  .rank { display:inline-block; width:24px; height:24px; border-radius:50%; text-align:center; line-height:24px; font-size:11px; font-weight:700; color:#fff; }
+  .rank-a { background:#2E7D32; }
+  .rank-b { background:#1976D2; }
+  .rank-c { background:#F57C00; }
+  .rank-d { background:#c62828; }
+
+  /* Source status */
+  .src-status { display:inline-block; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:600; }
+  .src-not-started { background:#f5f5f5; color:#9e9e9e; }
+  .src-analyzing { background:#ede7f6; color:#512DA8; }
+  .src-biz-done { background:#e3f2fd; color:#1565C0; }
+  .src-func-done { background:#e8f5e9; color:#2E7D32; }
+  .src-ipo-done { background:#c8e6c9; color:#1B5E20; }
+
+  /* Mapping arrow */
+  .mapping-arrow { color:#1976D2; font-weight:700; font-size:16px; text-align:center; }
+  .mapping-type { font-size:9px; color:#90a4ae; display:block; }
+
+  /* Destination status */
+  .dst-status { display:inline-block; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:600; }
+  .dst-pending { background:#f5f5f5; color:#9e9e9e; }
+  .dst-designing { background:#e3f2fd; color:#1565C0; }
+  .dst-implementing { background:#fff3e0; color:#E65100; }
+  .dst-testing { background:#e0f7fa; color:#00695C; }
+  .dst-done { background:#c8e6c9; color:#1B5E20; }
+
+  /* Dual progress */
+  .dual-progress { display:flex; gap:4px; align-items:center; }
+  .dp-bar { width:50px; height:6px; background:#e0e0e0; border-radius:3px; overflow:hidden; }
+  .dp-fill { height:100%; border-radius:3px; }
+  .dp-label { font-size:9px; color:#90a4ae; width:28px; text-align:right; }
+
+  /* Mapping view cards */
+  .mapping-grid { padding:0 32px 32px; display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:16px; }
+  .map-card {
+    background:#fff; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    border-left:5px solid #e0e0e0;
+  }
+  .map-card.complete { border-left-color:#2E7D32; }
+  .map-card.in-progress { border-left-color:#1976D2; }
+  .map-card.blocked { border-left-color:#c62828; }
+  .map-card.not-started { border-left-color:#bdbdbd; }
+  .map-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .map-card-id { font-size:12px; color:#90a4ae; font-weight:700; }
+  .map-card-name { font-size:15px; font-weight:700; color:#1b2a4a; }
+  .map-card-dept { font-size:11px; color:#78909c; }
+  .map-sides { display:flex; gap:12px; align-items:stretch; }
+  .map-side { flex:1; padding:12px; border-radius:8px; }
+  .map-side.source { background:#f8f0ff; border:1px solid #e1bee7; }
+  .map-side.dest { background:#f0f7ff; border:1px solid #bbdefb; }
+  .map-side-label { font-size:10px; font-weight:700; color:#78909c; letter-spacing:1px; margin-bottom:6px; }
+  .map-side-label.src-label { color:#7B1FA2; }
+  .map-side-label.dst-label { color:#1565C0; }
+  .map-arrow-col { display:flex; align-items:center; font-size:20px; color:#90a4ae; }
+  .map-step { display:flex; align-items:center; gap:6px; margin:4px 0; }
+  .map-step-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .map-step-dot.done { background:#2E7D32; }
+  .map-step-dot.current { background:#1976D2; box-shadow:0 0 0 3px rgba(25,118,210,0.3); }
+  .map-step-dot.pending { background:#e0e0e0; }
+  .map-step-text { font-size:11px; color:#546e7a; }
+  .map-step-text.done { color:#2E7D32; text-decoration:line-through; opacity:0.7; }
+  .map-step-text.current { color:#1565C0; font-weight:700; }
+
+  /* Summary section */
+  .summary-grid { padding:0 32px 32px; display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px; }
+  .summary-card { background:#fff; border-radius:12px; padding:24px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+  .summary-card h3 { font-size:14px; color:#1b2a4a; margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid #e0e0e0; }
+  .summary-row { display:flex; justify-content:space-between; padding:6px 0; font-size:13px; border-bottom:1px solid #f5f5f5; }
+  .summary-row:last-child { border-bottom:none; }
+  .summary-key { color:#546e7a; }
+  .summary-val { font-weight:700; }
+
+  /* Consultant view */
+  .consultant-grid { padding:0 32px 32px; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px; }
+  .consultant-card { background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+  .consultant-header { background:linear-gradient(135deg,#1b2a4a,#263d5e); color:#fff; padding:16px 20px; }
+  .consultant-name { font-size:16px; font-weight:700; }
+  .consultant-stats { display:flex; gap:16px; margin-top:8px; }
+  .consultant-stat { font-size:11px; color:#90CAF9; }
+  .consultant-stat strong { color:#fff; font-size:14px; display:block; }
+  .consultant-bots { padding:12px 20px; max-height:250px; overflow-y:auto; }
+  .consultant-bot { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #f5f5f5; font-size:12px; }
+  .consultant-bot:last-child { border-bottom:none; }
+
+  /* Export bar */
+  .export-bar { padding:0 32px 12px; display:flex; gap:10px; flex-wrap:wrap; }
+
+  /* Modal */
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.5); display:none; align-items:center;
+    justify-content:center; z-index:1000; padding:20px;
+  }
+  .modal-overlay.active { display:flex; }
+  .modal {
+    background:#fff; border-radius:16px; padding:32px; max-width:700px; width:100%;
+    max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal h2 { font-size:18px; color:#1b2a4a; margin-bottom:20px; }
+  .modal label { display:block; font-size:12px; color:#546e7a; font-weight:600; margin:12px 0 4px; }
+  .modal input, .modal select, .modal textarea {
+    width:100%; padding:8px 12px; border:1px solid #d0d0d0; border-radius:8px; font-size:13px; font-family:inherit;
+  }
+  .modal textarea { height:80px; resize:vertical; }
+  .modal-actions { display:flex; gap:12px; margin-top:24px; justify-content:flex-end; }
+  .section-title { font-size:13px; font-weight:700; color:#1976D2; margin:16px 0 8px; padding:6px 0; border-bottom:1px dashed #90CAF9; }
+
+  /* Responsive */
+  @media (max-width:768px) {
+    .header, .dashboard, .toolbar, .table-wrap, .progress-section, .export-bar, .tabs,
+    .mapping-grid, .summary-grid, .consultant-grid { padding-left:16px; padding-right:16px; }
+    .toolbar input[type="text"] { width:100%; }
+    .mapping-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div>
+    <h1><span>HMM</span> Migration Tracker</h1>
+    <div class="header-meta">
+      プロジェクト: <input class="project-name" id="projectName" value="A社 BizRobo!→aKaBot マイグレーション" onchange="saveData()">
+      &nbsp;|&nbsp; 最終更新: <span id="lastUpdate">-</span>
+    </div>
+  </div>
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <div style="text-align:center; padding:4px 16px; background:rgba(255,255,255,0.1); border-radius:8px;">
+      <div style="font-size:18px; font-weight:800; color:#64B5F6;" id="headerTotal">120</div>
+      <div style="font-size:10px; color:#90a4ae;">総ボット</div>
+    </div>
+    <div style="text-align:center; padding:4px 16px; background:rgba(255,255,255,0.1); border-radius:8px;">
+      <div style="font-size:18px; font-weight:800; color:#A5D6A7;" id="headerDone">0</div>
+      <div style="font-size:10px; color:#90a4ae;">移行完了</div>
+    </div>
+    <div style="text-align:center; padding:4px 16px; background:rgba(255,255,255,0.1); border-radius:8px;">
+      <div style="font-size:18px; font-weight:800; color:#FFCC80;" id="headerPct">0%</div>
+      <div style="font-size:10px; color:#90a4ae;">進捗率</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TABS ===== -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('overview')">全体概要</div>
+  <div class="tab" onclick="switchTab('mapping')">マッピング <span class="cnt" id="cntMapping">120</span></div>
+  <div class="tab" onclick="switchTab('source')">移行元分析 <span class="cnt" id="cntSource">120</span></div>
+  <div class="tab" onclick="switchTab('dest')">移行先開発 <span class="cnt" id="cntDest">120</span></div>
+  <div class="tab" onclick="switchTab('consultant')">コンサルタント</div>
+</div>
+
+<!-- ========================================= -->
+<!-- TAB: OVERVIEW                             -->
+<!-- ========================================= -->
+<div class="tab-content active" id="tab-overview">
+
+<div class="dashboard" id="overviewDashboard"></div>
+
+<!-- Dual progress bars -->
+<div class="progress-section">
+  <div style="font-size:11px; color:#546e7a; font-weight:600; margin-bottom:6px;">移行元分析 進捗</div>
+  <div class="progress-bar-bg" id="srcProgressBar"></div>
+  <div style="display:flex; gap:14px; margin-top:4px; flex-wrap:wrap;">
+    <span style="font-size:10px; color:#9e9e9e;">&#9632; 未着手</span>
+    <span style="font-size:10px; color:#7B1FA2;">&#9632; 業務要件分析中</span>
+    <span style="font-size:10px; color:#1565C0;">&#9632; 機能要件完了</span>
+    <span style="font-size:10px; color:#2E7D32;">&#9632; IPO確定</span>
+  </div>
+</div>
+<div class="progress-section">
+  <div style="font-size:11px; color:#546e7a; font-weight:600; margin-bottom:6px;">移行先開発 進捗</div>
+  <div class="progress-bar-bg" id="dstProgressBar"></div>
+  <div style="display:flex; gap:14px; margin-top:4px; flex-wrap:wrap;">
+    <span style="font-size:10px; color:#9e9e9e;">&#9632; 待機中</span>
+    <span style="font-size:10px; color:#1565C0;">&#9632; 設計中</span>
+    <span style="font-size:10px; color:#F57C00;">&#9632; 実装中</span>
+    <span style="font-size:10px; color:#00838F;">&#9632; テスト中</span>
+    <span style="font-size:10px; color:#2E7D32;">&#9632; 完了</span>
+  </div>
+</div>
+
+<div class="summary-grid" id="overviewSummary"></div>
+</div>
+
+<!-- ========================================= -->
+<!-- TAB: MAPPING                              -->
+<!-- ========================================= -->
+<div class="tab-content" id="tab-mapping">
+<div class="toolbar">
+  <input type="text" id="mapSearch" placeholder="ボット名・ID・部門で検索..." oninput="renderMapping()">
+  <select id="mapFilterDept" onchange="renderMapping()">
+    <option value="">全部門</option>
+  </select>
+  <select id="mapFilterPhase" onchange="renderMapping()">
+    <option value="">全フェーズ</option>
+    <option value="not-started">未着手</option>
+    <option value="src-analysis">移行元分析中</option>
+    <option value="src-done">分析完了（開発待ち）</option>
+    <option value="dst-dev">移行先開発中</option>
+    <option value="complete">移行完了</option>
+  </select>
+  <select id="mapFilterRank" onchange="renderMapping()">
+    <option value="">全ランク</option>
+    <option value="A">A</option>
+    <option value="B">B</option>
+    <option value="C">C</option>
+    <option value="D">D</option>
+  </select>
+  <button class="btn btn-primary" onclick="openBotModal(-1)">+ ボット追加</button>
+</div>
+<div class="mapping-grid" id="mappingGrid"></div>
+</div>
+
+<!-- ========================================= -->
+<!-- TAB: SOURCE ANALYSIS                      -->
+<!-- ========================================= -->
+<div class="tab-content" id="tab-source">
+<div class="toolbar">
+  <input type="text" id="srcSearch" placeholder="検索..." oninput="renderSourceTable()">
+  <select id="srcFilterStatus" onchange="renderSourceTable()">
+    <option value="">全ステータス</option>
+    <option value="not_started">未着手</option>
+    <option value="biz_analyzing">業務要件分析中</option>
+    <option value="biz_done">業務要件完了</option>
+    <option value="func_analyzing">機能要件分析中</option>
+    <option value="func_done">機能要件完了</option>
+    <option value="ipo_done">IPO確定</option>
+  </select>
+  <select id="srcFilterDept" onchange="renderSourceTable()">
+    <option value="">全部門</option>
+  </select>
+</div>
+<div class="export-bar">
+  <button class="btn btn-outline btn-sm" onclick="exportCSV('source')">CSV出力</button>
+  <button class="btn btn-outline btn-sm" onclick="exportJSON('source')">JSON出力</button>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th onclick="sortTable('source','id')">ID</th>
+        <th onclick="sortTable('source','rank')">ランク</th>
+        <th onclick="sortTable('source','name')">ボット名（移行元）</th>
+        <th onclick="sortTable('source','department')">部門 / 担当者</th>
+        <th>移行元プラットフォーム</th>
+        <th onclick="sortTable('source','srcStatus')">分析ステータス</th>
+        <th>業務要件</th>
+        <th>機能要件</th>
+        <th>IPO定義</th>
+        <th>レビュー</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="srcTableBody"></tbody>
+  </table>
+</div>
+</div>
+
+<!-- ========================================= -->
+<!-- TAB: DESTINATION DEVELOPMENT              -->
+<!-- ========================================= -->
+<div class="tab-content" id="tab-dest">
+<div class="toolbar">
+  <input type="text" id="dstSearch" placeholder="検索..." oninput="renderDestTable()">
+  <select id="dstFilterStatus" onchange="renderDestTable()">
+    <option value="">全ステータス</option>
+    <option value="pending">待機中</option>
+    <option value="designing">設計中</option>
+    <option value="implementing">実装中</option>
+    <option value="testing">テスト/UAT</option>
+    <option value="done">完了</option>
+    <option value="blocked">ブロック</option>
+  </select>
+  <select id="dstFilterConsultant" onchange="renderDestTable()">
+    <option value="">全担当者</option>
+  </select>
+</div>
+<div class="export-bar">
+  <button class="btn btn-outline btn-sm" onclick="exportCSV('dest')">CSV出力</button>
+  <button class="btn btn-outline btn-sm" onclick="exportJSON('dest')">JSON出力</button>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th onclick="sortTable('dest','id')">ID</th>
+        <th onclick="sortTable('dest','rank')">ランク</th>
+        <th onclick="sortTable('dest','name')">ボット名（移行先）</th>
+        <th>移行先プラットフォーム</th>
+        <th onclick="sortTable('dest','dstStatus')">開発ステータス</th>
+        <th onclick="sortTable('dest','consultant')">担当コンサルタント</th>
+        <th>設計</th>
+        <th>実装</th>
+        <th>テスト</th>
+        <th>UAT</th>
+        <th>修正ログ</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="dstTableBody"></tbody>
+  </table>
+</div>
+</div>
+
+<!-- ========================================= -->
+<!-- TAB: CONSULTANT                           -->
+<!-- ========================================= -->
+<div class="tab-content" id="tab-consultant">
+<div class="consultant-grid" id="consultantGrid"></div>
+</div>
+
+<!-- ===== BOT ADD/EDIT MODAL ===== -->
+<div class="modal-overlay" id="botModal">
+  <div class="modal">
+    <h2 id="modalTitle">ボット追加</h2>
+    <input type="hidden" id="editIdx" value="-1">
+
+    <div class="section-title">基本情報</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 16px;">
+      <div>
+        <label>ボット名 *</label>
+        <input type="text" id="fName" placeholder="例: 売上日報生成">
+      </div>
+      <div>
+        <label>ボットID</label>
+        <input type="text" id="fBotId" placeholder="例: BOT-001">
+      </div>
+      <div>
+        <label>部門</label>
+        <input type="text" id="fDept" placeholder="例: 経理部">
+      </div>
+      <div>
+        <label>業務担当者（顧客側）</label>
+        <input type="text" id="fOwner" placeholder="例: 田中太郎">
+      </div>
+      <div>
+        <label>難易度ランク</label>
+        <select id="fRank">
+          <option value="A">A（簡単）</option>
+          <option value="B" selected>B（中程度）</option>
+          <option value="C">C（複雑）</option>
+          <option value="D">D（高難度）</option>
+        </select>
+      </div>
+      <div>
+        <label>業務パターン</label>
+        <select id="fPattern">
+          <option value="抽出型">抽出型 (Extract)</option>
+          <option value="変換型">変換型 (Transform)</option>
+          <option value="転記型" selected>転記型 (Load)</option>
+          <option value="照合型">照合型 (Validate)</option>
+          <option value="通知型">通知型 (Notify)</option>
+          <option value="複合型">複合型 (ETL)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-title">移行元（Source）分析</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 16px;">
+      <div>
+        <label>移行元プラットフォーム</label>
+        <select id="fSrcPlatform">
+          <option value="BizRobo!">BizRobo!</option>
+          <option value="UiPath">UiPath</option>
+          <option value="WinActor">WinActor</option>
+          <option value="Blue Prism">Blue Prism</option>
+          <option value="Power Automate">Power Automate</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div>
+        <label>分析ステータス</label>
+        <select id="fSrcStatus">
+          <option value="not_started">未着手</option>
+          <option value="biz_analyzing">業務要件分析中</option>
+          <option value="biz_done">業務要件完了</option>
+          <option value="func_analyzing">機能要件分析中</option>
+          <option value="func_done">機能要件完了</option>
+          <option value="ipo_done">IPO確定</option>
+        </select>
+      </div>
+      <div>
+        <label>業務要件（概要）</label>
+        <input type="text" id="fBizReq" placeholder="例: 毎朝SAP売上データをExcel集計">
+      </div>
+      <div>
+        <label>機能要件（概要）</label>
+        <input type="text" id="fFuncReq" placeholder="例: SAP RFC接続、Excel書式設定">
+      </div>
+      <div>
+        <label>対象システム（移行元）</label>
+        <input type="text" id="fSrcSystem" placeholder="例: SAP, Excel, Web">
+      </div>
+      <div>
+        <label>レビューステータス</label>
+        <select id="fReviewStatus">
+          <option value="none">未レビュー</option>
+          <option value="pending">レビュー依頼中</option>
+          <option value="in_review">レビュー中</option>
+          <option value="approved">承認済</option>
+          <option value="rejected">差戻し</option>
+        </select>
+      </div>
+    </div>
+    <label>IPO定義メモ</label>
+    <textarea id="fIpoMemo" placeholder="Input: SAP売上データ(日次)&#10;Process: 部門別集計、前日比算出&#10;Output: Excel売上日報(部門別シート)"></textarea>
+
+    <div class="section-title">移行先（Destination）開発</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 16px;">
+      <div>
+        <label>移行先プラットフォーム</label>
+        <select id="fDstPlatform">
+          <option value="aKaBot">aKaBot</option>
+          <option value="UiPath">UiPath</option>
+          <option value="Power Automate">Power Automate</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div>
+        <label>開発ステータス</label>
+        <select id="fDstStatus">
+          <option value="pending">待機中</option>
+          <option value="designing">設計中</option>
+          <option value="implementing">実装中</option>
+          <option value="testing">テスト/UAT</option>
+          <option value="done">完了</option>
+          <option value="blocked">ブロック</option>
+        </select>
+      </div>
+      <div>
+        <label>担当コンサルタント</label>
+        <input type="text" id="fConsultant" placeholder="例: 山本">
+      </div>
+      <div>
+        <label>見積工数（時間）</label>
+        <input type="number" id="fEstimate" placeholder="例: 8" min="0">
+      </div>
+    </div>
+    <label>備考</label>
+    <textarea id="fNotes" placeholder="特記事項、注意点など" style="height:60px;"></textarea>
+
+    <div id="modLogSection" style="display:none;">
+      <div class="section-title">修正ログ</div>
+      <div style="display:flex; gap:8px;">
+        <select id="fModType" style="width:110px;">
+          <option value="fix">修正</option>
+          <option value="change">変更</option>
+          <option value="add">追加</option>
+          <option value="note">メモ</option>
+        </select>
+        <input type="text" id="fModText" placeholder="修正内容を記入" style="flex:1;">
+        <button class="btn btn-sm btn-primary" onclick="addModLog()">追加</button>
+      </div>
+      <div id="fModPreview" style="margin-top:8px; max-height:120px; overflow-y:auto; font-size:12px;"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeBotModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveBot()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATUS MAPS =====
+const SRC_STATUS = {
+  not_started:    { label:'未着手',         cls:'src-not-started', order:0, pct:0 },
+  biz_analyzing:  { label:'業務要件分析中', cls:'src-analyzing',   order:1, pct:20 },
+  biz_done:       { label:'業務要件完了',   cls:'src-biz-done',    order:2, pct:40 },
+  func_analyzing: { label:'機能要件分析中', cls:'src-analyzing',   order:3, pct:50 },
+  func_done:      { label:'機能要件完了',   cls:'src-func-done',   order:4, pct:75 },
+  ipo_done:       { label:'IPO確定',        cls:'src-ipo-done',    order:5, pct:100 },
+};
+
+const DST_STATUS = {
+  pending:       { label:'待機中',    cls:'dst-pending',       order:0, pct:0 },
+  designing:     { label:'設計中',    cls:'dst-designing',     order:1, pct:20 },
+  implementing:  { label:'実装中',    cls:'dst-implementing',  order:2, pct:50 },
+  testing:       { label:'テスト/UAT',cls:'dst-testing',       order:3, pct:75 },
+  done:          { label:'完了',      cls:'dst-done',          order:4, pct:100 },
+  blocked:       { label:'ブロック',  cls:'dst-pending',       order:5, pct:0 },
+};
+
+const REVIEW_STATUS = {
+  none:       { label:'未レビュー', cls:'badge-waiting' },
+  pending:    { label:'依頼中',    cls:'badge-review' },
+  in_review:  { label:'レビュー中',cls:'badge-review' },
+  approved:   { label:'承認済',    cls:'badge-done' },
+  rejected:   { label:'差戻し',    cls:'badge-blocked' },
+};
+
+const RANK_CLS = { A:'rank-a', B:'rank-b', C:'rank-c', D:'rank-d' };
+
+// ===== DATA =====
+let bots = [];
+let sorts = { source: { key:'', asc:true }, dest: { key:'', asc:true } };
+
+function generateSampleBots() {
+  const depts = ['経理部','営業部','人事部','物流部','総務部','情報システム部','購買部','品質管理部'];
+  const owners = ['田中','鈴木','佐藤','山田','高橋','中村','小林','加藤','吉田','渡辺','伊藤','松本'];
+  const consultants = ['山本','李','グエン','佐々木'];
+  const patterns = ['抽出型','変換型','転記型','照合型','通知型','複合型'];
+  const systems = ['Excel','Web','SAP','Oracle','Windows','メール','OCR','PDF'];
+  const botNames = [
+    '売上日報生成','請求書照合','在庫アラート通知','勤怠データ集計','見積書作成',
+    '経費精算自動化','受注データ転記','出荷通知メール','仕入先マスタ更新','月次決算集計',
+    '給与明細配信','交通費精算','契約書PDF生成','顧客データ同期','入金消込処理',
+    '与信チェック','発注書作成','納品書照合','売掛金管理','固定資産台帳更新',
+    '有給残日数通知','採用応募者管理','社内報配信','検品結果登録','入出庫管理',
+    'クレーム管理転記','会議室予約集計','出張旅費精算','稟議書ステータス確認','予算実績比較',
+  ];
+  const bizReqs = [
+    '毎朝SAP売上データをExcel集計して部門長に配信',
+    '仕入先請求書とPO情報を照合し差異レポート出力',
+    '在庫が閾値以下の商品を検知し担当者にメール通知',
+    '勤怠システムから月次データを抽出し給与計算用に変換',
+    '営業見積テンプレートに顧客情報と商品データを自動転記',
+    '社員の経費申請をチェックし承認ワークフローに送信',
+    'ECサイト受注データをERPに自動転記',
+    '出荷確定時に顧客へ追跡番号付き通知メール送信',
+    '仕入先マスタの更新情報をERPに反映',
+    '月次決算の各勘定科目データを集計しレポート生成',
+  ];
+  const funcReqs = [
+    'SAP RFC接続、Excel書式設定、メール送信',
+    'PDF OCR、データベース照合、差異計算、帳票出力',
+    'DB監視クエリ、閾値判定、SMTP送信',
+    'Web API、CSV変換、バリデーション',
+    'テンプレート操作、データベース参照、PDF生成',
+    '画面操作、ルール判定、API連携',
+    'Web scraping、DB INSERT、エラーハンドリング',
+    'DB監視、テンプレートメール、SMTP',
+    'CSV取込、マスタ更新、ログ出力',
+    'DB集計クエリ、Excel出力、配信',
+  ];
+
+  const list = [];
+  const srcStatuses = ['not_started','biz_analyzing','biz_done','func_analyzing','func_done','ipo_done'];
+  const dstStatuses = ['pending','designing','implementing','testing','done'];
+  const reviewStatuses = ['none','pending','in_review','approved','rejected'];
+  const modTypes = ['fix','change','add','note'];
+  const modTexts = [
+    'セレクタ修正（画面変更対応）','Excel出力フォーマット変更','エラーハンドリング追加',
+    '条件分岐ロジック修正','API接続方式に変更','テストデータ追加','タイムアウト値調整',
+    '顧客要望により出力項目追加','SAP接続パラメータ修正','OCR認識率改善のため前処理追加'
+  ];
+
+  for (let i = 0; i < 120; i++) {
+    const rank = i < 40 ? 'A' : i < 90 ? 'B' : i < 110 ? 'C' : 'D';
+    const name = i < 30 ? botNames[i % botNames.length] : botNames[i % botNames.length] + '_' + (Math.floor(i/30)+1);
+
+    // Determine source analysis status based on progress simulation
+    const progress = Math.random();
+    let srcIdx;
+    if (rank === 'A') srcIdx = Math.min(Math.floor(progress * 7), 5);
+    else if (rank === 'B') srcIdx = Math.min(Math.floor(progress * 6), 5);
+    else if (rank === 'C') srcIdx = Math.min(Math.floor(progress * 5), 4);
+    else srcIdx = Math.min(Math.floor(progress * 4), 3);
+    const srcStatus = srcStatuses[srcIdx];
+
+    // Destination status depends on source completion
+    let dstStatus = 'pending';
+    if (srcStatus === 'ipo_done') {
+      const dp = Math.random();
+      if (dp < 0.15) dstStatus = 'done';
+      else if (dp < 0.35) dstStatus = 'testing';
+      else if (dp < 0.6) dstStatus = 'implementing';
+      else if (dp < 0.85) dstStatus = 'designing';
+      else dstStatus = 'pending';
+    } else if (srcStatus === 'func_done') {
+      dstStatus = Math.random() < 0.3 ? 'designing' : 'pending';
+    }
+
+    // Review status depends on source progress
+    let reviewStatus = 'none';
+    if (srcStatus === 'ipo_done') reviewStatus = 'approved';
+    else if (srcStatus === 'func_done') reviewStatus = Math.random() < 0.5 ? 'in_review' : 'pending';
+    else if (srcStatus === 'biz_done' || srcStatus === 'func_analyzing') reviewStatus = Math.random() < 0.3 ? 'pending' : 'none';
+
+    // Modification logs for destination dev
+    const mods = [];
+    if (dstStatus !== 'pending') {
+      const modCount = Math.floor(Math.random() * 3);
+      for (let m = 0; m < modCount; m++) {
+        mods.push({
+          date: '2026-0' + (1+Math.floor(Math.random()*2)) + '-' + String(1+Math.floor(Math.random()*28)).padStart(2,'0'),
+          type: modTypes[Math.floor(Math.random()*modTypes.length)],
+          text: modTexts[Math.floor(Math.random()*modTexts.length)]
+        });
+      }
+      mods.sort((a,b) => b.date.localeCompare(a.date));
+    }
+
+    const est = rank==='A' ? 3+Math.floor(Math.random()*3) : rank==='B' ? 6+Math.floor(Math.random()*5) : rank==='C' ? 13+Math.floor(Math.random()*10) : 25+Math.floor(Math.random()*20);
+
+    list.push({
+      id: 'BOT-' + String(i+1).padStart(3,'0'),
+      name: name,
+      department: depts[i % depts.length],
+      owner: owners[i % owners.length],
+      rank: rank,
+      pattern: patterns[Math.floor(Math.random()*patterns.length)],
+      srcPlatform: 'BizRobo!',
+      dstPlatform: 'aKaBot',
+      srcStatus: srcStatus,
+      dstStatus: dstStatus,
+      reviewStatus: reviewStatus,
+      bizReq: bizReqs[i % bizReqs.length],
+      funcReq: funcReqs[i % funcReqs.length],
+      ipoMemo: '',
+      srcSystem: [systems[Math.floor(Math.random()*systems.length)], systems[Math.floor(Math.random()*systems.length)]].filter((v,j,a)=>a.indexOf(v)===j).join(', '),
+      consultant: consultants[i % consultants.length],
+      estimate: est,
+      notes: '',
+      mods: mods,
+      created: '2026-01-15',
+      updated: new Date().toISOString().slice(0,10),
+    });
+  }
+  return list;
+}
+
+// ===== TABS =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  event.target.closest('.tab').classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  refreshAll();
+}
+
+// ===== OVERVIEW =====
+function renderOverview() {
+  const total = bots.length;
+  const srcDone = bots.filter(b => b.srcStatus === 'ipo_done').length;
+  const srcAnalyzing = bots.filter(b => ['biz_analyzing','biz_done','func_analyzing','func_done'].includes(b.srcStatus)).length;
+  const dstDone = bots.filter(b => b.dstStatus === 'done').length;
+  const dstDev = bots.filter(b => ['designing','implementing','testing'].includes(b.dstStatus)).length;
+  const blocked = bots.filter(b => b.dstStatus === 'blocked').length;
+  const reviewed = bots.filter(b => b.reviewStatus === 'approved').length;
+  const pct = total > 0 ? Math.round(dstDone / total * 100) : 0;
+
+  document.getElementById('headerTotal').textContent = total;
+  document.getElementById('headerDone').textContent = dstDone;
+  document.getElementById('headerPct').textContent = pct + '%';
+
+  document.getElementById('overviewDashboard').innerHTML = `
+    <div class="card" style="border-top-color:#1976D2;"><div class="card-value" style="color:#1976D2;">${total}</div><div class="card-label">総ボット数</div></div>
+    <div class="card" style="border-top-color:#7B1FA2;"><div class="card-value" style="color:#7B1FA2;">${srcAnalyzing}</div><div class="card-label">分析中</div><div class="card-sub">移行元</div></div>
+    <div class="card" style="border-top-color:#00897B;"><div class="card-value" style="color:#00897B;">${srcDone}</div><div class="card-label">IPO確定</div><div class="card-sub">分析完了</div></div>
+    <div class="card" style="border-top-color:#1565C0;"><div class="card-value" style="color:#1565C0;">${dstDev}</div><div class="card-label">開発中</div><div class="card-sub">移行先</div></div>
+    <div class="card" style="border-top-color:#2E7D32;"><div class="card-value" style="color:#2E7D32;">${dstDone}</div><div class="card-label">移行完了</div><div class="card-sub">${pct}%</div></div>
+    <div class="card" style="border-top-color:#F57C00;"><div class="card-value" style="color:#F57C00;">${reviewed}</div><div class="card-label">レビュー承認</div></div>
+    ${blocked > 0 ? `<div class="card" style="border-top-color:#c62828;"><div class="card-value" style="color:#c62828;">${blocked}</div><div class="card-label">ブロック</div></div>` : ''}
+  `;
+
+  // Source progress bar
+  const srcCounts = { not_started:0, analyzing:0, func_done:0, ipo_done:0 };
+  bots.forEach(b => {
+    if (b.srcStatus === 'not_started') srcCounts.not_started++;
+    else if (b.srcStatus === 'ipo_done') srcCounts.ipo_done++;
+    else if (b.srcStatus === 'func_done') srcCounts.func_done++;
+    else srcCounts.analyzing++;
+  });
+  const srcBar = document.getElementById('srcProgressBar');
+  srcBar.innerHTML = [
+    { cnt: srcCounts.ipo_done, bg:'#2E7D32' },
+    { cnt: srcCounts.func_done, bg:'#1565C0' },
+    { cnt: srcCounts.analyzing, bg:'#7B1FA2' },
+    { cnt: srcCounts.not_started, bg:'#bdbdbd' },
+  ].map(s => {
+    const w = total > 0 ? (s.cnt / total * 100) : 0;
+    return w > 0 ? `<div style="width:${w}%; background:${s.bg};">${w > 4 ? s.cnt : ''}</div>` : '';
+  }).join('');
+
+  // Dest progress bar
+  const dstCounts = { pending:0, designing:0, implementing:0, testing:0, done:0 };
+  bots.forEach(b => {
+    if (b.dstStatus === 'blocked') dstCounts.pending++;
+    else if (dstCounts[b.dstStatus] !== undefined) dstCounts[b.dstStatus]++;
+  });
+  const dstBar = document.getElementById('dstProgressBar');
+  dstBar.innerHTML = [
+    { cnt: dstCounts.done, bg:'#2E7D32' },
+    { cnt: dstCounts.testing, bg:'#00838F' },
+    { cnt: dstCounts.implementing, bg:'#F57C00' },
+    { cnt: dstCounts.designing, bg:'#1565C0' },
+    { cnt: dstCounts.pending, bg:'#bdbdbd' },
+  ].map(s => {
+    const w = total > 0 ? (s.cnt / total * 100) : 0;
+    return w > 0 ? `<div style="width:${w}%; background:${s.bg};">${w > 4 ? s.cnt : ''}</div>` : '';
+  }).join('');
+
+  // Summary cards
+  const byDept = {};
+  bots.forEach(b => {
+    if (!byDept[b.department]) byDept[b.department] = { total:0, srcDone:0, dstDone:0 };
+    byDept[b.department].total++;
+    if (b.srcStatus === 'ipo_done') byDept[b.department].srcDone++;
+    if (b.dstStatus === 'done') byDept[b.department].dstDone++;
+  });
+
+  const byRank = { A:{total:0,done:0}, B:{total:0,done:0}, C:{total:0,done:0}, D:{total:0,done:0} };
+  bots.forEach(b => {
+    byRank[b.rank].total++;
+    if (b.dstStatus === 'done') byRank[b.rank].done++;
+  });
+
+  document.getElementById('overviewSummary').innerHTML = `
+    <div class="summary-card">
+      <h3>部門別進捗</h3>
+      ${Object.entries(byDept).map(([dept, d]) => `
+        <div class="summary-row">
+          <span class="summary-key">${dept}</span>
+          <span>
+            <span style="font-size:11px; color:#7B1FA2;">分析${d.srcDone}/${d.total}</span>
+            &nbsp;
+            <span style="font-size:11px; color:#2E7D32;">完了${d.dstDone}/${d.total}</span>
+          </span>
+        </div>
+      `).join('')}
+    </div>
+    <div class="summary-card">
+      <h3>ランク別進捗</h3>
+      ${Object.entries(byRank).map(([rank, d]) => `
+        <div class="summary-row">
+          <span class="summary-key"><span class="rank ${RANK_CLS[rank]}">${rank}</span> ランク (${d.total}本)</span>
+          <span class="summary-val" style="color:${d.done === d.total ? '#2E7D32' : '#1976D2'};">${d.done}/${d.total} 完了</span>
+        </div>
+      `).join('')}
+    </div>
+    <div class="summary-card">
+      <h3>コンサルタント別負荷</h3>
+      ${(() => {
+        const byC = {};
+        bots.forEach(b => {
+          if (!byC[b.consultant]) byC[b.consultant] = { total:0, active:0, done:0, hours:0 };
+          byC[b.consultant].total++;
+          if (['designing','implementing','testing'].includes(b.dstStatus)) byC[b.consultant].active++;
+          if (b.dstStatus === 'done') byC[b.consultant].done++;
+          byC[b.consultant].hours += b.estimate || 0;
+        });
+        return Object.entries(byC).map(([c, d]) => `
+          <div class="summary-row">
+            <span class="summary-key">${c} (${d.total}本)</span>
+            <span style="font-size:11px;">
+              <span style="color:#1565C0;">対応中${d.active}</span> /
+              <span style="color:#2E7D32;">完了${d.done}</span>
+            </span>
+          </div>
+        `).join('');
+      })()}
+    </div>
+    <div class="summary-card">
+      <h3>移行フロー状況</h3>
+      <div class="summary-row"><span class="summary-key">移行元 未着手</span><span class="summary-val">${bots.filter(b=>b.srcStatus==='not_started').length}</span></div>
+      <div class="summary-row"><span class="summary-key">業務要件分析中/完了</span><span class="summary-val">${bots.filter(b=>['biz_analyzing','biz_done'].includes(b.srcStatus)).length}</span></div>
+      <div class="summary-row"><span class="summary-key">機能要件分析中/完了</span><span class="summary-val">${bots.filter(b=>['func_analyzing','func_done'].includes(b.srcStatus)).length}</span></div>
+      <div class="summary-row"><span class="summary-key">IPO確定 → 開発待ち</span><span class="summary-val" style="color:#F57C00;">${bots.filter(b=>b.srcStatus==='ipo_done' && b.dstStatus==='pending').length}</span></div>
+      <div class="summary-row"><span class="summary-key">開発中（設計+実装+テスト）</span><span class="summary-val" style="color:#1565C0;">${bots.filter(b=>['designing','implementing','testing'].includes(b.dstStatus)).length}</span></div>
+      <div class="summary-row"><span class="summary-key">移行完了</span><span class="summary-val" style="color:#2E7D32;">${dstDone}</span></div>
+    </div>
+  `;
+}
+
+// ===== MAPPING VIEW =====
+function renderMapping() {
+  const search = document.getElementById('mapSearch').value.toLowerCase();
+  const fDept = document.getElementById('mapFilterDept').value;
+  const fPhase = document.getElementById('mapFilterPhase').value;
+  const fRank = document.getElementById('mapFilterRank').value;
+
+  // Populate dept filter
+  const depts = [...new Set(bots.map(b => b.department))].sort();
+  const deptSel = document.getElementById('mapFilterDept');
+  const curDept = deptSel.value;
+  if (deptSel.options.length <= 1) {
+    deptSel.innerHTML = '<option value="">全部門</option>' + depts.map(d => `<option value="${d}">${d}</option>`).join('');
+    deptSel.value = curDept;
+  }
+
+  let filtered = bots.filter(b => {
+    if (search && !(b.name.toLowerCase().includes(search) || b.id.toLowerCase().includes(search) || b.department.toLowerCase().includes(search) || b.consultant.toLowerCase().includes(search))) return false;
+    if (fDept && b.department !== fDept) return false;
+    if (fRank && b.rank !== fRank) return false;
+    if (fPhase) {
+      if (fPhase === 'not-started' && b.srcStatus !== 'not_started') return false;
+      if (fPhase === 'src-analysis' && !['biz_analyzing','biz_done','func_analyzing','func_done'].includes(b.srcStatus)) return false;
+      if (fPhase === 'src-done' && !(b.srcStatus === 'ipo_done' && b.dstStatus === 'pending')) return false;
+      if (fPhase === 'dst-dev' && !['designing','implementing','testing'].includes(b.dstStatus)) return false;
+      if (fPhase === 'complete' && b.dstStatus !== 'done') return false;
+    }
+    return true;
+  });
+
+  document.getElementById('cntMapping').textContent = filtered.length;
+
+  const grid = document.getElementById('mappingGrid');
+  grid.innerHTML = filtered.map((b, _) => {
+    const realIdx = bots.indexOf(b);
+    const srcSteps = [
+      { key:'biz_analyzing', label:'業務要件分析' },
+      { key:'biz_done', label:'業務要件完了' },
+      { key:'func_analyzing', label:'機能要件分析' },
+      { key:'func_done', label:'機能要件完了' },
+      { key:'ipo_done', label:'IPO確定' },
+    ];
+    const dstSteps = [
+      { key:'designing', label:'設計' },
+      { key:'implementing', label:'実装' },
+      { key:'testing', label:'テスト/UAT' },
+      { key:'done', label:'完了' },
+    ];
+    const srcOrder = SRC_STATUS[b.srcStatus].order;
+    const dstOrder = DST_STATUS[b.dstStatus] ? DST_STATUS[b.dstStatus].order : 0;
+
+    const cardCls = b.dstStatus === 'done' ? 'complete' :
+                    b.dstStatus === 'blocked' ? 'blocked' :
+                    (srcOrder > 0 || dstOrder > 0) ? 'in-progress' : 'not-started';
+
+    const srcStepsHtml = srcSteps.map((s, si) => {
+      const stepOrder = SRC_STATUS[s.key].order;
+      const state = srcOrder > stepOrder ? 'done' : srcOrder === stepOrder ? 'current' : 'pending';
+      return `<div class="map-step"><div class="map-step-dot ${state}"></div><span class="map-step-text ${state}">${s.label}</span></div>`;
+    }).join('');
+
+    const dstStepsHtml = dstSteps.map((s, si) => {
+      const stepOrder = DST_STATUS[s.key].order;
+      const state = b.dstStatus === 'blocked' ? 'pending' :
+                    dstOrder > stepOrder ? 'done' : dstOrder === stepOrder ? 'current' : 'pending';
+      return `<div class="map-step"><div class="map-step-dot ${state}"></div><span class="map-step-text ${state}">${s.label}</span></div>`;
+    }).join('');
+
+    const srcPct = SRC_STATUS[b.srcStatus].pct;
+    const dstPct = DST_STATUS[b.dstStatus] ? DST_STATUS[b.dstStatus].pct : 0;
+    const totalPct = Math.round((srcPct * 0.4 + dstPct * 0.6));
+
+    return `<div class="map-card ${cardCls}" onclick="openBotModal(${realIdx})" style="cursor:pointer;">
+      <div class="map-card-header">
+        <div>
+          <span class="map-card-id">${b.id}</span>
+          <span class="rank ${RANK_CLS[b.rank]}" style="margin-left:6px;">${b.rank}</span>
+          <span style="font-size:11px; color:#78909c; margin-left:8px;">${b.pattern}</span>
+        </div>
+        <span style="font-size:13px; font-weight:700; color:${totalPct===100?'#2E7D32':'#1976D2'};">${totalPct}%</span>
+      </div>
+      <div class="map-card-name">${b.name}</div>
+      <div class="map-card-dept">${b.department} / ${b.owner} &nbsp;→&nbsp; 担当: ${b.consultant}</div>
+
+      <div class="map-sides" style="margin-top:12px;">
+        <div class="map-side source">
+          <div class="map-side-label src-label">移行元 (${b.srcPlatform})</div>
+          ${srcStepsHtml}
+        </div>
+        <div class="map-arrow-col">→</div>
+        <div class="map-side dest">
+          <div class="map-side-label dst-label">移行先 (${b.dstPlatform})</div>
+          ${dstStepsHtml}
+        </div>
+      </div>
+      ${b.reviewStatus !== 'none' ? `<div style="margin-top:8px;"><span class="badge ${REVIEW_STATUS[b.reviewStatus].cls}">レビュー: ${REVIEW_STATUS[b.reviewStatus].label}</span></div>` : ''}
+    </div>`;
+  }).join('');
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div style="text-align:center; padding:60px; color:#90a4ae; grid-column:1/-1;">該当するボットがありません</div>';
+  }
+}
+
+// ===== SOURCE TABLE =====
+function renderSourceTable() {
+  const search = document.getElementById('srcSearch').value.toLowerCase();
+  const fStatus = document.getElementById('srcFilterStatus').value;
+  const fDept = document.getElementById('srcFilterDept').value;
+
+  // Populate dept filter
+  const depts = [...new Set(bots.map(b => b.department))].sort();
+  const dSel = document.getElementById('srcFilterDept');
+  if (dSel.options.length <= 1) {
+    dSel.innerHTML = '<option value="">全部門</option>' + depts.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
+
+  let filtered = bots.filter(b => {
+    if (search && !(b.name.toLowerCase().includes(search) || b.id.toLowerCase().includes(search) || b.department.toLowerCase().includes(search))) return false;
+    if (fStatus && b.srcStatus !== fStatus) return false;
+    if (fDept && b.department !== fDept) return false;
+    return true;
+  });
+
+  const sk = sorts.source.key;
+  if (sk) {
+    filtered.sort((a, b) => {
+      let va = a[sk], vb = b[sk];
+      if (sk === 'srcStatus') { va = SRC_STATUS[va].order; vb = SRC_STATUS[vb].order; }
+      if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+      return (va < vb ? -1 : va > vb ? 1 : 0) * (sorts.source.asc ? 1 : -1);
+    });
+  }
+
+  document.getElementById('cntSource').textContent = filtered.length;
+
+  const checkIcon = '<span style="color:#2E7D32; font-weight:700;">&#10003;</span>';
+  const dotIcon = '<span style="color:#1976D2;">&#9679;</span>';
+  const emptyIcon = '<span style="color:#e0e0e0;">&#9675;</span>';
+
+  document.getElementById('srcTableBody').innerHTML = filtered.map(b => {
+    const realIdx = bots.indexOf(b);
+    const so = SRC_STATUS[b.srcStatus].order;
+
+    const bizStatus = so >= 2 ? checkIcon : so >= 1 ? dotIcon : emptyIcon;
+    const funcStatus = so >= 4 ? checkIcon : so >= 3 ? dotIcon : emptyIcon;
+    const ipoStatus = so >= 5 ? checkIcon : emptyIcon;
+
+    return `<tr>
+      <td style="font-size:11px; color:#90a4ae;">${b.id}</td>
+      <td><span class="rank ${RANK_CLS[b.rank]}">${b.rank}</span></td>
+      <td><strong style="font-size:13px;">${b.name}</strong><br><span style="font-size:11px; color:#90a4ae;">${b.srcSystem}</span></td>
+      <td>${b.department}<br><span style="font-size:11px; color:#90a4ae;">${b.owner}</span></td>
+      <td style="font-size:12px;">${b.srcPlatform}</td>
+      <td><span class="${SRC_STATUS[b.srcStatus].cls}" style="padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600;">${SRC_STATUS[b.srcStatus].label}</span></td>
+      <td style="text-align:center;">${bizStatus}<br><span style="font-size:9px; color:#90a4ae;">${b.bizReq ? b.bizReq.slice(0,15)+'...' : ''}</span></td>
+      <td style="text-align:center;">${funcStatus}<br><span style="font-size:9px; color:#90a4ae;">${b.funcReq ? b.funcReq.slice(0,15)+'...' : ''}</span></td>
+      <td style="text-align:center;">${ipoStatus}</td>
+      <td><span class="badge ${REVIEW_STATUS[b.reviewStatus].cls}" style="font-size:10px;">${REVIEW_STATUS[b.reviewStatus].label}</span></td>
+      <td><button class="btn btn-sm btn-outline" onclick="openBotModal(${realIdx})">&#x270E;</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== DESTINATION TABLE =====
+function renderDestTable() {
+  const search = document.getElementById('dstSearch').value.toLowerCase();
+  const fStatus = document.getElementById('dstFilterStatus').value;
+  const fCon = document.getElementById('dstFilterConsultant').value;
+
+  // Populate consultant filter
+  const cons = [...new Set(bots.map(b => b.consultant).filter(Boolean))].sort();
+  const cSel = document.getElementById('dstFilterConsultant');
+  if (cSel.options.length <= 1) {
+    cSel.innerHTML = '<option value="">全担当者</option>' + cons.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+
+  let filtered = bots.filter(b => {
+    if (search && !(b.name.toLowerCase().includes(search) || b.id.toLowerCase().includes(search) || b.consultant.toLowerCase().includes(search))) return false;
+    if (fStatus && b.dstStatus !== fStatus) return false;
+    if (fCon && b.consultant !== fCon) return false;
+    return true;
+  });
+
+  const sk = sorts.dest.key;
+  if (sk) {
+    filtered.sort((a, b) => {
+      let va = a[sk], vb = b[sk];
+      if (sk === 'dstStatus') { va = DST_STATUS[va].order; vb = DST_STATUS[vb].order; }
+      if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+      return (va < vb ? -1 : va > vb ? 1 : 0) * (sorts.dest.asc ? 1 : -1);
+    });
+  }
+
+  document.getElementById('cntDest').textContent = filtered.length;
+
+  const checkIcon = '<span style="color:#2E7D32; font-weight:700;">&#10003;</span>';
+  const dotIcon = '<span style="color:#F57C00;">&#9679;</span>';
+  const emptyIcon = '<span style="color:#e0e0e0;">&#9675;</span>';
+
+  document.getElementById('dstTableBody').innerHTML = filtered.map(b => {
+    const realIdx = bots.indexOf(b);
+    const do_ = DST_STATUS[b.dstStatus] ? DST_STATUS[b.dstStatus].order : 0;
+    const isBlocked = b.dstStatus === 'blocked';
+
+    const designS = do_ >= 2 ? checkIcon : do_ === 1 ? dotIcon : emptyIcon;
+    const implS = do_ >= 3 ? checkIcon : do_ === 2 ? dotIcon : emptyIcon;
+    const testS = do_ >= 4 ? checkIcon : do_ === 3 ? dotIcon : emptyIcon;
+    const uatS = do_ >= 4 ? checkIcon : emptyIcon;
+
+    const modHtml = b.mods.length > 0 ? b.mods.slice(0,3).map(m =>
+      `<div style="font-size:11px; margin:2px 0;"><span style="color:#90a4ae;">${m.date.slice(5)}</span> <span style="color:${m.type==='fix'?'#c62828':m.type==='change'?'#F57C00':'#1565C0'};">[${m.type==='fix'?'修正':m.type==='change'?'変更':m.type==='add'?'追加':'メモ'}]</span> ${m.text.slice(0,20)}${m.text.length>20?'...':''}</div>`
+    ).join('') + (b.mods.length > 3 ? `<div style="font-size:10px; color:#90a4ae;">他${b.mods.length-3}件</div>` : '') : '<span style="color:#e0e0e0;">—</span>';
+
+    return `<tr${isBlocked ? ' style="background:#fff5f5;"' : ''}>
+      <td style="font-size:11px; color:#90a4ae;">${b.id}</td>
+      <td><span class="rank ${RANK_CLS[b.rank]}">${b.rank}</span></td>
+      <td><strong style="font-size:13px;">${b.name}</strong></td>
+      <td style="font-size:12px;">${b.dstPlatform}</td>
+      <td><span class="badge ${isBlocked ? 'badge-blocked' : DST_STATUS[b.dstStatus].cls.replace('dst-','badge-')}">${isBlocked ? 'ブロック' : DST_STATUS[b.dstStatus].label}</span></td>
+      <td>${b.consultant}</td>
+      <td style="text-align:center;">${designS}</td>
+      <td style="text-align:center;">${implS}</td>
+      <td style="text-align:center;">${testS}</td>
+      <td style="text-align:center;">${uatS}</td>
+      <td style="max-width:180px;">${modHtml}</td>
+      <td><button class="btn btn-sm btn-outline" onclick="openBotModal(${realIdx})">&#x270E;</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== CONSULTANT VIEW =====
+function renderConsultant() {
+  const byC = {};
+  bots.forEach(b => {
+    if (!byC[b.consultant]) byC[b.consultant] = [];
+    byC[b.consultant].push(b);
+  });
+
+  document.getElementById('consultantGrid').innerHTML = Object.entries(byC).sort((a,b) => a[0].localeCompare(b[0])).map(([name, list]) => {
+    const active = list.filter(b => ['designing','implementing','testing'].includes(b.dstStatus)).length;
+    const done = list.filter(b => b.dstStatus === 'done').length;
+    const analyzing = list.filter(b => ['biz_analyzing','func_analyzing'].includes(b.srcStatus)).length;
+    const totalHours = list.reduce((s, b) => s + (b.estimate || 0), 0);
+
+    const botRows = list
+      .sort((a, b) => {
+        const ao = DST_STATUS[a.dstStatus] ? DST_STATUS[a.dstStatus].order : -1;
+        const bo = DST_STATUS[b.dstStatus] ? DST_STATUS[b.dstStatus].order : -1;
+        return ao - bo;
+      })
+      .slice(0, 15)
+      .map(b => {
+        const srcPct = SRC_STATUS[b.srcStatus].pct;
+        const dstPct = DST_STATUS[b.dstStatus] ? DST_STATUS[b.dstStatus].pct : 0;
+        return `<div class="consultant-bot">
+          <span style="color:#90a4ae; width:60px; flex-shrink:0;">${b.id}</span>
+          <span style="flex:1; font-weight:600;">${b.name.slice(0,12)}${b.name.length>12?'..':''}</span>
+          <span class="rank ${RANK_CLS[b.rank]}" style="width:18px; height:18px; line-height:18px; font-size:9px;">${b.rank}</span>
+          <div class="dual-progress">
+            <div class="dp-bar"><div class="dp-fill" style="width:${srcPct}%; background:#7B1FA2;"></div></div>
+            <div class="dp-bar"><div class="dp-fill" style="width:${dstPct}%; background:#1976D2;"></div></div>
+          </div>
+        </div>`;
+      }).join('');
+
+    return `<div class="consultant-card">
+      <div class="consultant-header">
+        <div class="consultant-name">${name}</div>
+        <div class="consultant-stats">
+          <div class="consultant-stat"><strong>${list.length}</strong>担当</div>
+          <div class="consultant-stat"><strong>${active}</strong>対応中</div>
+          <div class="consultant-stat"><strong>${done}</strong>完了</div>
+          <div class="consultant-stat"><strong>${totalHours}h</strong>工数</div>
+        </div>
+      </div>
+      <div class="consultant-bots">
+        <div style="display:flex; justify-content:flex-end; gap:16px; font-size:9px; color:#90a4ae; margin-bottom:4px;">
+          <span style="color:#7B1FA2;">&#9632;分析</span>
+          <span style="color:#1976D2;">&#9632;開発</span>
+        </div>
+        ${botRows}
+        ${list.length > 15 ? `<div style="text-align:center; font-size:11px; color:#90a4ae; margin-top:8px;">他 ${list.length - 15} 件</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== SORT =====
+function sortTable(tab, key) {
+  if (sorts[tab].key === key) sorts[tab].asc = !sorts[tab].asc;
+  else { sorts[tab].key = key; sorts[tab].asc = true; }
+  if (tab === 'source') renderSourceTable();
+  else renderDestTable();
+}
+
+// ===== BOT MODAL =====
+function openBotModal(idx) {
+  const isNew = idx < 0;
+  document.getElementById('editIdx').value = idx;
+  document.getElementById('modalTitle').textContent = isNew ? 'ボット追加' : 'ボット編集: ' + bots[idx].name;
+  document.getElementById('modLogSection').style.display = isNew ? 'none' : 'block';
+
+  if (isNew) {
+    document.getElementById('fName').value = '';
+    document.getElementById('fBotId').value = 'BOT-' + String(bots.length+1).padStart(3,'0');
+    document.getElementById('fDept').value = '';
+    document.getElementById('fOwner').value = '';
+    document.getElementById('fRank').value = 'B';
+    document.getElementById('fPattern').value = '転記型';
+    document.getElementById('fSrcPlatform').value = 'BizRobo!';
+    document.getElementById('fSrcStatus').value = 'not_started';
+    document.getElementById('fBizReq').value = '';
+    document.getElementById('fFuncReq').value = '';
+    document.getElementById('fSrcSystem').value = '';
+    document.getElementById('fReviewStatus').value = 'none';
+    document.getElementById('fIpoMemo').value = '';
+    document.getElementById('fDstPlatform').value = 'aKaBot';
+    document.getElementById('fDstStatus').value = 'pending';
+    document.getElementById('fConsultant').value = '';
+    document.getElementById('fEstimate').value = '';
+    document.getElementById('fNotes').value = '';
+  } else {
+    const b = bots[idx];
+    document.getElementById('fName').value = b.name;
+    document.getElementById('fBotId').value = b.id;
+    document.getElementById('fDept').value = b.department;
+    document.getElementById('fOwner').value = b.owner;
+    document.getElementById('fRank').value = b.rank;
+    document.getElementById('fPattern').value = b.pattern;
+    document.getElementById('fSrcPlatform').value = b.srcPlatform;
+    document.getElementById('fSrcStatus').value = b.srcStatus;
+    document.getElementById('fBizReq').value = b.bizReq || '';
+    document.getElementById('fFuncReq').value = b.funcReq || '';
+    document.getElementById('fSrcSystem').value = b.srcSystem || '';
+    document.getElementById('fReviewStatus').value = b.reviewStatus || 'none';
+    document.getElementById('fIpoMemo').value = b.ipoMemo || '';
+    document.getElementById('fDstPlatform').value = b.dstPlatform;
+    document.getElementById('fDstStatus').value = b.dstStatus;
+    document.getElementById('fConsultant').value = b.consultant;
+    document.getElementById('fEstimate').value = b.estimate || '';
+    document.getElementById('fNotes').value = b.notes || '';
+    renderModPreview(idx);
+  }
+  document.getElementById('botModal').classList.add('active');
+}
+
+function closeBotModal() {
+  document.getElementById('botModal').classList.remove('active');
+}
+
+function saveBot() {
+  const idx = parseInt(document.getElementById('editIdx').value);
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { alert('ボット名を入力してください'); return; }
+
+  const data = {
+    id: document.getElementById('fBotId').value.trim() || 'BOT-' + String(bots.length+1).padStart(3,'0'),
+    name: name,
+    department: document.getElementById('fDept').value.trim(),
+    owner: document.getElementById('fOwner').value.trim(),
+    rank: document.getElementById('fRank').value,
+    pattern: document.getElementById('fPattern').value,
+    srcPlatform: document.getElementById('fSrcPlatform').value,
+    srcStatus: document.getElementById('fSrcStatus').value,
+    bizReq: document.getElementById('fBizReq').value.trim(),
+    funcReq: document.getElementById('fFuncReq').value.trim(),
+    srcSystem: document.getElementById('fSrcSystem').value.trim(),
+    reviewStatus: document.getElementById('fReviewStatus').value,
+    ipoMemo: document.getElementById('fIpoMemo').value.trim(),
+    dstPlatform: document.getElementById('fDstPlatform').value,
+    dstStatus: document.getElementById('fDstStatus').value,
+    consultant: document.getElementById('fConsultant').value.trim(),
+    estimate: parseInt(document.getElementById('fEstimate').value) || 0,
+    notes: document.getElementById('fNotes').value.trim(),
+    updated: new Date().toISOString().slice(0,10),
+  };
+
+  if (idx >= 0) {
+    Object.assign(bots[idx], data);
+  } else {
+    bots.push({ ...data, mods: [], created: new Date().toISOString().slice(0,10) });
+  }
+
+  closeBotModal();
+  refreshAll();
+  saveData();
+}
+
+function renderModPreview(idx) {
+  const b = bots[idx];
+  document.getElementById('fModPreview').innerHTML = b.mods.length > 0 ?
+    b.mods.map(m => `<div style="font-size:12px; margin:3px 0;"><span style="color:#90a4ae;">${m.date}</span> <span style="color:${m.type==='fix'?'#c62828':m.type==='change'?'#F57C00':'#1565C0'};">[${m.type==='fix'?'修正':m.type==='change'?'変更':m.type==='add'?'追加':'メモ'}]</span> ${m.text}</div>`).join('') :
+    '<span style="color:#bdbdbd; font-size:12px;">修正ログなし</span>';
+}
+
+function addModLog() {
+  const idx = parseInt(document.getElementById('editIdx').value);
+  if (idx < 0) return;
+  const text = document.getElementById('fModText').value.trim();
+  if (!text) return;
+  bots[idx].mods.unshift({
+    date: new Date().toISOString().slice(0,10),
+    type: document.getElementById('fModType').value,
+    text: text
+  });
+  document.getElementById('fModText').value = '';
+  renderModPreview(idx);
+}
+
+// ===== EXPORT =====
+function exportCSV(type) {
+  let headers, rows;
+  if (type === 'source') {
+    headers = ['ID','ランク','ボット名','部門','担当者','移行元','分析ステータス','業務要件','機能要件','レビュー'];
+    rows = bots.map(b => [b.id, b.rank, b.name, b.department, b.owner, b.srcPlatform, SRC_STATUS[b.srcStatus].label, b.bizReq, b.funcReq, REVIEW_STATUS[b.reviewStatus].label]);
+  } else {
+    headers = ['ID','ランク','ボット名','移行先','開発ステータス','担当コンサルタント','見積工数','修正件数'];
+    rows = bots.map(b => [b.id, b.rank, b.name, b.dstPlatform, DST_STATUS[b.dstStatus].label, b.consultant, b.estimate, b.mods.length]);
+  }
+
+  const csv = [headers.join(','), ...rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(','))].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `hmm_${type}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function exportJSON(type) {
+  const data = type === 'source' ?
+    bots.map(b => ({ id:b.id, rank:b.rank, name:b.name, department:b.department, owner:b.owner, srcPlatform:b.srcPlatform, srcStatus:b.srcStatus, bizReq:b.bizReq, funcReq:b.funcReq, reviewStatus:b.reviewStatus })) :
+    bots.map(b => ({ id:b.id, rank:b.rank, name:b.name, dstPlatform:b.dstPlatform, dstStatus:b.dstStatus, consultant:b.consultant, estimate:b.estimate, mods:b.mods }));
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `hmm_${type}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+// ===== PERSISTENCE =====
+function saveData() {
+  try {
+    localStorage.setItem('hmm_tracker_bots', JSON.stringify(bots));
+    localStorage.setItem('hmm_tracker_project', document.getElementById('projectName').value);
+  } catch(e) {}
+}
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem('hmm_tracker_bots');
+    if (saved) bots = JSON.parse(saved);
+    const proj = localStorage.getItem('hmm_tracker_project');
+    if (proj) document.getElementById('projectName').value = proj;
+  } catch(e) {}
+}
+
+// ===== REFRESH =====
+function refreshAll() {
+  document.getElementById('lastUpdate').textContent = new Date().toLocaleString('ja-JP');
+  renderOverview();
+  renderMapping();
+  renderSourceTable();
+  renderDestTable();
+  renderConsultant();
+}
+
+// ===== INIT =====
+bots = generateSampleBots();
+loadData();
+refreshAll();
+</script>
+
+</body>
+</html>
