@@ -1,4 +1,5 @@
 """難易度分類 - A/B/C/Dランク判定・リスクフラグ付与"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

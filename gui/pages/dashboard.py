@@ -1,4 +1,6 @@
-"""ダッシュボード - 全体進捗・KPI・統計"""
+"""InsightMigration - ダッシュボード (全体進捗・KPI・統計)
+Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
+"""
 from __future__ import annotations
 
 import pandas as pd
@@ -23,8 +25,8 @@ STATUS_COLORS = {
 
 
 def render(config: Config, db: MigrationDB) -> None:
-    st.markdown('<div class="main-header">📊 移行ダッシュボード</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-header">120本ロボットの移行進捗をリアルタイムで管理</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header">🔷 InsightMigration ダッシュボード</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">RPA移行進捗をリアルタイムで管理 — Powered by InsightMigration</div>', unsafe_allow_html=True)
 
     summary = db.get_summary()
     records = db.get_all_records()

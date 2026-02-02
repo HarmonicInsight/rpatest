@@ -1,4 +1,5 @@
 """ロボット一覧・詳細・一括操作画面"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 from pathlib import Path

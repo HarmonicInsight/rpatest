@@ -1,4 +1,5 @@
 """命名規則チェッカー - プロジェクト名・ワークフロー名・変数名の規則準拠チェック"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

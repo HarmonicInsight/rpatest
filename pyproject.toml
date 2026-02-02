@@ -3,9 +3,13 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
-name = "bizrobo-akabot-migration"
+name = "insight-migration"
 version = "1.0.0"
-description = "BizRobo → aKaBot 移行自動化フレームワーク"
+description = "InsightMigration - RPA移行自動化フレームワーク (BizRobo → aKaBot)"
+authors = [
+    {name = "HarmonicInsight / FPT Consulting Japan"},
+]
+license = {text = "Proprietary"}
 requires-python = ">=3.10"
 dependencies = [
     "pyyaml>=6.0",
@@ -16,6 +20,9 @@ dependencies = [
     "pytest>=7.4",
     "rich>=13.0",
     "click>=8.1",
+    "streamlit>=1.30",
+    "plotly>=5.18",
+    "pandas>=2.0",
 ]
 
 [project.optional-dependencies]

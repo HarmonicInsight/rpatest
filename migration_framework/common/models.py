@@ -1,4 +1,5 @@
 """移行フレームワーク共通データモデル"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import enum
@@ -195,3 +196,44 @@ class MigrationRecord:
     manual_items: str = ""
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
+
+
+# --- Phase 5: デプロイ関連 ---
+
+class DeploymentStatus(str, enum.Enum):
+    PENDING = "pending"
+    PACKAGING = "packaging"
+    UPLOADING = "uploading"
+    CONFIGURING = "configuring"
+    HEALTH_CHECK = "health_check"
+    DEPLOYED = "deployed"
+    PARTIAL = "partial"       # 一部端末のみ成功
+    FAILED = "failed"
+    ROLLED_BACK = "rolled_back"
+
+
+@dataclass
+class MachineInfo:
+    """デプロイ先マシン(端末)情報"""
+    name: str
+    machine_id: int
+    ip_address: str = ""
+    environment: str = "Production"   # Production / Staging / Development
+    os_type: str = "Windows"
+    status: str = "Available"
+    agent_version: str = ""
+    tags: list[str] = field(default_factory=list)
+
+
+@dataclass
+class DeploymentRecord:
+    """デプロイ結果レコード"""
+    project_name: str
+    target_machines: list[str] = field(default_factory=list)
+    status: DeploymentStatus = DeploymentStatus.PENDING
+    package_path: str = ""
+    package_id: str = ""
+    process_id: str = ""
+    health_results: dict[str, bool] = field(default_factory=dict)
+    error_message: str = ""
+    deployed_at: datetime = field(default_factory=datetime.now)

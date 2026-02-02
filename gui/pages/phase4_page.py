@@ -1,4 +1,5 @@
 """Phase 4: テスト画面 - 自動テスト実行・結果比較・レポート生成"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 from pathlib import Path

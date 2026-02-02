@@ -1,4 +1,5 @@
 """設定画面 - フレームワーク設定・接続情報・エクスポート"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import json
