@@ -951,7 +951,7 @@
       <strong>PM</strong> … 1名<br>
       <strong>アーキテクト</strong> … 1名<br>
       <strong>開発リーダー</strong> … 1-2名<br>
-      <strong>開発者</strong> … 4-6名<br>
+      <strong>開発者/SE</strong> … 4-6名<br>
       <strong>テスター</strong> … 2-3名<br>
       <strong>業務コンサル</strong> … 1-2名<br>
     </div>
@@ -968,7 +968,7 @@
     </div>
     <div style="font-size:13px; color:#37474f; line-height:1.8;">
       <strong>HMMリード</strong> … 1名<br>
-      <strong>移行オペレーター</strong> … 1-2名<br>
+      <strong>移行コンサルタント</strong> … 1-2名<br>
       <strong>レビューサポート</strong> … 1名<br>
       <br><br><br>
     </div>
@@ -999,18 +999,19 @@
     </td>
   </tr>
   <tr>
-    <td><strong>移行オペレーター</strong></td>
+    <td><strong>移行コンサルタント</strong></td>
     <td style="text-align:center;">1-2名</td>
     <td>
       ・InsightMigrationツールの操作<br>
       ・AI出力結果のチェック・修正<br>
-      ・変換後コードの微調整<br>
-      ・テスト実行・結果確認
+      ・変換後コードの品質確認<br>
+      ・テスト実行・結果確認<br>
+      ・顧客への技術的な説明
     </td>
     <td>
       ・基本的なプログラミング知識<br>
-      ・ツール操作ができれば可<br>
-      ・判断力より正確性重視
+      ・HMM方式の理解<br>
+      ・顧客対応力
     </td>
   </tr>
   <tr>
@@ -1088,7 +1089,7 @@
   <ul style="margin:8px 0 0 16px; line-height:2;">
     <li><strong>AI がIPO抽出を自動化</strong> → 従来の「業務コンサル」「アーキテクト」の工数が不要</li>
     <li><strong>ポータルが要件収集を自動化</strong> → 従来の「ヒアリング担当SE」の工数が不要</li>
-    <li><strong>ツールが変換・検証を自動化</strong> → 従来の「開発者4-6名」が「オペレーター1-2名」に</li>
+    <li><strong>ツールが変換・検証を自動化</strong> → 従来の「開発者4-6名」が「コンサルタント1-2名」に</li>
     <li><strong>ポータルがテスト管理を自動化</strong> → 従来の「テスター2-3名」が「レビューサポート1名」に</li>
   </ul>
 </div>
@@ -1134,7 +1135,231 @@
 </div>
 
 <!-- ==================== Section 12 ==================== -->
-<h2 class="page-break"><span class="num">12</span> まとめ</h2>
+<h2 class="page-break"><span class="num">12</span> スループット試算（120本移行の場合）</h2>
+
+<h3>12.1 ランク別・パターン別の現実的な所要時間</h3>
+
+<p>
+  HMMツール（InsightMigration）を活用した場合でも、コンサルタントの1日は
+  ツール操作だけではありません。顧客とのやり取り、IPO定義の確認、テスト環境の準備、
+  問い合わせ対応、コンテキストスイッチなど、<strong>実際の業務オーバーヘッド</strong>を含めた
+  現実的な所要時間を示します。
+</p>
+
+<h4>Aランク（簡単）— 1日3-5本ペース</h4>
+
+<table>
+  <tr><th>作業ステップ</th><th>内容</th><th>現実的な所要時間</th></tr>
+  <tr><td>① ソース確認</td><td>BizRoboのXML/設定を開いて概要を把握</td><td>15-20分</td></tr>
+  <tr><td>② IPO抽出実行</td><td>ツール実行 → AI出力結果を確認・微調整</td><td>30-45分</td></tr>
+  <tr><td>③ 顧客レビュー依頼</td><td>ポータルにIPO公開、担当者にメール送信</td><td>10-15分</td></tr>
+  <tr><td>④ レビュー回答確認</td><td>回答内容を読み、不明点があればチャットで確認</td><td>15-30分</td></tr>
+  <tr><td>⑤ 実装・変換</td><td>ツールで自動変換 → 出力結果の確認・調整</td><td>30分-1時間</td></tr>
+  <tr><td>⑥ テスト実行</td><td>テストデータ準備、実行、結果確認</td><td>30-45分</td></tr>
+  <tr><td>⑦ 顧客UAT依頼</td><td>テスト結果をポータル公開、確認依頼</td><td>10-15分</td></tr>
+  <tr>
+    <td colspan="2" style="font-weight:700; text-align:right;">1本あたり合計（実作業）</td>
+    <td style="font-weight:700; color:#34a853; font-size:16px;">約半日（2-4時間）</td>
+  </tr>
+</table>
+
+<p style="font-size:13px; color:#546e7a;">
+  <strong>典型的な1日:</strong> 午前中にAランク2本のIPO抽出〜変換、午後にもう1-2本＋前日分の顧客回答対応。
+  実際にはレビュー待ちの間に別のロボットを並行処理するため、「着手→完了」は数日かかることが多い。
+</p>
+
+<h4>Bランク（中程度）— 1日1-2本ペース</h4>
+
+<table>
+  <tr><th>作業ステップ</th><th>内容</th><th>現実的な所要時間</th></tr>
+  <tr><td>① ソース解析</td><td>Web操作・Excel連携・条件分岐の構造を理解</td><td>30分-1時間</td></tr>
+  <tr><td>② IPO抽出・精査</td><td>AI出力の条件分岐ロジックが正しいか精査、必要に応じ修正</td><td>1-1.5時間</td></tr>
+  <tr><td>③ 顧客レビュー</td><td>IPO公開、特に条件分岐・例外処理の認識合わせ</td><td>30分</td></tr>
+  <tr><td>④ レビュー対応</td><td>顧客からの指摘対応、追加ヒアリング（チャット/電話）</td><td>30分-1時間</td></tr>
+  <tr><td>⑤ 実装・調整</td><td>自動変換後、Web操作部分のセレクタ調整、Excel処理の確認</td><td>2-3時間</td></tr>
+  <tr><td>⑥ テスト</td><td>テストデータ準備が複雑、正常系＋異常系のテスト</td><td>1-2時間</td></tr>
+  <tr><td>⑦ UAT対応</td><td>顧客テスト結果のフォロー、修正があれば対応</td><td>30分-1時間</td></tr>
+  <tr>
+    <td colspan="2" style="font-weight:700; text-align:right;">1本あたり合計（実作業）</td>
+    <td style="font-weight:700; color:#1a73e8; font-size:16px;">約1日（6-10時間）</td>
+  </tr>
+</table>
+
+<p style="font-size:13px; color:#546e7a;">
+  <strong>典型的な1日:</strong> 1本のBランクロボットに集中。午前にIPO精査＋実装、午後にテスト＋前日分のレビュー対応。
+  順調なら午後に2本目に着手。顧客からの追加質問が入ると1本で1日を使い切ることも。
+</p>
+
+<h4>Cランク（複雑）— 2-3日で1本ペース</h4>
+
+<table>
+  <tr><th>作業ステップ</th><th>内容</th><th>現実的な所要時間</th></tr>
+  <tr><td>① ソース解析</td><td>SAP/基幹連携、複数システム跨ぎの全体把握</td><td>1-2時間</td></tr>
+  <tr><td>② IPO抽出・設計判断</td><td>API化の判断、接続方式の再設計検討</td><td>2-3時間</td></tr>
+  <tr><td>③ 顧客との認識合わせ</td><td>業務フローの確認、例外パターンの洗い出し</td><td>1-2時間</td></tr>
+  <tr><td>④ 実装</td><td>自動変換＋手動調整（SAP接続設定、DB接続等）</td><td>4-8時間</td></tr>
+  <tr><td>⑤ テスト</td><td>テスト環境構築、正常系＋異常系＋境界値テスト</td><td>2-4時間</td></tr>
+  <tr><td>⑥ 修正・再テスト</td><td>ほぼ確実に初回テストで問題が出る → 修正 → 再テスト</td><td>2-4時間</td></tr>
+  <tr><td>⑦ UAT・最終確認</td><td>顧客と一緒に動作確認（オンライン会議の場合も）</td><td>1-2時間</td></tr>
+  <tr>
+    <td colspan="2" style="font-weight:700; text-align:right;">1本あたり合計（実作業）</td>
+    <td style="font-weight:700; color:#f9ab00; font-size:16px;">2-3日（13-25時間）</td>
+  </tr>
+</table>
+
+<h4>Dランク（高難度）— 3-5日で1本ペース</h4>
+
+<table>
+  <tr><th>作業ステップ</th><th>内容</th><th>現実的な所要時間</th></tr>
+  <tr><td>① ソース解析・調査</td><td>OCR/画像認識、特殊ロジックの理解。場合により現行動作の観察</td><td>2-4時間</td></tr>
+  <tr><td>② IPO設計・方針決定</td><td>AI出力では不十分な部分をリードと協議、代替方式の検討</td><td>3-4時間</td></tr>
+  <tr><td>③ 顧客折衝</td><td>現行の例外パターンが多く、1回では終わらない</td><td>2-4時間（複数回）</td></tr>
+  <tr><td>④ 実装（手動比率高い）</td><td>自動変換のカバー率が低い、手動でのコーディング・設定が多い</td><td>8-16時間</td></tr>
+  <tr><td>⑤ テスト・デバッグ</td><td>OCRの認識率調整、例外パターンの網羅的テスト</td><td>4-8時間</td></tr>
+  <tr><td>⑥ 再実装・再テスト</td><td>テスト結果による手戻りが発生する確率が高い</td><td>4-8時間</td></tr>
+  <tr><td>⑦ UAT（複数回）</td><td>顧客テストで追加の問題が見つかる可能性が高い</td><td>2-4時間</td></tr>
+  <tr>
+    <td colspan="2" style="font-weight:700; text-align:right;">1本あたり合計（実作業）</td>
+    <td style="font-weight:700; color:#ea4335; font-size:16px;">3-5日（25-48時間）</td>
+  </tr>
+</table>
+
+<div class="callout callout-warning">
+  <div class="callout-title">現実的な見積もりのポイント</div>
+  <ul style="margin:8px 0 0 16px; line-height:2;">
+    <li><strong>ツール操作時間 ≠ 実際の所要時間</strong> — IPO抽出がAIで数分でも、結果の確認・精査・顧客との擦り合わせに何倍もかかる</li>
+    <li><strong>コンテキストスイッチのコスト</strong> — 1日に5種類のロボットを触ると、それぞれの業務背景を思い出す時間がかかる</li>
+    <li><strong>顧客レスポンスの待ち時間</strong> — 回答が翌日〜数日後になることが多く、その間は別作業に切り替え → 戻る時のコストが発生</li>
+    <li><strong>テストの手戻り</strong> — C/Dランクは初回で通ることはまずない。修正→再テストのサイクルが1-3回発生する前提で見積もる</li>
+    <li><strong>1日の実質作業時間は6時間</strong> — 会議、メール、報告、休憩等を考慮すると8時間フルで作業できる日はない</li>
+  </ul>
+</div>
+
+<h3>12.2 コンサルタント1人あたりの月間スループット</h3>
+
+<p>
+  HMMにおける移行担当者は、従来の「開発者」や「SE」ではなく<strong>「コンサルタント」</strong>です。
+  コード実装の大部分はAI＋ツールが行い、人間の仕事は<strong>判断・レビュー・顧客対応・品質確認</strong>です。
+  以下は1ヶ月（稼働20日、実質作業6時間/日 = 120時間）での現実的なスループットです。
+</p>
+
+<table>
+  <tr>
+    <th>スキルレベル</th>
+    <th>月間スループット</th>
+    <th>典型的な1週間の内訳</th>
+    <th>備考</th>
+  </tr>
+  <tr>
+    <td><strong>HMMリード（経験者）</strong></td>
+    <td style="font-size:20px; font-weight:700; color:#1565C0; text-align:center;">20-30本/月</td>
+    <td>
+      月: A×2本 + レビュー対応<br>
+      火: B×1本 + A×1本<br>
+      水: B×1本 + 顧客折衝<br>
+      木: C×1本（着手→翌日）<br>
+      金: C×1本（完了） + 報告
+    </td>
+    <td>HMM方式を熟知。<br>判断が速く無駄が少ない。<br>難しいものも自力で解決可能。</td>
+  </tr>
+  <tr>
+    <td><strong>コンサルタント（標準）</strong></td>
+    <td style="font-size:20px; font-weight:700; color:#1976D2; text-align:center;">10-18本/月</td>
+    <td>
+      月: A×2本<br>
+      火: B×1本<br>
+      水: B×1本 + レビュー対応<br>
+      木: 前日の修正 + A×1本<br>
+      金: C×1本（着手のみ）
+    </td>
+    <td>HMM研修後の標準レベル。<br>C/Dランクはリードに相談が必要。<br>顧客対応に慣れてくると加速。</td>
+  </tr>
+  <tr>
+    <td><strong>オペレーター（初級）</strong></td>
+    <td style="font-size:20px; font-weight:700; color:#546e7a; text-align:center;">6-12本/月</td>
+    <td>
+      月: A×1本 + ツール操作学習<br>
+      火: A×1本<br>
+      水: B×1本（時間がかかる）<br>
+      木: B×1本（続き）<br>
+      金: レビュー対応 + 報告
+    </td>
+    <td>ツール操作は可能だが<br>判断に時間がかかる。<br>A/Bランク中心に担当。</td>
+  </tr>
+</table>
+
+<h3>12.3 120本移行のスケジュールモデル</h3>
+
+<p>
+  120本の典型的な構成（A:40本、B:50本、C:20本、D:10本）を想定した場合のモデルです。
+</p>
+
+<!-- Schedule model visual -->
+<div style="background:#0d1b2a; border-radius:12px; padding:28px 20px; margin:28px 0;">
+  <div style="text-align:center; color:#64B5F6; font-size:13px; font-weight:700; letter-spacing:2px; margin-bottom:20px;">
+    120本移行スケジュールモデル（リード1名 + コンサルタント2名 + レビューサポート1名）
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:8px; max-width:600px; margin:0 auto;">
+    <!-- Week 1-2 -->
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="background:#1976D2; color:#fff; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; min-width:90px; text-align:center;">Week 1-2</div>
+      <div style="background:#1a2940; border:1px solid #2a3a4e; border-radius:8px; padding:10px 16px; flex:1;">
+        <div style="font-size:13px; color:#e0e0e0; font-weight:600;">パイロット: 10本（Aランク）</div>
+        <div style="font-size:11px; color:#90a4ae; margin-top:4px;">ツール・プロセスの検証、顧客との連携確認</div>
+      </div>
+    </div>
+    <!-- Week 3-4 -->
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="background:#34a853; color:#fff; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; min-width:90px; text-align:center;">Week 3-4</div>
+      <div style="background:#1a2940; border:1px solid #2E7D32; border-radius:8px; padding:10px 16px; flex:1;">
+        <div style="font-size:13px; color:#A5D6A7; font-weight:600;">Aランク残り30本 + Bランク20本 = 50本</div>
+        <div style="font-size:11px; color:#90a4ae; margin-top:4px;">簡単なロボットを一気に処理、並行してレビュー依頼</div>
+      </div>
+    </div>
+    <!-- Week 5-6 -->
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="background:#1a73e8; color:#fff; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; min-width:90px; text-align:center;">Week 5-6</div>
+      <div style="background:#1a2940; border:1px solid #1976D2; border-radius:8px; padding:10px 16px; flex:1;">
+        <div style="font-size:13px; color:#90CAF9; font-weight:600;">Bランク残り30本 = 30本</div>
+        <div style="font-size:11px; color:#90a4ae; margin-top:4px;">Web操作・Excel連携系を集中処理</div>
+      </div>
+    </div>
+    <!-- Week 7-10 -->
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="background:#F57C00; color:#fff; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; min-width:90px; text-align:center;">Week 7-10</div>
+      <div style="background:#1a2940; border:1px solid #F57C00; border-radius:8px; padding:10px 16px; flex:1;">
+        <div style="font-size:13px; color:#FFCC80; font-weight:600;">C/Dランク 30本（複雑）</div>
+        <div style="font-size:11px; color:#90a4ae; margin-top:4px;">SAP連携・OCR等の高難度ロボット、個別対応が必要</div>
+      </div>
+    </div>
+    <!-- Week 11-12 -->
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="background:#2E7D32; color:#fff; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; min-width:90px; text-align:center;">Week 11-12</div>
+      <div style="background:#1a2940; border:1px solid #2E7D32; border-radius:8px; padding:10px 16px; flex:1;">
+        <div style="font-size:13px; color:#A5D6A7; font-weight:600;">並行稼働・最終確認・切替</div>
+        <div style="font-size:11px; color:#90a4ae; margin-top:4px;">UAT完了、本番移行、ドキュメント整備</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:20px; font-size:13px; color:#90CAF9; font-weight:600;">
+    合計: 約3ヶ月（12週間）で120本の移行完了<br>
+    <span style="color:#90a4ae; font-weight:400; font-size:12px;">リード1名(月20-30本) + コンサルタント2名(月10-18本×2) = チーム合計 月40-65本</span>
+  </div>
+</div>
+
+<div class="callout callout-warning">
+  <div class="callout-title">スループットの最大のボトルネック</div>
+  コンサルタントの処理能力ではなく、<strong>顧客側のレスポンス速度</strong>が最大のボトルネックです。<br>
+  レビュー回答、テスト実行、承認——これらは全て顧客側のアクションです。<br>
+  レビューサポート担当がコールセンター型でフォローアップすることで、このボトルネックを最小化します。<br><br>
+  <strong>コンサルタント1人のスループット:</strong> 月10-30本（スキルレベルとランク構成による）<br>
+  <strong>顧客側のスループット:</strong> 週10-15本のレビュー完了が現実的な上限
+</div>
+
+<!-- ==================== Section 13 ==================== -->
+<h2 class="page-break"><span class="num">13</span> まとめ</h2>
 
 <div class="callout callout-dark">
   <div class="callout-title">Harmonic Migration Method — 4つの要点</div>
