@@ -599,23 +599,247 @@
 </div>
 
 <!-- ==================== Section 9 ==================== -->
-<h2 class="page-break"><span class="num">09</span> まとめ</h2>
+<h2 class="page-break"><span class="num">09</span> AI時代の要件定義</h2>
+
+<h3>9.1 従来型の要件定義</h3>
+
+<p>
+  従来のシステム移行・要件定義では、エンジニアが業務担当者を<strong>一人ひとり訪問してインタビュー</strong>し、
+  ヒアリング結果を手動で取りまとめる方式が一般的でした。
+</p>
+
+<!-- Comparison diagram: Traditional vs AI-era -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:28px 0;">
+
+  <!-- Traditional -->
+  <div style="background:#fff; border-radius:12px; border:2px solid #e0e0e0; padding:28px; position:relative;">
+    <div style="text-align:center; margin-bottom:20px;">
+      <span style="background:#9e9e9e; color:#fff; padding:4px 16px; border-radius:12px; font-size:12px; font-weight:700; letter-spacing:1px;">従来型</span>
+      <h4 style="margin-top:8px; font-size:18px; color:#546e7a;">対面ヒアリング方式</h4>
+    </div>
+
+    <!-- Visual: Engineer visiting people one by one -->
+    <div style="background:#f5f5f5; border-radius:10px; padding:24px; text-align:center;">
+      <div style="font-size:40px; margin-bottom:8px;">&#x1F464;</div>
+      <div style="font-size:13px; font-weight:600; color:#1b2a4a; margin-bottom:16px;">エンジニア</div>
+
+      <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+        <div style="text-align:center;">
+          <div style="font-size:11px; color:#90a4ae;">訪問①</div>
+          <div style="font-size:24px;">&#x1F3E2;→&#x1F464;</div>
+          <div style="font-size:11px; color:#546e7a;">経理部 田中さん</div>
+          <div style="font-size:10px; color:#90a4ae;">1.5時間</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:11px; color:#90a4ae;">訪問②</div>
+          <div style="font-size:24px;">&#x1F3E2;→&#x1F464;</div>
+          <div style="font-size:11px; color:#546e7a;">営業部 鈴木さん</div>
+          <div style="font-size:10px; color:#90a4ae;">1.5時間</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:11px; color:#90a4ae;">訪問③</div>
+          <div style="font-size:24px;">&#x1F3E2;→&#x1F464;</div>
+          <div style="font-size:11px; color:#546e7a;">物流部 山田さん</div>
+          <div style="font-size:10px; color:#90a4ae;">1.5時間</div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px; font-size:24px;">&#x2B07;</div>
+
+      <div style="display:flex; justify-content:center; gap:8px; margin-top:8px;">
+        <div style="background:#fff; border:1px solid #e0e0e0; border-radius:6px; padding:8px 12px; font-size:11px;">&#x1F4DD; 議事録作成</div>
+        <div style="background:#fff; border:1px solid #e0e0e0; border-radius:6px; padding:8px 12px; font-size:11px;">&#x1F4CB; 要件書とりまとめ</div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px; font-size:13px; color:#c62828; line-height:1.8;">
+      <strong>課題:</strong><br>
+      ・1人あたり1-2時間 × 人数分のヒアリング工数<br>
+      ・日程調整の手間（会議室予約、出張）<br>
+      ・議事録作成・認識齟齬の確認に更に時間<br>
+      ・「言った/言わない」問題の発生<br>
+      ・100本のロボット × 担当者 = 膨大な工数
+    </div>
+  </div>
+
+  <!-- AI-era -->
+  <div style="background:#fff; border-radius:12px; border:2px solid #1976D2; padding:28px; position:relative;">
+    <div style="text-align:center; margin-bottom:20px;">
+      <span style="background:#1976D2; color:#fff; padding:4px 16px; border-radius:12px; font-size:12px; font-weight:700; letter-spacing:1px;">AI時代</span>
+      <h4 style="margin-top:8px; font-size:18px; color:#1565C0;">Webポータル方式（HMM）</h4>
+    </div>
+
+    <!-- Visual: Portal-based -->
+    <div style="background:#e3f2fd; border-radius:10px; padding:24px; text-align:center;">
+      <div style="font-size:40px; margin-bottom:8px;">&#x1F916;</div>
+      <div style="font-size:13px; font-weight:600; color:#1b2a4a; margin-bottom:4px;">AI が IPO 自動抽出</div>
+      <div style="font-size:11px; color:#546e7a; margin-bottom:16px;">ソースコード → 機能要件 (IPO)</div>
+
+      <div style="font-size:24px; margin-bottom:12px;">&#x2B07; &#x1F4E7; レビュー依頼メール送信</div>
+
+      <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+        <div style="background:#fff; border:2px solid #1976D2; border-radius:10px; padding:12px; text-align:center; width:100px;">
+          <div style="font-size:24px;">&#x1F4F1;</div>
+          <div style="font-size:11px; font-weight:600; color:#1b2a4a;">田中さん</div>
+          <div style="font-size:10px; color:#2E7D32;">&#x2713; 回答済</div>
+        </div>
+        <div style="background:#fff; border:2px solid #1976D2; border-radius:10px; padding:12px; text-align:center; width:100px;">
+          <div style="font-size:24px;">&#x1F4BB;</div>
+          <div style="font-size:11px; font-weight:600; color:#1b2a4a;">鈴木さん</div>
+          <div style="font-size:10px; color:#F57C00;">&#x270D; 記入中</div>
+        </div>
+        <div style="background:#fff; border:2px solid #1976D2; border-radius:10px; padding:12px; text-align:center; width:100px;">
+          <div style="font-size:24px;">&#x1F4F1;</div>
+          <div style="font-size:11px; font-weight:600; color:#1b2a4a;">山田さん</div>
+          <div style="font-size:10px; color:#2E7D32;">&#x2713; 回答済</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px; font-size:11px; color:#546e7a;">
+        各自のタイミングでブラウザ/スマホから回答<br>
+        チャット形式で不明点を確認
+      </div>
+    </div>
+
+    <div style="margin-top:16px; font-size:13px; color:#1565C0; line-height:1.8;">
+      <strong>メリット:</strong><br>
+      ・ヒアリング工数ゼロ（各自が空き時間に入力）<br>
+      ・日程調整不要（非同期コミュニケーション）<br>
+      ・記録が自動的にデータベース化<br>
+      ・「言った/言わない」問題が発生しない<br>
+      ・100本でも並列にレビュー依頼可能
+    </div>
+  </div>
+</div>
+
+<h3>9.2 HMMの要件定義フロー</h3>
+
+<div class="diagram">
+<pre>
+  【従来型】                              【HMM (AI時代)】
+
+  ロボット担当者を特定                     AIがソースコードからIPOを自動抽出
+       ↓                                       ↓
+  1人ずつ日程調整                          レビューポータルのURLをメール送信
+       ↓                                       ↓
+  会議室で対面ヒアリング (1-2h/人)          担当者が空き時間にWebで回答 (10-15min/人)
+       ↓                                       ↓
+  議事録作成・確認                          回答が自動的にDB保存
+       ↓                                       ↓
+  要件書とりまとめ                          不明点はチャットで即時確認
+       ↓                                       ↓
+  全員分完了まで繰り返し                    全員の回答状況をダッシュボードで確認
+       ↓                                       ↓
+  100本 × 1.5h = 150時間                   100本 × 15min = 25時間 (並列実行)
+
+  所要期間: 数週間〜数ヶ月                  所要期間: 数日
+</pre>
+</div>
+
+<h3>9.3 要件レビューポータル</h3>
+
+<p>
+  HMMでは、AIが自動抽出したIPO定義（機能要件）を<strong>Webポータル</strong>で業務担当者に公開し、
+  担当者がブラウザ上で直接フィードバックを書き込む仕組みを提供します。
+</p>
+
+<div class="callout callout-insight">
+  <div class="callout-title">要件レビューポータルの機能</div>
+  <ul style="margin:8px 0 0 16px; line-height:2;">
+    <li><strong>IPO可視化</strong> — ロボットごとにInput/Process/Outputを構造化して表示</li>
+    <li><strong>指摘・要望記入欄</strong> — 各IPO要素に対して「変更要望」「追加要望」「問題報告」「承認」を入力</li>
+    <li><strong>改修要件の収集</strong> — 移行に伴って追加したい機能、現行の不満点を記入可能</li>
+    <li><strong>担当者認証</strong> — 誰がどの要件にコメントしたかを記録</li>
+    <li><strong>ステータス管理</strong> — 未レビュー → レビュー中 → 承認済 → テスト中 → 確認完了</li>
+  </ul>
+</div>
+
+<p>
+  これにより、エンジニアが一人ひとりをインタビューする必要がなくなります。
+  担当者は自分の業務に詳しい内容を、自分のペースで、Web上に記入するだけです。
+</p>
+
+<!-- ==================== Section 10 ==================== -->
+<h2><span class="num">10</span> AI時代のユーザーテスト</h2>
+
+<p>
+  従来のユーザーテスト（UAT）は、テスト担当者が実機の前に座り、テストケースを1つずつ手動実行し、
+  結果をExcelに記録するという方式でした。HMMではこれもWebポータルに統合します。
+</p>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:28px 0;">
+
+  <!-- Traditional UAT -->
+  <div style="background:#fff; border-radius:12px; border:2px solid #e0e0e0; padding:24px;">
+    <div style="text-align:center; margin-bottom:16px;">
+      <span style="background:#9e9e9e; color:#fff; padding:4px 16px; border-radius:12px; font-size:12px; font-weight:700;">従来型 UAT</span>
+    </div>
+    <div style="font-size:13px; color:#546e7a; line-height:2;">
+      1. テストケースをExcelで準備<br>
+      2. テスト担当者に配布・説明会<br>
+      3. 実機の前に座ってもらう<br>
+      4. 1ケースずつ手動実行・目視確認<br>
+      5. 結果をExcelに記入<br>
+      6. Excelを回収・集計<br>
+      7. 不合格項目のフォローアップ<br>
+      <br>
+      <span style="color:#c62828;">→ 時間がかかる、Excel管理が煩雑、進捗が見えない</span>
+    </div>
+  </div>
+
+  <!-- HMM UAT -->
+  <div style="background:#fff; border-radius:12px; border:2px solid #1976D2; padding:24px;">
+    <div style="text-align:center; margin-bottom:16px;">
+      <span style="background:#1976D2; color:#fff; padding:4px 16px; border-radius:12px; font-size:12px; font-weight:700;">HMM ポータル UAT</span>
+    </div>
+    <div style="font-size:13px; color:#546e7a; line-height:2;">
+      1. テストケースはポータルに自動表示<br>
+      2. URLをメールで送信するだけ<br>
+      3. ロボット実行後、結果をWeb上に記入<br>
+      4. 「合格」or「不合格」ボタンをクリック<br>
+      5. 所感・問題点をその場で記入<br>
+      6. 進捗はダッシュボードでリアルタイム確認<br>
+      7. 不合格はそのまま改修チケットに<br>
+      <br>
+      <span style="color:#1565C0;">→ Excel不要、進捗可視化、フィードバック即時反映</span>
+    </div>
+  </div>
+</div>
+
+<div class="callout callout-success">
+  <div class="callout-title">HMMが包含する全プロセス</div>
+  <p style="margin:0; line-height:2;">
+    Harmonic Migration Methodは、単なるコード変換ツールではありません。<br>
+    <strong>要件定義（AI + Webポータル）</strong>から<strong>ユーザーテスト（ポータル上での動作確認）</strong>まで、
+    マイグレーションプロセス全体を包含した統合的な方法論です。<br><br>
+    ・<strong>AI時代の要件定義</strong> → コードからIPOを自動抽出し、Webで非同期レビュー<br>
+    ・<strong>AI時代の設計</strong> → IPO抽象化による言語非依存の中間表現<br>
+    ・<strong>AI時代の実装</strong> → ターゲット環境にネイティブなコード生成<br>
+    ・<strong>AI時代のテスト</strong> → ポータル上で担当者が直接フィードバック
+  </p>
+</div>
+
+<!-- ==================== Section 11 ==================== -->
+<h2 class="page-break"><span class="num">11</span> まとめ</h2>
 
 <div class="callout callout-dark">
-  <div class="callout-title">Harmonic Migration Method — 3つの要点</div>
+  <div class="callout-title">Harmonic Migration Method — 4つの要点</div>
   <p style="margin:0; line-height: 2.2;">
     <strong>1. マッピングは補助、IPO抽象化が本質</strong><br>
     &nbsp;&nbsp;&nbsp;&nbsp;関数の1:1マッピングはチェック機能に過ぎない。本質はソースコードからIPOを抽出し再設計すること。<br><br>
     <strong>2. 言語非依存の中間表現が鍵</strong><br>
     &nbsp;&nbsp;&nbsp;&nbsp;IPO定義という抽象層があることで、任意の言語間移行が可能になり、移行時の最適化判断もできる。<br><br>
     <strong>3. AIがこの手法を現実的にした</strong><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;LLMの「コードを理解する力」により、従来は人手でしかできなかったIPO抽出が自動化された。
+    &nbsp;&nbsp;&nbsp;&nbsp;LLMの「コードを理解する力」により、従来は人手でしかできなかったIPO抽出が自動化された。<br><br>
+    <strong>4. 要件定義からテストまで全プロセスを統合</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;Webポータルにより、ヒアリング工数を激減させ、テスト結果の収集もオンラインで完結する。
   </p>
 </div>
 
 <blockquote>
   すべてのマイグレーションツールは、こうあるべきだ。<br>
   コードの「構文」を変換するのではなく、コードの「意味」を理解し、再設計する。<br>
+  そして、要件定義からテストまで、すべてをAIとWebで効率化する。<br>
   これが Harmonic Migration Method の思想であり、AI時代のマイグレーションの標準となる。
 </blockquote>
 

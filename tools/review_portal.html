@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InsightMigration - 要件レビューポータル</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', 'Yu Gothic UI', 'Meiryo', sans-serif; background: #f5f7fa; color: #1a1a2e; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, #0d1b2a, #1b2a4a); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #1976D2; }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header h1 { font-size: 18px; color: #fff; }
+  .header .brand { color: #64B5F6; font-size: 12px; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .user-badge { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 6px 16px; color: #90CAF9; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .user-badge .avatar { width: 24px; height: 24px; background: #1976D2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; }
+
+  /* Layout */
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 60px); }
+
+  /* Sidebar */
+  .sidebar { background: #fff; border-right: 1px solid #e0e0e0; padding: 20px 0; overflow-y: auto; }
+  .sidebar-section { padding: 0 16px; margin-bottom: 24px; }
+  .sidebar-section h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #90a4ae; margin-bottom: 12px; padding: 0 4px; }
+
+  .robot-card { padding: 12px 16px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; transition: all 0.15s; border: 1px solid transparent; }
+  .robot-card:hover { background: #e3f2fd; }
+  .robot-card.active { background: #e3f2fd; border-color: #1976D2; }
+  .robot-card .robot-name { font-size: 14px; font-weight: 600; color: #1b2a4a; }
+  .robot-card .robot-meta { font-size: 11px; color: #90a4ae; margin-top: 2px; display: flex; gap: 8px; }
+  .robot-card .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+  .status-pending { background: #9e9e9e; }
+  .status-reviewing { background: #F57C00; }
+  .status-approved { background: #2E7D32; }
+  .status-testing { background: #1976D2; }
+  .status-confirmed { background: #00897B; }
+
+  .sidebar-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px; margin-bottom: 20px; }
+  .stat-card { background: #f5f7fa; border-radius: 8px; padding: 12px; text-align: center; }
+  .stat-card .stat-num { font-size: 22px; font-weight: 700; color: #1976D2; }
+  .stat-card .stat-label { font-size: 10px; color: #90a4ae; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .filter-input { width: 100%; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
+  .filter-input:focus { outline: none; border-color: #1976D2; }
+
+  /* Main content */
+  .main { padding: 28px 32px; overflow-y: auto; }
+
+  .robot-header { margin-bottom: 24px; }
+  .robot-header h2 { font-size: 22px; color: #1b2a4a; margin-bottom: 4px; }
+  .robot-header .desc { font-size: 13px; color: #546e7a; }
+
+  /* Phase tabs */
+  .phase-tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 2px solid #e0e0e0; }
+  .phase-tab { padding: 10px 20px; font-size: 13px; color: #546e7a; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+  .phase-tab:hover { color: #1b2a4a; }
+  .phase-tab.active { color: #1976D2; border-bottom-color: #1976D2; font-weight: 600; }
+
+  /* IPO Section */
+  .ipo-section { display: none; }
+  .ipo-section.active { display: block; }
+
+  .ipo-card { background: #fff; border-radius: 12px; border: 1px solid #e0e0e0; margin-bottom: 16px; overflow: hidden; }
+  .ipo-card-header { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .ipo-card-header.input-h { background: linear-gradient(135deg, #0D47A1, #1565C0); color: #fff; }
+  .ipo-card-header.process-h { background: linear-gradient(135deg, #E65100, #F57C00); color: #fff; }
+  .ipo-card-header.output-h { background: linear-gradient(135deg, #1B5E20, #2E7D32); color: #fff; }
+  .ipo-card-header h3 { font-size: 15px; letter-spacing: 1px; }
+  .ipo-card-header .count-badge { background: rgba(255,255,255,0.2); padding: 2px 12px; border-radius: 10px; font-size: 12px; }
+  .ipo-card-body { padding: 0; }
+
+  .ipo-item { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; }
+  .ipo-item:last-child { border-bottom: none; }
+  .ipo-item-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .ipo-item-name { font-size: 14px; font-weight: 600; color: #1b2a4a; }
+  .ipo-item-tags { display: flex; gap: 6px; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .tag-format { background: #e3f2fd; color: #1565C0; }
+  .tag-type { background: #f3e5f5; color: #7B1FA2; }
+
+  .ipo-item-desc { font-size: 13px; color: #546e7a; margin-bottom: 12px; }
+
+  /* Feedback area */
+  .feedback-area { background: #fafafa; border: 1px solid #e8e8e8; border-radius: 8px; padding: 12px; margin-top: 8px; }
+  .feedback-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .feedback-header span { font-size: 12px; font-weight: 600; color: #F57C00; text-transform: uppercase; letter-spacing: 0.5px; }
+  .feedback-count { font-size: 11px; color: #90a4ae; }
+
+  .feedback-list { margin-bottom: 8px; }
+  .feedback-entry { background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px 12px; margin-bottom: 6px; font-size: 13px; }
+  .feedback-entry .fb-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .feedback-entry .fb-author { font-weight: 600; color: #1b2a4a; font-size: 12px; }
+  .feedback-entry .fb-date { font-size: 11px; color: #90a4ae; }
+  .feedback-entry .fb-type { font-size: 10px; padding: 1px 8px; border-radius: 8px; }
+  .fb-type-change { background: #fff3e0; color: #E65100; }
+  .fb-type-add { background: #e8f5e9; color: #1B5E20; }
+  .fb-type-issue { background: #fce4ec; color: #c62828; }
+  .fb-type-ok { background: #e8f5e9; color: #2E7D32; }
+  .feedback-entry .fb-text { font-size: 13px; color: #37474f; line-height: 1.6; }
+
+  .fb-input-row { display: flex; gap: 8px; }
+  .fb-input-row select { padding: 8px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 12px; background: #fff; }
+  .fb-input-row textarea { flex: 1; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; resize: none; min-height: 36px; }
+  .fb-input-row textarea:focus { outline: none; border-color: #1976D2; }
+
+  .btn { padding: 8px 20px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+  .btn-primary { background: #1976D2; color: #fff; }
+  .btn-primary:hover { background: #1565C0; }
+  .btn-success { background: #2E7D32; color: #fff; }
+  .btn-success:hover { background: #1B5E20; }
+  .btn-outline { background: transparent; color: #1976D2; border: 1px solid #1976D2; }
+  .btn-outline:hover { background: #e3f2fd; }
+
+  /* Testing section */
+  .test-section { background: #fff; border-radius: 12px; border: 1px solid #e0e0e0; padding: 24px; }
+  .test-item { padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 12px; }
+  .test-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .test-item-name { font-size: 14px; font-weight: 600; }
+  .test-status { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .test-pass { background: #e8f5e9; color: #2E7D32; }
+  .test-fail { background: #fce4ec; color: #c62828; }
+  .test-wait { background: #f5f5f5; color: #9e9e9e; }
+  .test-result-input { width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; resize: vertical; min-height: 60px; }
+  .test-result-input:focus { outline: none; border-color: #1976D2; }
+
+  .test-buttons { display: flex; gap: 8px; margin-top: 10px; }
+
+  /* Summary bar */
+  .summary-bar { background: #fff; border-radius: 12px; border: 1px solid #e0e0e0; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 24px; }
+  .summary-item { text-align: center; }
+  .summary-item .si-num { font-size: 20px; font-weight: 700; }
+  .summary-item .si-label { font-size: 11px; color: #90a4ae; }
+  .summary-item.si-input .si-num { color: #1565C0; }
+  .summary-item.si-process .si-num { color: #F57C00; }
+  .summary-item.si-output .si-num { color: #2E7D32; }
+  .summary-item.si-feedback .si-num { color: #c62828; }
+  .summary-item.si-approved .si-num { color: #00897B; }
+
+  .empty-state { text-align: center; padding: 60px; color: #90a4ae; }
+  .empty-state .icon-lg { font-size: 48px; margin-bottom: 12px; }
+
+  /* Notification */
+  .notification { position: fixed; top: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; font-size: 13px; color: #fff; opacity: 0; transition: opacity 0.3s; z-index: 100; }
+  .notification.show { opacity: 1; }
+  .notif-success { background: #2E7D32; }
+  .notif-info { background: #1976D2; }
+
+  /* Progress bar */
+  .progress-bar { height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; margin-top: 8px; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .progress-fill.fill-blue { background: #1976D2; }
+  .progress-fill.fill-green { background: #2E7D32; }
+  .progress-fill.fill-orange { background: #F57C00; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1>InsightMigration — 要件レビューポータル</h1>
+    <span class="brand">Harmonic Migration Method</span>
+  </div>
+  <div class="header-right">
+    <div class="user-badge">
+      <div class="avatar" id="userAvatar">田</div>
+      <span id="userName">田中太郎（経理部）</span>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="switchUser()">ユーザー切替</button>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-stats">
+      <div class="stat-card">
+        <div class="stat-num" id="statTotal">6</div>
+        <div class="stat-label">対象ロボット</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statReviewed">2</div>
+        <div class="stat-label">レビュー済</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>ロボット一覧</h3>
+      <input type="text" class="filter-input" placeholder="ロボット名で検索..." oninput="filterRobots(this.value)">
+      <div id="robotList"></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" id="mainContent">
+    <div class="empty-state">
+      <div class="icon-lg">&#x1F4CB;</div>
+      <p>左のロボット一覧から、レビュー対象を選択してください。</p>
+    </div>
+  </div>
+</div>
+
+<div class="notification" id="notification"></div>
+
+<script>
+// ===== Sample Data =====
+const users = [
+  { id: 'tanaka', name: '田中太郎', dept: '経理部', initial: '田' },
+  { id: 'suzuki', name: '鈴木花子', dept: '営業部', initial: '鈴' },
+  { id: 'yamada', name: '山田一郎', dept: '情報システム部', initial: '山' },
+];
+let currentUser = users[0];
+let currentUserIdx = 0;
+
+const robots = [
+  {
+    id: 'R001', name: '売上日報レポート生成', rank: 'A', status: 'reviewing', assignee: '経理部',
+    description: '毎朝SAPから前日の売上データを取得し、部門別にExcelレポートを生成してメール送信',
+    inputs: [
+      { id: 'i1', name: 'SAPから売上データ取得', format: 'SAP RFC', type: 'テーブル', desc: 'T-code VA05から前日の受注データを取得。項目: 受注番号, 得意先, 金額, 日付' },
+      { id: 'i2', name: '部門マスタCSV読込', format: 'CSV', type: 'マスタ', desc: '部門コードと部門名の対応表。\\\\server\\master\\dept.csv' },
+    ],
+    processes: [
+      { id: 'p1', name: '日付フィルタリング', desc: '売上データから前営業日のレコードのみ抽出。祝日判定はカレンダーマスタ参照' },
+      { id: 'p2', name: '部門別集計', desc: '部門コードでグループ化し、金額をSUM。通貨形式に変換' },
+      { id: 'p3', name: 'Excel帳票生成', desc: 'テンプレート(売上日報.xlsx)に集計結果を書き込み' },
+    ],
+    outputs: [
+      { id: 'o1', name: 'Excel売上日報ファイル', format: 'Excel', type: 'ファイル', desc: '\\\\server\\reports\\daily\\売上日報_YYYYMMDD.xlsx' },
+      { id: 'o2', name: '部門長への通知メール', format: 'Email', type: '通知', desc: 'Excelを添付し配布リストに送信。件名: 【日報】売上レポート {日付}' },
+    ],
+    feedbacks: [
+      { author: 'suzuki', type: 'add', text: '営業部としては、得意先別の売上ランキングTOP10も追加してほしい。現状は部門別のみなので顧客分析ができない。', date: '2026-01-28', target: 'p2' },
+      { author: 'tanaka', type: 'change', text: '祝日判定が不正確。振替休日の考慮がなく、土曜営業日も漏れている。カレンダーマスタを社内の正式版に差し替えたい。', date: '2026-01-29', target: 'p1' },
+    ],
+    tests: [
+      { id: 't1', name: 'SAP接続・データ取得', status: 'pass', result: '正常に取得。2,847件のデータを確認' },
+      { id: 't2', name: '部門別集計の正確性', status: 'wait', result: '' },
+      { id: 't3', name: 'メール送信・添付確認', status: 'wait', result: '' },
+    ],
+  },
+  {
+    id: 'R002', name: '請求書照合ロボット', rank: 'B', status: 'pending', assignee: '経理部',
+    description: '仕入先からの請求書(PDF)と発注データ(SAP)を照合し、差異レポートを作成',
+    inputs: [
+      { id: 'i1', name: '請求書PDF読込', format: 'PDF (OCR)', type: 'ドキュメント', desc: '共有フォルダの請求書PDFをOCRで読み取り。項目: 請求番号, 金額, 日付, 仕入先名' },
+      { id: 'i2', name: 'SAP発注データ取得', format: 'SAP RFC', type: 'テーブル', desc: 'ME23Nから対応する発注データを取得' },
+    ],
+    processes: [
+      { id: 'p1', name: '請求書-発注マッチング', desc: '請求番号または仕入先+日付+金額で突き合わせ' },
+      { id: 'p2', name: '差異検出・分類', desc: '金額差異、日付差異、未マッチをそれぞれ分類' },
+    ],
+    outputs: [
+      { id: 'o1', name: '照合結果レポート', format: 'Excel', type: 'レポート', desc: '差異一覧と照合結果サマリー' },
+      { id: 'o2', name: '差異アラート通知', format: 'Email', type: '通知', desc: '閾値超過の差異があれば経理担当にアラート' },
+    ],
+    feedbacks: [],
+    tests: [
+      { id: 't1', name: 'OCR読み取り精度', status: 'wait', result: '' },
+      { id: 't2', name: 'マッチング精度', status: 'wait', result: '' },
+    ],
+  },
+  {
+    id: 'R003', name: '在庫アラート通知', rank: 'A', status: 'approved', assignee: '物流部',
+    description: '在庫管理DBを定期チェックし、閾値を下回った商品の補充アラートをSlack通知',
+    inputs: [
+      { id: 'i1', name: '在庫DB照会', format: 'Oracle SQL', type: 'テーブル', desc: '在庫テーブルから現在庫数と安全在庫閾値を取得' },
+    ],
+    processes: [
+      { id: 'p1', name: '閾値判定', desc: '現在庫 < 安全在庫 の商品を抽出' },
+    ],
+    outputs: [
+      { id: 'o1', name: 'Slack補充アラート', format: 'Webhook', type: '通知', desc: '#inventory-alerts チャンネルに不足商品リストを投稿' },
+    ],
+    feedbacks: [
+      { author: 'yamada', type: 'ok', text: 'IPO定義に問題なし。現行通りで移行してOK。', date: '2026-01-30', target: 'all' },
+    ],
+    tests: [
+      { id: 't1', name: 'DB接続・閾値判定', status: 'pass', result: 'テストDB環境で正常動作確認。5件の閾値下回り商品を正しく検出' },
+      { id: 't2', name: 'Slack通知', status: 'pass', result: 'テストチャンネルに正しく通知。フォーマットも問題なし' },
+    ],
+  },
+  {
+    id: 'R004', name: '勤怠データ集計', rank: 'B', status: 'reviewing', assignee: '人事部',
+    description: '各部門の勤怠管理システムから出退勤データを収集し、月次集計レポートを作成',
+    inputs: [
+      { id: 'i1', name: '勤怠システムAPI', format: 'REST API', type: 'JSON', desc: '勤怠管理SaaSのAPIから部門別の出退勤データを取得' },
+    ],
+    processes: [
+      { id: 'p1', name: '残業時間計算', desc: '所定労働時間との差分を算出。36協定上限チェック' },
+      { id: 'p2', name: '部門別サマリー生成', desc: '部門ごとの平均残業、有給取得率を集計' },
+    ],
+    outputs: [
+      { id: 'o1', name: '月次勤怠レポート', format: 'Excel', type: 'レポート', desc: '人事部向け月次勤怠サマリー' },
+    ],
+    feedbacks: [
+      { author: 'tanaka', type: 'issue', text: '36協定上限チェックのロジックが古い。2024年改正の上限値（月45時間/年360時間）に更新が必要。', date: '2026-02-01', target: 'p1' },
+    ],
+    tests: [
+      { id: 't1', name: '勤怠API接続', status: 'wait', result: '' },
+    ],
+  },
+  {
+    id: 'R005', name: '見積書自動作成', rank: 'C', status: 'pending', assignee: '営業部',
+    description: '商品マスタと価格表から見積書PDFを自動生成し、営業担当に通知',
+    inputs: [
+      { id: 'i1', name: '見積依頼データ', format: 'Web Form', type: 'フォーム入力', desc: '社内ポータルの見積依頼フォームから入力データを取得' },
+      { id: 'i2', name: '商品マスタ・価格表', format: 'DB (SQL)', type: 'マスタ', desc: '商品コード→品名、単価、割引率を取得' },
+    ],
+    processes: [
+      { id: 'p1', name: '見積金額計算', desc: '数量×単価、割引率適用、消費税計算' },
+      { id: 'p2', name: 'PDF帳票生成', desc: '見積書テンプレートにデータを流し込み' },
+    ],
+    outputs: [
+      { id: 'o1', name: '見積書PDF', format: 'PDF', type: 'ドキュメント', desc: '\\\\server\\quotes\\見積書_XXXX.pdf' },
+      { id: 'o2', name: '営業担当への通知', format: 'Email', type: '通知', desc: '見積書PDFを添付して営業担当にメール' },
+    ],
+    feedbacks: [],
+    tests: [],
+  },
+  {
+    id: 'R006', name: '経費精算データ入力', rank: 'B', status: 'testing', assignee: '経理部',
+    description: '経費精算システムから承認済みデータを取得し、会計システム(Oracle)に自動入力',
+    inputs: [
+      { id: 'i1', name: '経費精算API', format: 'REST API', type: 'JSON', desc: '経費精算SaaSから承認済み精算データを取得' },
+    ],
+    processes: [
+      { id: 'p1', name: '勘定科目マッピング', desc: '経費カテゴリ→勘定科目コードへの変換' },
+      { id: 'p2', name: '仕訳データ生成', desc: '借方/貸方の仕訳レコードを生成' },
+    ],
+    outputs: [
+      { id: 'o1', name: 'Oracle会計システム登録', format: 'Oracle PL/SQL', type: 'DB登録', desc: '仕訳テーブルにINSERT' },
+      { id: 'o2', name: '処理結果ログ', format: 'CSV', type: 'ログ', desc: '処理件数・エラー件数をログ出力' },
+    ],
+    feedbacks: [
+      { author: 'tanaka', type: 'change', text: '勘定科目マッピングに「リモートワーク手当」カテゴリの追加が必要。2025年から新設された科目。', date: '2026-02-01', target: 'p1' },
+      { author: 'yamada', type: 'ok', text: 'Oracle側の受け入れテーブル構造を確認済み。問題なし。', date: '2026-02-02', target: 'o1' },
+    ],
+    tests: [
+      { id: 't1', name: '経費データ取得', status: 'pass', result: '10件のテストデータで正常取得確認' },
+      { id: 't2', name: '勘定科目マッピング', status: 'pass', result: '全カテゴリのマッピングが正常動作' },
+      { id: 't3', name: 'Oracle登録', status: 'fail', result: 'テスト環境のOracle接続でタイムアウト。ネットワーク設定の確認が必要' },
+    ],
+  },
+];
+
+// ===== State =====
+let selectedRobotId = null;
+let activePhase = 'ipo'; // 'ipo' | 'test'
+
+// ===== Init =====
+function init() {
+  renderSidebar();
+}
+
+function notify(msg, type = 'info') {
+  const el = document.getElementById('notification');
+  el.textContent = msg;
+  el.className = `notification notif-${type} show`;
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ===== Sidebar =====
+function renderSidebar() {
+  const list = document.getElementById('robotList');
+  list.innerHTML = robots.map(r => {
+    const fbCount = r.feedbacks.length;
+    return `
+      <div class="robot-card ${selectedRobotId === r.id ? 'active' : ''}" onclick="selectRobot('${r.id}')">
+        <div class="robot-name">
+          <span class="status-dot status-${r.status}"></span>
+          ${r.name}
+        </div>
+        <div class="robot-meta">
+          <span>ランク ${r.rank}</span>
+          <span>${r.assignee}</span>
+          ${fbCount > 0 ? `<span style="color:#F57C00">${fbCount}件の指摘</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const reviewed = robots.filter(r => ['approved', 'testing', 'confirmed'].includes(r.status)).length;
+  document.getElementById('statTotal').textContent = robots.length;
+  document.getElementById('statReviewed').textContent = reviewed;
+}
+
+function filterRobots(query) {
+  const cards = document.querySelectorAll('.robot-card');
+  cards.forEach((card, i) => {
+    const name = robots[i].name.toLowerCase();
+    card.style.display = name.includes(query.toLowerCase()) ? '' : 'none';
+  });
+}
+
+// ===== Select Robot =====
+function selectRobot(id) {
+  selectedRobotId = id;
+  activePhase = 'ipo';
+  renderSidebar();
+  renderMain();
+}
+
+// ===== Main content =====
+function renderMain() {
+  const r = robots.find(r => r.id === selectedRobotId);
+  if (!r) return;
+
+  const statusLabel = { pending: '未レビュー', reviewing: 'レビュー中', approved: '承認済', testing: 'テスト中', confirmed: '確認完了' };
+  const totalFb = r.feedbacks.length;
+  const totalTests = r.tests.length;
+  const passTests = r.tests.filter(t => t.status === 'pass').length;
+
+  const main = document.getElementById('mainContent');
+  main.innerHTML = `
+    <div class="robot-header">
+      <h2>${r.name} <span style="font-size:14px; color:#90a4ae">(${r.id})</span></h2>
+      <div class="desc">${r.description}</div>
+    </div>
+
+    <div class="summary-bar">
+      <div class="summary-item si-input"><div class="si-num">${r.inputs.length}</div><div class="si-label">INPUT</div></div>
+      <div class="summary-item si-process"><div class="si-num">${r.processes.length}</div><div class="si-label">PROCESS</div></div>
+      <div class="summary-item si-output"><div class="si-num">${r.outputs.length}</div><div class="si-label">OUTPUT</div></div>
+      <div style="flex:1"></div>
+      <div class="summary-item si-feedback"><div class="si-num">${totalFb}</div><div class="si-label">指摘・要望</div></div>
+      <div class="summary-item si-approved"><div class="si-num">${passTests}/${totalTests}</div><div class="si-label">テスト通過</div></div>
+      <div style="margin-left:16px">
+        <span class="tag" style="background:#e3f2fd; color:#1565C0; font-size:13px; padding:6px 16px;">
+          ${statusLabel[r.status] || r.status}
+        </span>
+      </div>
+    </div>
+
+    <div class="phase-tabs">
+      <div class="phase-tab ${activePhase === 'ipo' ? 'active' : ''}" onclick="switchPhase('ipo')">機能要件 (IPO)</div>
+      <div class="phase-tab ${activePhase === 'test' ? 'active' : ''}" onclick="switchPhase('test')">動作確認・テスト</div>
+    </div>
+
+    <div class="ipo-section ${activePhase === 'ipo' ? 'active' : ''}" id="ipoPhase">
+      ${renderIPOCards(r)}
+    </div>
+
+    <div class="ipo-section ${activePhase === 'test' ? 'active' : ''}" id="testPhase">
+      ${renderTestSection(r)}
+    </div>
+  `;
+}
+
+function switchPhase(phase) {
+  activePhase = phase;
+  renderMain();
+}
+
+// ===== IPO Cards =====
+function renderIPOCards(r) {
+  const renderItems = (items, type) => items.map(item => {
+    const itemFeedbacks = r.feedbacks.filter(f => f.target === item.id || f.target === 'all');
+    return `
+      <div class="ipo-item">
+        <div class="ipo-item-header">
+          <div class="ipo-item-name">${item.name}</div>
+          <div class="ipo-item-tags">
+            ${item.format ? `<span class="tag tag-format">${item.format}</span>` : ''}
+            ${item.type ? `<span class="tag tag-type">${item.type}</span>` : ''}
+          </div>
+        </div>
+        <div class="ipo-item-desc">${item.desc}</div>
+
+        <div class="feedback-area">
+          <div class="feedback-header">
+            <span>指摘・要望・確認</span>
+            <span class="feedback-count">${itemFeedbacks.length}件</span>
+          </div>
+          <div class="feedback-list">
+            ${itemFeedbacks.map(f => {
+              const u = users.find(u => u.id === f.author) || { name: f.author };
+              const typeLabel = { change: '変更要望', add: '追加要望', issue: '問題報告', ok: '承認' };
+              const typeClass = { change: 'fb-type-change', add: 'fb-type-add', issue: 'fb-type-issue', ok: 'fb-type-ok' };
+              return `
+                <div class="feedback-entry">
+                  <div class="fb-meta">
+                    <span class="fb-author">${u.name}</span>
+                    <span class="fb-type ${typeClass[f.type]}">${typeLabel[f.type]}</span>
+                    <span class="fb-date">${f.date}</span>
+                  </div>
+                  <div class="fb-text">${f.text}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+          <div class="fb-input-row">
+            <select id="fbType_${type}_${item.id}">
+              <option value="change">変更要望</option>
+              <option value="add">追加要望</option>
+              <option value="issue">問題報告</option>
+              <option value="ok">承認（問題なし）</option>
+            </select>
+            <textarea id="fbText_${type}_${item.id}" placeholder="コメントを入力..."></textarea>
+            <button class="btn btn-primary btn-sm" onclick="addFeedback('${r.id}', '${item.id}')">送信</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="ipo-card">
+      <div class="ipo-card-header input-h">
+        <h3>INPUT（入力）</h3>
+        <span class="count-badge">${r.inputs.length}件</span>
+      </div>
+      <div class="ipo-card-body">${renderItems(r.inputs, 'input')}</div>
+    </div>
+
+    <div class="ipo-card">
+      <div class="ipo-card-header process-h">
+        <h3>PROCESS（処理）</h3>
+        <span class="count-badge">${r.processes.length}件</span>
+      </div>
+      <div class="ipo-card-body">${renderItems(r.processes, 'process')}</div>
+    </div>
+
+    <div class="ipo-card">
+      <div class="ipo-card-header output-h">
+        <h3>OUTPUT（出力）</h3>
+        <span class="count-badge">${r.outputs.length}件</span>
+      </div>
+      <div class="ipo-card-body">${renderItems(r.outputs, 'output')}</div>
+    </div>
+  `;
+}
+
+// ===== Test Section =====
+function renderTestSection(r) {
+  if (r.tests.length === 0) {
+    return `<div class="test-section"><div class="empty-state"><div class="icon-lg">&#x1F9EA;</div><p>テスト項目はまだ定義されていません</p></div></div>`;
+  }
+
+  const statusLabel = { pass: '合格', fail: '不合格', wait: '未テスト' };
+  const statusClass = { pass: 'test-pass', fail: 'test-fail', wait: 'test-wait' };
+
+  return `
+    <div class="test-section">
+      <h3 style="margin-bottom:16px; font-size:16px;">動作確認テスト</h3>
+      <p style="font-size:13px; color:#546e7a; margin-bottom:20px;">
+        移行後のロボットが正しく動作するか、担当者の目線で確認してください。<br>
+        各テスト項目に対して、結果と所感を記入してください。
+      </p>
+      ${r.tests.map(t => `
+        <div class="test-item">
+          <div class="test-item-header">
+            <span class="test-item-name">${t.name}</span>
+            <span class="test-status ${statusClass[t.status]}">${statusLabel[t.status]}</span>
+          </div>
+          <textarea class="test-result-input" id="testResult_${t.id}"
+            placeholder="テスト結果・所感を記入してください..."
+          >${t.result}</textarea>
+          <div class="test-buttons">
+            <button class="btn btn-success btn-sm" onclick="setTestResult('${r.id}', '${t.id}', 'pass')">合格</button>
+            <button class="btn btn-sm" style="background:#c62828; color:#fff;" onclick="setTestResult('${r.id}', '${t.id}', 'fail')">不合格</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ===== Actions =====
+function addFeedback(robotId, targetId) {
+  const r = robots.find(r => r.id === robotId);
+  if (!r) return;
+
+  // Find the textarea — try all type prefixes
+  let fbText = '', fbType = 'change';
+  for (const prefix of ['input', 'process', 'output']) {
+    const textEl = document.getElementById(`fbText_${prefix}_${targetId}`);
+    const typeEl = document.getElementById(`fbType_${prefix}_${targetId}`);
+    if (textEl && textEl.value.trim()) {
+      fbText = textEl.value.trim();
+      fbType = typeEl.value;
+      break;
+    }
+  }
+
+  if (!fbText) { notify('コメントを入力してください', 'info'); return; }
+
+  r.feedbacks.push({
+    author: currentUser.id,
+    type: fbType,
+    text: fbText,
+    date: new Date().toISOString().slice(0, 10),
+    target: targetId,
+  });
+
+  if (r.status === 'pending') r.status = 'reviewing';
+
+  renderMain();
+  renderSidebar();
+  notify('フィードバックを送信しました', 'success');
+}
+
+function setTestResult(robotId, testId, status) {
+  const r = robots.find(r => r.id === robotId);
+  if (!r) return;
+
+  const test = r.tests.find(t => t.id === testId);
+  if (!test) return;
+
+  const resultEl = document.getElementById(`testResult_${testId}`);
+  test.result = resultEl ? resultEl.value : '';
+  test.status = status;
+
+  // Update robot status if all tests pass
+  const allPass = r.tests.every(t => t.status === 'pass');
+  if (allPass) r.status = 'confirmed';
+  else if (r.tests.some(t => t.status !== 'wait')) r.status = 'testing';
+
+  renderMain();
+  renderSidebar();
+  notify(status === 'pass' ? 'テスト合格を記録しました' : 'テスト不合格を記録しました', status === 'pass' ? 'success' : 'info');
+}
+
+function switchUser() {
+  currentUserIdx = (currentUserIdx + 1) % users.length;
+  currentUser = users[currentUserIdx];
+  document.getElementById('userName').textContent = `${currentUser.name}（${currentUser.dept}）`;
+  document.getElementById('userAvatar').textContent = currentUser.initial;
+  notify(`${currentUser.name} に切り替えました`, 'info');
+}
+
+// ===== Start =====
+init();
+</script>
+
+</body>
+</html>
