@@ -155,21 +155,34 @@
   1:1でマッピング（翻訳）する手法を採用しています。
 </p>
 
-<div class="diagram">
-<pre>
-  【従来型: マッピング方式】
-
-  旧システム                    新システム
-  ┌──────────┐    1:1 変換     ┌──────────┐
-  │ Action A │ ──────────→   │ Activity A'│
-  │ Action B │ ──────────→   │ Activity B'│
-  │ Action C │ ──── ??? ──→  │    ???     │  ← 対応なし → 破綻
-  │ Action D │ ──────────→   │ Activity D'│
-  └──────────┘                └──────────┘
-
-  変換率: 60-80%（残り20-40%は手動対応）
-  品質:   旧言語の癖が残る「翻訳調」のコード
-</pre>
+<!-- Mapping diagram (responsive) -->
+<div style="background:#0d1b2a; border-radius:12px; padding:28px 20px; margin:28px 0;">
+  <div style="text-align:center; color:#546e7a; font-size:13px; font-weight:700; letter-spacing:2px; margin-bottom:20px;">
+    従来型: マッピング方式
+  </div>
+  <div style="display:flex; align-items:stretch; justify-content:center; gap:8px; flex-wrap:wrap;">
+    <!-- Old -->
+    <div style="background:#1a2940; border:2px solid #546e7a; border-radius:10px; padding:14px 18px; min-width:120px;">
+      <div style="font-size:11px; color:#90a4ae; text-align:center; margin-bottom:8px;">旧システム</div>
+      <div style="font-size:13px; color:#e0e0e0; line-height:2;">Action A<br>Action B<br>Action C<br>Action D</div>
+    </div>
+    <!-- Arrows -->
+    <div style="display:flex; flex-direction:column; justify-content:center; gap:4px; min-width:80px; text-align:center; padding-top:20px;">
+      <div style="font-size:12px; color:#4CAF50;">→ 1:1変換</div>
+      <div style="font-size:12px; color:#4CAF50;">→ 1:1変換</div>
+      <div style="font-size:12px; color:#c62828; font-weight:700;">→ ??? 破綻</div>
+      <div style="font-size:12px; color:#4CAF50;">→ 1:1変換</div>
+    </div>
+    <!-- New -->
+    <div style="background:#1a2940; border:2px solid #546e7a; border-radius:10px; padding:14px 18px; min-width:120px;">
+      <div style="font-size:11px; color:#90a4ae; text-align:center; margin-bottom:8px;">新システム</div>
+      <div style="font-size:13px; color:#e0e0e0; line-height:2;">Activity A'<br>Activity B'<br><span style="color:#c62828; font-weight:700;">???</span><br>Activity D'</div>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:16px; font-size:12px; color:#90a4ae; line-height:1.8;">
+    変換率: 60-80%（残り20-40%は手動対応）<br>
+    品質: 旧言語の癖が残る「翻訳調」のコード
+  </div>
 </div>
 
 <h3>2.2 過去の教訓</h3>
@@ -205,22 +218,53 @@
   この中間表現をもとに、ターゲット環境にネイティブな設計で再実装します。
 </p>
 
-<div class="diagram">
-<pre>
-  【Harmonic Migration Method】
+<!-- HMM Core Diagram (responsive) -->
+<div style="background:#0d1b2a; border-radius:12px; padding:32px 20px; margin:28px 0;">
+  <div style="text-align:center; color:#64B5F6; font-size:14px; font-weight:700; letter-spacing:2px; margin-bottom:24px;">
+    Harmonic Migration Method
+  </div>
+  <div style="display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap;">
+    <!-- Old System -->
+    <div style="background:#1a2940; border:2px solid #546e7a; border-radius:12px; padding:16px 20px; min-width:140px; text-align:center;">
+      <div style="font-size:11px; color:#90a4ae; letter-spacing:1px; margin-bottom:10px;">任意の旧システム</div>
+      <div style="font-size:14px; color:#e0e0e0; line-height:1.8;">
+        BizRobo<br>VB6<br>COBOL<br>Java<br><span style="color:#90a4ae;">何でも</span>
+      </div>
+      <div style="margin-top:10px; font-size:11px; color:#546e7a;">ソースコード<br>(言語依存)</div>
+    </div>
 
-  任意の旧システム          IPO抽象化層              任意の新システム
-  ┌──────────┐        ┌──────────────┐        ┌──────────┐
-  │ BizRobo  │        │              │        │ aKaBot   │
-  │ VB6      │  ───→  │   INPUT      │  ───→  │ C# .NET  │
-  │ COBOL    │  理解   │   PROCESS    │  再設計 │ Python   │
-  │ Java     │        │   OUTPUT     │        │ 何でも    │
-  │ 何でも    │        │              │        │          │
-  └──────────┘        └──────────────┘        └──────────┘
+    <!-- Arrow: Understand -->
+    <div style="text-align:center; min-width:50px;">
+      <div style="font-size:24px; color:#64B5F6;">&#x27A1;</div>
+      <div style="font-size:11px; color:#90CAF9; font-weight:600;">理解</div>
+    </div>
 
-    ソースコード          業務関数定義             ネイティブ実装
-    (言語依存)          (言語非依存)            (最適設計)
-</pre>
+    <!-- IPO Abstraction Layer -->
+    <div style="background:linear-gradient(135deg, #0D47A1, #1565C0); border:2px solid #1976D2; border-radius:12px; padding:16px 24px; min-width:160px; text-align:center; box-shadow:0 0 20px rgba(33,150,243,0.2);">
+      <div style="font-size:11px; color:#90CAF9; letter-spacing:1px; margin-bottom:10px;">IPO抽象化層</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <div style="background:rgba(255,255,255,0.15); border-radius:6px; padding:6px 12px; font-size:14px; color:#fff; font-weight:600;">INPUT</div>
+        <div style="background:rgba(255,255,255,0.15); border-radius:6px; padding:6px 12px; font-size:14px; color:#fff; font-weight:600;">PROCESS</div>
+        <div style="background:rgba(255,255,255,0.15); border-radius:6px; padding:6px 12px; font-size:14px; color:#fff; font-weight:600;">OUTPUT</div>
+      </div>
+      <div style="margin-top:10px; font-size:11px; color:#90CAF9;">業務関数定義<br>(言語非依存)</div>
+    </div>
+
+    <!-- Arrow: Redesign -->
+    <div style="text-align:center; min-width:50px;">
+      <div style="font-size:24px; color:#64B5F6;">&#x27A1;</div>
+      <div style="font-size:11px; color:#90CAF9; font-weight:600;">再設計</div>
+    </div>
+
+    <!-- New System -->
+    <div style="background:#1a2940; border:2px solid #2E7D32; border-radius:12px; padding:16px 20px; min-width:140px; text-align:center;">
+      <div style="font-size:11px; color:#90a4ae; letter-spacing:1px; margin-bottom:10px;">任意の新システム</div>
+      <div style="font-size:14px; color:#e0e0e0; line-height:1.8;">
+        aKaBot<br>C# .NET<br>Python<br><span style="color:#90a4ae;">何でも</span>
+      </div>
+      <div style="margin-top:10px; font-size:11px; color:#4CAF50;">ネイティブ実装<br>(最適設計)</div>
+    </div>
+  </div>
 </div>
 
 <h3>3.2 四原則</h3>
@@ -397,34 +441,46 @@
   この中間表現が存在することで、ソース言語とターゲット言語の組み合わせが自由になります。
 </p>
 
-<div class="diagram">
-<pre>
-  【IPO業務関数定義の例】
-
-  業務関数: 日次売上レポート生成
-  ──────────────────────────────────
-  INPUT:
-    - source: SAP (T-code: VA05)
-      format: テーブル形式
-      fields: [受注番号, 得意先, 金額, 日付]
-      trigger: 毎日 09:00 JST
-
-  PROCESS:
-    - filter: 日付 = 前営業日
-    - group_by: 得意先コード
-    - aggregate: SUM(金額)
-    - sort: 金額 DESC
-    - format: 通貨形式 (¥#,###)
-
-  OUTPUT:
-    - target: Excel ファイル
-      template: 売上日報テンプレート.xlsx
-      path: \\server\reports\daily\
-    - target: Email
-      to: 部門長配布リスト
-      subject: "【日報】売上レポート {date}"
-      attachment: 上記Excelファイル
-</pre>
+<!-- IPO Example (responsive) -->
+<div style="background:#0d1b2a; border-radius:12px; padding:28px 20px; margin:28px 0;">
+  <div style="text-align:center; margin-bottom:20px;">
+    <span style="color:#64B5F6; font-size:13px; font-weight:700; letter-spacing:1px;">IPO業務関数定義の例</span>
+    <div style="color:#fff; font-size:16px; font-weight:700; margin-top:4px;">日次売上レポート生成</div>
+  </div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+    <!-- INPUT -->
+    <div style="background:linear-gradient(135deg, #0D47A1, #1565C0); border-radius:10px; padding:16px;">
+      <div style="font-size:12px; font-weight:700; color:#90CAF9; letter-spacing:1px; margin-bottom:10px;">INPUT</div>
+      <div style="font-size:13px; color:#e0e0e0; line-height:1.8;">
+        <strong>source:</strong> SAP (T-code: VA05)<br>
+        <strong>format:</strong> テーブル形式<br>
+        <strong>fields:</strong> 受注番号, 得意先, 金額, 日付<br>
+        <strong>trigger:</strong> 毎日 09:00 JST
+      </div>
+    </div>
+    <!-- OUTPUT -->
+    <div style="background:linear-gradient(135deg, #1B5E20, #2E7D32); border-radius:10px; padding:16px;">
+      <div style="font-size:12px; font-weight:700; color:#A5D6A7; letter-spacing:1px; margin-bottom:10px;">OUTPUT</div>
+      <div style="font-size:13px; color:#e0e0e0; line-height:1.8;">
+        <strong>target:</strong> Excel ファイル<br>
+        <strong>template:</strong> 売上日報テンプレート.xlsx<br>
+        <strong>target:</strong> Email<br>
+        <strong>to:</strong> 部門長配布リスト<br>
+        <strong>subject:</strong> 【日報】売上レポート {date}
+      </div>
+    </div>
+    <!-- PROCESS (full width) -->
+    <div style="background:linear-gradient(135deg, #E65100, #F57C00); border-radius:10px; padding:16px; grid-column:1/-1;">
+      <div style="font-size:12px; font-weight:700; color:#FFCC80; letter-spacing:1px; margin-bottom:10px;">PROCESS</div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        <span style="background:rgba(0,0,0,0.2); padding:4px 12px; border-radius:6px; font-size:12px; color:#fff;">filter: 日付 = 前営業日</span>
+        <span style="background:rgba(0,0,0,0.2); padding:4px 12px; border-radius:6px; font-size:12px; color:#fff;">group_by: 得意先コード</span>
+        <span style="background:rgba(0,0,0,0.2); padding:4px 12px; border-radius:6px; font-size:12px; color:#fff;">aggregate: SUM(金額)</span>
+        <span style="background:rgba(0,0,0,0.2); padding:4px 12px; border-radius:6px; font-size:12px; color:#fff;">sort: 金額 DESC</span>
+        <span style="background:rgba(0,0,0,0.2); padding:4px 12px; border-radius:6px; font-size:12px; color:#fff;">format: 通貨形式 (¥#,###)</span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <h4>Step 3: 再設計 — ターゲット環境に最適な設計判断</h4>
@@ -461,20 +517,44 @@
   構文の一致ではなく、業務的な等価性を確認します。
 </p>
 
-<div class="diagram">
-<pre>
-  【IPO等価性テスト】
-
-  テストデータ (Input)
-       │
-       ├──→ 旧システム実行 ──→ Output A (期待値)
-       │
-       └──→ 新システム実行 ──→ Output B (実測値)
-
-  検証: Output A ≒ Output B
-  ※ 完全一致ではなく、業務的に等価であることを確認
-     (例: 日付フォーマットの差異は許容、金額の差異は不許容)
-</pre>
+<!-- Equivalence test diagram (responsive) -->
+<div style="background:#0d1b2a; border-radius:12px; padding:28px 20px; margin:28px 0;">
+  <div style="text-align:center; color:#64B5F6; font-size:13px; font-weight:700; letter-spacing:2px; margin-bottom:20px;">
+    IPO等価性テスト
+  </div>
+  <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
+    <!-- Input -->
+    <div style="background:#1565C0; border-radius:10px; padding:12px 28px; color:#fff; font-size:14px; font-weight:600;">
+      テストデータ (Input)
+    </div>
+    <!-- Branch -->
+    <div style="display:flex; gap:24px; flex-wrap:wrap; justify-content:center;">
+      <!-- Old system -->
+      <div style="text-align:center;">
+        <div style="font-size:18px; color:#546e7a; margin-bottom:8px;">&#x2B07;</div>
+        <div style="background:#1a2940; border:2px solid #546e7a; border-radius:10px; padding:12px 20px;">
+          <div style="font-size:12px; color:#90a4ae; margin-bottom:4px;">旧システム実行</div>
+          <div style="font-size:14px; color:#e0e0e0; font-weight:600;">Output A</div>
+          <div style="font-size:11px; color:#90a4ae;">(期待値)</div>
+        </div>
+      </div>
+      <!-- New system -->
+      <div style="text-align:center;">
+        <div style="font-size:18px; color:#546e7a; margin-bottom:8px;">&#x2B07;</div>
+        <div style="background:#1a2940; border:2px solid #1976D2; border-radius:10px; padding:12px 20px;">
+          <div style="font-size:12px; color:#90CAF9; margin-bottom:4px;">新システム実行</div>
+          <div style="font-size:14px; color:#e0e0e0; font-weight:600;">Output B</div>
+          <div style="font-size:11px; color:#90CAF9;">(実測値)</div>
+        </div>
+      </div>
+    </div>
+    <!-- Verification -->
+    <div style="font-size:18px; color:#546e7a;">&#x2B07;</div>
+    <div style="background:#2E7D32; border-radius:10px; padding:12px 28px; color:#fff; text-align:center;">
+      <div style="font-size:14px; font-weight:700;">検証: Output A ≒ Output B</div>
+      <div style="font-size:12px; opacity:0.85; margin-top:4px;">業務的に等価であることを確認<br>（日付フォーマットの差異は許容、金額の差異は不許容）</div>
+    </div>
+  </div>
 </div>
 
 <!-- ==================== Section 6 ==================== -->
@@ -576,26 +656,34 @@
 
 <h3>8.2 スコープ境界</h3>
 
-<div class="diagram">
-<pre>
-  ┌──────────────────────────────────────────────────────┐
-  │  HarmonicInsight 知的財産                              │
-  │  ┌────────────────────────────────────────────────┐  │
-  │  │  InsightMigration (HMM実装)                     │  │
-  │  │  ├─ IPO抽出エンジン (AI)                         │  │
-  │  │  ├─ 業務関数定義フォーマット                       │  │
-  │  │  ├─ 等価性検証フレームワーク                       │  │
-  │  │  ├─ 解析・変換・検証・テスト・デプロイ パイプライン  │  │
-  │  │  ├─ GUI ダッシュボード                            │  │
-  │  │  └─ 業務関数設計ツール                            │  │
-  │  └────────────────────────────────────────────────┘  │
-  ├──────────────────────────────────────────────────────┤
-  │  外部プラットフォーム（公開APIを通じて連携）             │
-  │  ├─ aKaBot: Orchestrator API, Robot, Studio          │
-  │  ├─ UiPath: Orchestrator API, Robot, Studio          │
-  │  └─ その他: 任意のRPA/自動化プラットフォーム             │
-  └──────────────────────────────────────────────────────┘
-</pre>
+<!-- Scope boundary diagram (responsive) -->
+<div style="background:#0d1b2a; border-radius:12px; padding:24px 20px; margin:28px 0;">
+  <!-- HarmonicInsight IP -->
+  <div style="border:2px solid #1976D2; border-radius:12px; padding:16px; margin-bottom:12px;">
+    <div style="font-size:13px; font-weight:700; color:#64B5F6; letter-spacing:1px; margin-bottom:12px;">HarmonicInsight 知的財産</div>
+    <!-- InsightMigration -->
+    <div style="background:#1a2940; border:1px solid #1976D2; border-radius:10px; padding:14px;">
+      <div style="font-size:13px; font-weight:700; color:#90CAF9; margin-bottom:10px;">InsightMigration (HMM実装)</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px;">
+        <span style="background:rgba(33,150,243,0.15); border:1px solid rgba(33,150,243,0.3); padding:4px 12px; border-radius:6px; font-size:12px; color:#90CAF9;">IPO抽出エンジン (AI)</span>
+        <span style="background:rgba(33,150,243,0.15); border:1px solid rgba(33,150,243,0.3); padding:4px 12px; border-radius:6px; font-size:12px; color:#90CAF9;">業務関数定義フォーマット</span>
+        <span style="background:rgba(33,150,243,0.15); border:1px solid rgba(33,150,243,0.3); padding:4px 12px; border-radius:6px; font-size:12px; color:#90CAF9;">等価性検証フレームワーク</span>
+        <span style="background:rgba(33,150,243,0.15); border:1px solid rgba(33,150,243,0.3); padding:4px 12px; border-radius:6px; font-size:12px; color:#90CAF9;">解析・変換・検証・テスト・デプロイ</span>
+        <span style="background:rgba(33,150,243,0.15); border:1px solid rgba(33,150,243,0.3); padding:4px 12px; border-radius:6px; font-size:12px; color:#90CAF9;">GUI ダッシュボード</span>
+        <span style="background:rgba(33,150,243,0.15); border:1px solid rgba(33,150,243,0.3); padding:4px 12px; border-radius:6px; font-size:12px; color:#90CAF9;">業務関数設計ツール</span>
+        <span style="background:rgba(33,150,243,0.15); border:1px solid rgba(33,150,243,0.3); padding:4px 12px; border-radius:6px; font-size:12px; color:#90CAF9;">要件レビューポータル</span>
+      </div>
+    </div>
+  </div>
+  <!-- External -->
+  <div style="border:2px solid #546e7a; border-radius:12px; padding:16px;">
+    <div style="font-size:13px; font-weight:700; color:#90a4ae; letter-spacing:1px; margin-bottom:10px;">外部プラットフォーム（公開APIを通じて連携）</div>
+    <div style="display:flex; flex-wrap:wrap; gap:6px;">
+      <span style="background:rgba(255,255,255,0.05); border:1px solid #546e7a; padding:4px 12px; border-radius:6px; font-size:12px; color:#90a4ae;">aKaBot: Orchestrator API, Robot, Studio</span>
+      <span style="background:rgba(255,255,255,0.05); border:1px solid #546e7a; padding:4px 12px; border-radius:6px; font-size:12px; color:#90a4ae;">UiPath: Orchestrator API, Robot, Studio</span>
+      <span style="background:rgba(255,255,255,0.05); border:1px solid #546e7a; padding:4px 12px; border-radius:6px; font-size:12px; color:#90a4ae;">その他: 任意のRPA/自動化プラットフォーム</span>
+    </div>
+  </div>
 </div>
 
 <!-- ==================== Section 9 ==================== -->
@@ -714,26 +802,54 @@
 
 <h3>9.2 HMMの要件定義フロー</h3>
 
-<div class="diagram">
-<pre>
-  【従来型】                              【HMM (AI時代)】
-
-  ロボット担当者を特定                     AIがソースコードからIPOを自動抽出
-       ↓                                       ↓
-  1人ずつ日程調整                          レビューポータルのURLをメール送信
-       ↓                                       ↓
-  会議室で対面ヒアリング (1-2h/人)          担当者が空き時間にWebで回答 (10-15min/人)
-       ↓                                       ↓
-  議事録作成・確認                          回答が自動的にDB保存
-       ↓                                       ↓
-  要件書とりまとめ                          不明点はチャットで即時確認
-       ↓                                       ↓
-  全員分完了まで繰り返し                    全員の回答状況をダッシュボードで確認
-       ↓                                       ↓
-  100本 × 1.5h = 150時間                   100本 × 15min = 25時間 (並列実行)
-
-  所要期間: 数週間〜数ヶ月                  所要期間: 数日
-</pre>
+<!-- Requirements flow comparison (responsive) -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:28px 0;">
+  <!-- Traditional flow -->
+  <div style="background:#0d1b2a; border-radius:12px; padding:20px;">
+    <div style="text-align:center; margin-bottom:16px;">
+      <span style="background:#546e7a; color:#fff; padding:3px 14px; border-radius:10px; font-size:11px; font-weight:700;">従来型</span>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+      <div style="background:#1a2940; border:1px solid #546e7a; border-radius:8px; padding:8px 16px; font-size:12px; color:#e0e0e0; width:100%; text-align:center;">ロボット担当者を特定</div>
+      <div style="color:#546e7a;">&#x2B07;</div>
+      <div style="background:#1a2940; border:1px solid #546e7a; border-radius:8px; padding:8px 16px; font-size:12px; color:#e0e0e0; width:100%; text-align:center;">1人ずつ日程調整</div>
+      <div style="color:#546e7a;">&#x2B07;</div>
+      <div style="background:#1a2940; border:1px solid #c62828; border-radius:8px; padding:8px 16px; font-size:12px; color:#ef9a9a; width:100%; text-align:center;">会議室で対面ヒアリング (1-2h/人)</div>
+      <div style="color:#546e7a;">&#x2B07;</div>
+      <div style="background:#1a2940; border:1px solid #546e7a; border-radius:8px; padding:8px 16px; font-size:12px; color:#e0e0e0; width:100%; text-align:center;">議事録作成・確認</div>
+      <div style="color:#546e7a;">&#x2B07;</div>
+      <div style="background:#1a2940; border:1px solid #546e7a; border-radius:8px; padding:8px 16px; font-size:12px; color:#e0e0e0; width:100%; text-align:center;">要件書とりまとめ</div>
+      <div style="color:#546e7a;">&#x2B07;</div>
+      <div style="background:#1a2940; border:1px solid #c62828; border-radius:8px; padding:8px 16px; font-size:12px; color:#ef9a9a; width:100%; text-align:center;">全員分完了まで繰り返し</div>
+    </div>
+    <div style="text-align:center; margin-top:12px; font-size:12px; color:#c62828; font-weight:600;">
+      100本 × 1.5h = 150時間<br>
+      <span style="color:#90a4ae; font-weight:400;">所要期間: 数週間〜数ヶ月</span>
+    </div>
+  </div>
+  <!-- HMM flow -->
+  <div style="background:#0d1b2a; border-radius:12px; padding:20px;">
+    <div style="text-align:center; margin-bottom:16px;">
+      <span style="background:#1976D2; color:#fff; padding:3px 14px; border-radius:10px; font-size:11px; font-weight:700;">HMM (AI時代)</span>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+      <div style="background:#1a2940; border:1px solid #1976D2; border-radius:8px; padding:8px 16px; font-size:12px; color:#90CAF9; width:100%; text-align:center;">AIがソースコードからIPO自動抽出</div>
+      <div style="color:#1976D2;">&#x2B07;</div>
+      <div style="background:#1a2940; border:1px solid #1976D2; border-radius:8px; padding:8px 16px; font-size:12px; color:#90CAF9; width:100%; text-align:center;">レビューポータルのURLをメール送信</div>
+      <div style="color:#1976D2;">&#x2B07;</div>
+      <div style="background:#1a2940; border:1px solid #2E7D32; border-radius:8px; padding:8px 16px; font-size:12px; color:#A5D6A7; width:100%; text-align:center;">担当者が空き時間にWebで回答 (10-15min)</div>
+      <div style="color:#1976D2;">&#x2B07;</div>
+      <div style="background:#1a2940; border:1px solid #1976D2; border-radius:8px; padding:8px 16px; font-size:12px; color:#90CAF9; width:100%; text-align:center;">回答が自動的にDB保存</div>
+      <div style="color:#1976D2;">&#x2B07;</div>
+      <div style="background:#1a2940; border:1px solid #1976D2; border-radius:8px; padding:8px 16px; font-size:12px; color:#90CAF9; width:100%; text-align:center;">不明点はチャットで即時確認</div>
+      <div style="color:#1976D2;">&#x2B07;</div>
+      <div style="background:#1a2940; border:1px solid #2E7D32; border-radius:8px; padding:8px 16px; font-size:12px; color:#A5D6A7; width:100%; text-align:center;">ダッシュボードで回答状況を確認</div>
+    </div>
+    <div style="text-align:center; margin-top:12px; font-size:12px; color:#4CAF50; font-weight:600;">
+      100本 × 15min = 25時間 (並列)<br>
+      <span style="color:#90a4ae; font-weight:400;">所要期間: 数日</span>
+    </div>
+  </div>
 </div>
 
 <h3>9.3 要件レビューポータル</h3>
