@@ -1,0 +1,29 @@
+# テストケース定義サンプル
+test_cases:
+  - name: "請求書処理_スモークテスト"
+    robot_name: "PRJ_請求書処理ロボット"
+    type: "smoke"
+    input:
+      filePath: "test_data/invoices_test.xlsx"
+    expected:
+      isSuccess: "true"
+    timeout: 120
+
+  - name: "請求書処理_機能テスト"
+    robot_name: "PRJ_請求書処理ロボット"
+    type: "functional"
+    input:
+      filePath: "test_data/invoices_full.xlsx"
+    expected:
+      isSuccess: "true"
+      rowCount: 100
+    timeout: 300
+
+  - name: "データ同期_スモークテスト"
+    robot_name: "PRJ_データ同期ロボット"
+    type: "smoke"
+    input:
+      sourceFile: "test_data/sync_input.csv"
+    expected:
+      status: "completed"
+    timeout: 180

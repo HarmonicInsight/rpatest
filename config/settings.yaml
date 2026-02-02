@@ -1,0 +1,58 @@
+# BizRobo → aKaBot 移行設定
+migration:
+  source_dir: "./samples/bizrobo_input"
+  output_dir: "./output"
+  db_path: "./migration.db"
+
+analyzer:
+  complexity_thresholds:
+    A: 10    # 簡単: ステップ数 ≤ 10
+    B: 30    # 中程度: ステップ数 ≤ 30
+    C: 60    # 複雑: ステップ数 ≤ 60
+    D: 9999  # 非常に複雑: ステップ数 > 60
+  risk_keywords:
+    - "OCR"
+    - "画像認識"
+    - "ImageRecognition"
+    - "DesktopAutomation"
+    - "JavaBridge"
+
+converter:
+  action_mapping_file: "./config/action_mapping.yaml"
+  template_dir: "./config/templates"
+  auto_conversion_targets:
+    basic_actions: 0.90
+    conditionals: 0.85
+    excel_operations: 0.70
+    web_operations: 0.60
+    ocr_image: 0.30
+
+validator:
+  naming_rules:
+    project: "PRJ_{business_name}_{seq:03d}"
+    workflow: "Main"
+    sub_workflow: "Sub_{function_name}"
+    variable: "{type_prefix}_{purpose}_{scope}"
+  type_prefixes:
+    string: "str"
+    int: "int"
+    bool: "bln"
+    datatable: "dt"
+    datetime: "dtm"
+    list: "lst"
+
+tester:
+  akabot_api:
+    base_url: "http://localhost:8080/api/v1"
+    timeout: 300
+  parallel_workers: 6
+  retry_count: 3
+  test_types:
+    - smoke
+    - functional
+    - regression
+    - load
+
+report:
+  output_format: ["html", "json"]
+  dashboard_enabled: true

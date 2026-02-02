@@ -1,0 +1,206 @@
+# BizRobo アクション → aKaBot アクティビティ マッピング定義
+mappings:
+  # --- 基本アクション ---
+  OpenBrowser:
+    akabot: "AkaBot.Core.Activities.OpenBrowser"
+    auto: true
+    properties:
+      url: "Url"
+      browser_type: "BrowserType"
+
+  CloseBrowser:
+    akabot: "AkaBot.Core.Activities.CloseBrowser"
+    auto: true
+
+  Navigate:
+    akabot: "AkaBot.Core.Activities.NavigateTo"
+    auto: true
+    properties:
+      url: "Url"
+
+  Click:
+    akabot: "AkaBot.Core.Activities.Click"
+    auto: true
+    properties:
+      selector: "Target.Selector"
+      click_type: "ClickType"
+
+  TypeInto:
+    akabot: "AkaBot.Core.Activities.TypeInto"
+    auto: true
+    properties:
+      selector: "Target.Selector"
+      text: "Text"
+
+  GetText:
+    akabot: "AkaBot.Core.Activities.GetText"
+    auto: true
+    properties:
+      selector: "Target.Selector"
+      output_variable: "Value"
+
+  # --- 条件分岐 ---
+  If:
+    akabot: "AkaBot.Core.Activities.If"
+    auto: true
+    properties:
+      condition: "Condition"
+
+  ElseIf:
+    akabot: "AkaBot.Core.Activities.ElseIf"
+    auto: true
+
+  Switch:
+    akabot: "AkaBot.Core.Activities.Switch"
+    auto: true
+    properties:
+      expression: "Expression"
+
+  # --- ループ ---
+  ForEach:
+    akabot: "AkaBot.Core.Activities.ForEach"
+    auto: true
+    properties:
+      collection: "Values"
+      item_variable: "CurrentItem"
+
+  While:
+    akabot: "AkaBot.Core.Activities.While"
+    auto: true
+    properties:
+      condition: "Condition"
+
+  # --- Excel操作 ---
+  ExcelOpen:
+    akabot: "AkaBot.Excel.Activities.ExcelApplicationScope"
+    auto: true
+    properties:
+      file_path: "WorkbookPath"
+
+  ExcelReadRange:
+    akabot: "AkaBot.Excel.Activities.ReadRange"
+    auto: true
+    properties:
+      sheet: "SheetName"
+      range: "Range"
+      output: "DataTable"
+
+  ExcelWriteRange:
+    akabot: "AkaBot.Excel.Activities.WriteRange"
+    auto: true
+    properties:
+      sheet: "SheetName"
+      range: "StartingCell"
+      data: "DataTable"
+
+  ExcelWriteCell:
+    akabot: "AkaBot.Excel.Activities.WriteCell"
+    auto: true
+    properties:
+      sheet: "SheetName"
+      cell: "Cell"
+      value: "Value"
+
+  # --- ファイル操作 ---
+  CopyFile:
+    akabot: "AkaBot.Core.Activities.CopyFile"
+    auto: true
+    properties:
+      source: "From"
+      destination: "To"
+
+  MoveFile:
+    akabot: "AkaBot.Core.Activities.MoveFile"
+    auto: true
+
+  DeleteFile:
+    akabot: "AkaBot.Core.Activities.DeleteFile"
+    auto: true
+
+  CreateDirectory:
+    akabot: "AkaBot.Core.Activities.CreateDirectory"
+    auto: true
+
+  # --- Web操作 ---
+  ExtractData:
+    akabot: "AkaBot.Core.Activities.DataScraping"
+    auto: false
+    note: "セレクタ再設定が必要"
+
+  WaitElement:
+    akabot: "AkaBot.Core.Activities.WaitForElement"
+    auto: true
+    properties:
+      selector: "Target.Selector"
+      timeout: "Timeout"
+
+  # --- メール ---
+  SendMail:
+    akabot: "AkaBot.Mail.Activities.SendSmtpMail"
+    auto: true
+    properties:
+      to: "To"
+      subject: "Subject"
+      body: "Body"
+
+  # --- データ操作 ---
+  Assign:
+    akabot: "AkaBot.Core.Activities.Assign"
+    auto: true
+    properties:
+      variable: "To"
+      value: "Value"
+
+  Log:
+    akabot: "AkaBot.Core.Activities.LogMessage"
+    auto: true
+    properties:
+      message: "Message"
+      level: "Level"
+
+  # --- エラーハンドリング ---
+  TryCatch:
+    akabot: "AkaBot.Core.Activities.TryCatch"
+    auto: true
+
+  Throw:
+    akabot: "AkaBot.Core.Activities.Throw"
+    auto: true
+
+  Delay:
+    akabot: "AkaBot.Core.Activities.Delay"
+    auto: true
+    properties:
+      duration: "Duration"
+
+  # --- 未対応/手動対応 ---
+  OCRRead:
+    akabot: null
+    auto: false
+    note: "OCR機能はaKaBotで別途設定が必要"
+    manual_action: "代替実装が必要"
+
+  ImageRecognition:
+    akabot: null
+    auto: false
+    note: "画像認識はaKaBotのComputer Vision機能で再実装"
+    manual_action: "代替実装が必要"
+
+  DesktopRecorder:
+    akabot: null
+    auto: false
+    note: "BizRobo独自機能。aKaBotで再録画が必要"
+    manual_action: "再録画が必要"
+
+# 変数型マッピング
+variable_type_mapping:
+  String: "System.String"
+  Integer: "System.Int32"
+  Long: "System.Int64"
+  Double: "System.Double"
+  Boolean: "System.Boolean"
+  Date: "System.DateTime"
+  DataTable: "System.Data.DataTable"
+  List: "System.Collections.Generic.List"
+  Dictionary: "System.Collections.Generic.Dictionary"
+  Object: "System.Object"

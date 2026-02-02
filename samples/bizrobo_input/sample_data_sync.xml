@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="データ同期ロボット" version="1.0">
+    <variables>
+        <variable name="sourceFile" type="String" defaultValue="\\server\share\input.csv" scope="workflow"/>
+        <variable name="targetUrl" type="String" defaultValue="https://api.example.com/data" scope="workflow"/>
+        <variable name="retryCount" type="Integer" defaultValue="3" scope="workflow"/>
+        <variable name="resultList" type="List" scope="workflow"/>
+    </variables>
+
+    <steps>
+        <Log name="処理開始" message="データ同期処理を開始します" level="Info"/>
+
+        <ExcelOpen name="CSVファイル読込" filePath="${sourceFile}">
+            <ExcelReadRange name="全データ読込" sheet="Sheet1" range="" output="dataTable"/>
+        </ExcelOpen>
+
+        <ForEach name="データ送信ループ" collection="dataTable" itemVariable="row">
+            <TryCatch name="送信エラーハンドリング">
+                <Navigate name="API送信" url="${targetUrl}"/>
+                <Assign name="レスポンス記録" variable="resultList" value="OK"/>
+            </TryCatch>
+        </ForEach>
+
+        <While name="リトライ待機" condition="${retryCount > 0}">
+            <Delay name="待機" duration="5000"/>
+            <Assign name="カウントダウン" variable="retryCount" value="${retryCount - 1}"/>
+        </While>
+
+        <CopyFile name="バックアップ" source="${sourceFile}" destination="\\server\backup\"/>
+        <SendMail name="完了通知" to="team@example.com" subject="データ同期完了" body="同期処理が完了しました"/>
+        <Log name="処理終了" message="データ同期処理を終了します" level="Info"/>
+    </steps>
+</robot>
