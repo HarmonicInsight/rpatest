@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="クレーム管理_023" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="117"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\クレーム管理_023.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\クレーム管理_023.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <Click selector="#login"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <CloseBrowser/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <Click selector="#next"/>
+        <Click selector="#btn"/>
+        <CloseBrowser/>
+        <CloseBrowser/>
+        <GetText selector="#output_5"/>
+        <GetText selector="#output_5"/>
+        <GetText selector="#output_2"/>
+        <TypeInto selector="#input_8" text="${variable}"/>
+        <TypeInto selector="#input_4" text="${variable}"/>
+        <TypeInto selector="#input_4" text="${variable}"/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+        <SubRobot ref="共通_メール送信"/>
+    </SubRobots>
+</BizRoboRobot>

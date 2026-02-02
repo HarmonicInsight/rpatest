@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="決算処理_020" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="111"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\決算処理_020.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\決算処理_020.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <CloseBrowser/>
+        <TypeInto selector="#input_4" text="${variable}"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <Click selector="#next"/>
+        <Click selector="#submit"/>
+        <GetText selector="#output_4"/>
+        <TypeInto selector="#input_7" text="${variable}"/>
+        <GetText selector="#output_1"/>
+        <CloseBrowser/>
+        <CloseBrowser/>
+        <GetText selector="#output_1"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <TypeInto selector="#input_9" text="${variable}"/>
+        <Click selector="#btn"/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+
+    </SubRobots>
+</BizRoboRobot>

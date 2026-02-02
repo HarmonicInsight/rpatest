@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="退職処理_010" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="62"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\退職処理_010.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\退職処理_010.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <TypeInto selector="#input_8" text="${variable}"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <Click selector="#login"/>
+        <GetText selector="#output_2"/>
+        <GetText selector="#output_4"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <Click selector="#btn"/>
+        <CloseBrowser/>
+        <GetText selector="#output_2"/>
+        <CloseBrowser/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <TypeInto selector="#input_7" text="${variable}"/>
+        <CloseBrowser/>
+        <TypeInto selector="#input_4" text="${variable}"/>
+        <Click selector="#login"/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+
+    </SubRobots>
+</BizRoboRobot>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="交換対応_075" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="100"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\交換対応_075.xlsx"/>
+        <Variable name="userId" type="String" default="C:\Data\交換対応_075.xlsx"/>
+        <Variable name="password" type="String" default="C:\Data\交換対応_075.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\交換対応_075.xlsx"/>
+        <Variable name="isSuccess" type="Boolean" default="false"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <If condition="row != null">
+            <Log message="処理完了" level="Info"/>
+            <TypeInto selector="#input_4" text="${variable}"/>
+            <Navigate url="https://erp.example.com"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <WaitElement selector="#loading" timeout="25"/>
+            <CloseBrowser/>
+            <Click selector="#login"/>
+            <GetText selector="#output_5"/>
+        </If>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+        <SubRobot ref="共通_メール送信"/>
+    </SubRobots>
+</BizRoboRobot>

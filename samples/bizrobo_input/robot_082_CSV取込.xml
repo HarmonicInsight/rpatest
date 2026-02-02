@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="CSV取込_082" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="119"/>
+    </Settings>
+    <Variables>
+        <Variable name="inputPath" type="String" default="C:\Data\CSV取込_082.xlsx"/>
+        <Variable name="outputPath" type="String" default="C:\Data\CSV取込_082.xlsx"/>
+        <Variable name="dataTable" type="DataTable" default=""/>
+        <Variable name="count" type="Integer" default="0"/>
+        <Variable name="status" type="String" default="C:\Data\CSV取込_082.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <ForEach collection="dataTable" itemVariable="row">
+            <If condition="row != null">
+                <Log message="処理完了" level="Info"/>
+                <ExcelReadRange sheet="Sheet1" range="A1:Z100"/>
+                <ExcelWriteRange sheet="結果" range="A1"/>
+                <Switch/>
+                <SendMail to="admin@example.com" subject="処理結果通知"/>
+                <Assign variable="result" value="processed"/>
+                <ExcelOpen filePath="C:\Data\data.xlsx"/>
+            </If>
+        </ForEach>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+        <SubRobot ref="共通_メール送信"/>
+    </SubRobots>
+</BizRoboRobot>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="社員登録_009" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="90"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\社員登録_009.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\社員登録_009.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <TypeInto selector="#input_7" text="${variable}"/>
+        <CloseBrowser/>
+        <GetText selector="#output_1"/>
+        <Click selector="#next"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+        <SubRobot ref="共通_メール送信"/>
+    </SubRobots>
+</BizRoboRobot>

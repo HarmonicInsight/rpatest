@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="問合せ対応_072" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="89"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\問合せ対応_072.xlsx"/>
+        <Variable name="userId" type="String" default="C:\Data\問合せ対応_072.xlsx"/>
+        <Variable name="password" type="String" default="C:\Data\問合せ対応_072.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\問合せ対応_072.xlsx"/>
+        <Variable name="isSuccess" type="Boolean" default="false"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <If condition="row != null">
+            <CloseBrowser/>
+            <Navigate url="https://erp.example.com"/>
+            <Log message="処理完了" level="Info"/>
+            <CloseBrowser/>
+            <GetText selector="#output_3"/>
+            <TypeInto selector="#input_4" text="${variable}"/>
+            <WaitElement selector="#loading" timeout="26"/>
+            <WaitElement selector="#loading" timeout="12"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <Click selector="#btn"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <TypeInto selector="#input_5" text="${variable}"/>
+            <Log message="処理完了" level="Info"/>
+            <GetText selector="#output_3"/>
+            <Navigate url="https://erp.example.com"/>
+            <Click selector="#btn"/>
+        </If>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+
+    </SubRobots>
+</BizRoboRobot>

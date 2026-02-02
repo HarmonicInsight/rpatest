@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="債権管理_068" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="119"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\債権管理_068.xlsx"/>
+        <Variable name="userId" type="String" default="C:\Data\債権管理_068.xlsx"/>
+        <Variable name="password" type="String" default="C:\Data\債権管理_068.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\債権管理_068.xlsx"/>
+        <Variable name="isSuccess" type="Boolean" default="false"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <If condition="row != null">
+            <Click selector="#login"/>
+            <Navigate url="https://erp.example.com"/>
+            <GetText selector="#output_4"/>
+            <GetText selector="#output_3"/>
+            <Click selector="#submit"/>
+            <WaitElement selector="#loading" timeout="24"/>
+            <CloseBrowser/>
+            <Log message="処理完了" level="Info"/>
+            <Navigate url="https://erp.example.com"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <CloseBrowser/>
+            <WaitElement selector="#loading" timeout="11"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <WaitElement selector="#loading" timeout="23"/>
+            <CloseBrowser/>
+            <TypeInto selector="#input_4" text="${variable}"/>
+            <Navigate url="https://erp.example.com"/>
+            <GetText selector="#output_5"/>
+            <Log message="処理完了" level="Info"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <TypeInto selector="#input_8" text="${variable}"/>
+            <Click selector="#submit"/>
+            <TypeInto selector="#input_1" text="${variable}"/>
+            <Log message="処理完了" level="Info"/>
+        </If>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+
+    </SubRobots>
+</BizRoboRobot>

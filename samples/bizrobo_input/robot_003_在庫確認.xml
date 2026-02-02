@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="在庫確認_003" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="116"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\在庫確認_003.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\在庫確認_003.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <Click selector="#btn"/>
+        <CloseBrowser/>
+        <CloseBrowser/>
+        <Click selector="#next"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <GetText selector="#output_2"/>
+        <GetText selector="#output_2"/>
+        <TypeInto selector="#input_8" text="${variable}"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <Click selector="#next"/>
+        <TypeInto selector="#input_1" text="${variable}"/>
+        <TypeInto selector="#input_6" text="${variable}"/>
+        <CloseBrowser/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <GetText selector="#output_5"/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+
+    </SubRobots>
+</BizRoboRobot>

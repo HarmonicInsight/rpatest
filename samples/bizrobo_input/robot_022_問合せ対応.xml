@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="問合せ対応_022" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="32"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\問合せ対応_022.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\問合せ対応_022.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <TypeInto selector="#input_1" text="${variable}"/>
+        <Click selector="#next"/>
+        <TypeInto selector="#input_10" text="${variable}"/>
+        <GetText selector="#output_3"/>
+        <Click selector="#btn"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <CloseBrowser/>
+        <CloseBrowser/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <Click selector="#submit"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <GetText selector="#output_5"/>
+        <TypeInto selector="#input_10" text="${variable}"/>
+        <GetText selector="#output_5"/>
+        <CloseBrowser/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+        <SubRobot ref="共通_メール送信"/>
+    </SubRobots>
+</BizRoboRobot>

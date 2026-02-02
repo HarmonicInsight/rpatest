@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="請求書処理ロボット" version="1.0">
+    <variables>
+        <variable name="filePath" type="String" defaultValue="C:\Data\invoices.xlsx" scope="workflow"/>
+        <variable name="outputPath" type="String" defaultValue="C:\Data\result.xlsx" scope="workflow"/>
+        <variable name="rowCount" type="Integer" defaultValue="0" scope="workflow"/>
+        <variable name="isSuccess" type="Boolean" defaultValue="false" scope="workflow"/>
+        <variable name="dataTable" type="DataTable" scope="workflow"/>
+    </variables>
+
+    <steps>
+        <TryCatch name="メイン処理">
+            <OpenBrowser name="ブラウザ起動" url="https://erp.example.com/login" browserType="Chrome"/>
+            <TypeInto name="ユーザーID入力" selector="#username" text="${userId}"/>
+            <TypeInto name="パスワード入力" selector="#password" text="${password}"/>
+            <Click name="ログインボタン" selector="#loginBtn" clickType="Single"/>
+
+            <ExcelOpen name="Excel読込" filePath="${filePath}">
+                <ExcelReadRange name="データ取得" sheet="Sheet1" range="A1:F100" output="dataTable"/>
+            </ExcelOpen>
+
+            <ForEach name="請求書ループ" collection="dataTable" itemVariable="currentRow">
+                <If name="金額チェック" condition="${currentRow.Amount > 0}">
+                    <Navigate name="請求書ページ" url="https://erp.example.com/invoice/new"/>
+                    <TypeInto name="金額入力" selector="#amount" text="${currentRow.Amount}"/>
+                    <TypeInto name="取引先入力" selector="#vendor" text="${currentRow.Vendor}"/>
+                    <Click name="登録ボタン" selector="#submitBtn"/>
+                    <GetText name="結果取得" selector="#result" outputVariable="resultText"/>
+                    <Log name="処理ログ" message="請求書登録完了: ${currentRow.InvoiceNo}" level="Info"/>
+                </If>
+            </ForEach>
+
+            <ExcelWriteRange name="結果書込" sheet="Results" range="A1" data="dataTable"/>
+            <Assign name="成功フラグ" variable="isSuccess" value="true"/>
+        </TryCatch>
+
+        <SendMail name="完了通知" to="admin@example.com" subject="請求書処理完了" body="処理が完了しました"/>
+        <CloseBrowser name="ブラウザ終了"/>
+    </steps>
+</robot>

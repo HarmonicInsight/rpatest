@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="返品処理_024" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="64"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\返品処理_024.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\返品処理_024.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <TypeInto selector="#input_2" text="${variable}"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <TypeInto selector="#input_10" text="${variable}"/>
+        <GetText selector="#output_5"/>
+        <Click selector="#next"/>
+        <CloseBrowser/>
+        <CloseBrowser/>
+        <GetText selector="#output_3"/>
+        <Click selector="#submit"/>
+        <TypeInto selector="#input_1" text="${variable}"/>
+        <Click selector="#login"/>
+        <CloseBrowser/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <GetText selector="#output_2"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+
+    </SubRobots>
+</BizRoboRobot>

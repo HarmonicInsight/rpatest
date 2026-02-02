@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="請求書処理_001" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="55"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\請求書処理_001.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\請求書処理_001.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <TypeInto selector="#input_9" text="${variable}"/>
+        <GetText selector="#output_3"/>
+        <Click selector="#btn"/>
+        <TypeInto selector="#input_3" text="${variable}"/>
+        <GetText selector="#output_1"/>
+        <CloseBrowser/>
+        <CloseBrowser/>
+        <Click selector="#login"/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+        <SubRobot ref="共通_メール送信"/>
+    </SubRobots>
+</BizRoboRobot>

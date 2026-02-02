@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="経費精算_006" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="44"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\経費精算_006.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\経費精算_006.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <Click selector="#btn"/>
+        <TypeInto selector="#input_3" text="${variable}"/>
+        <TypeInto selector="#input_10" text="${variable}"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <GetText selector="#output_4"/>
+        <CloseBrowser/>
+        <CloseBrowser/>
+        <Click selector="#btn"/>
+        <GetText selector="#output_4"/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+        <SubRobot ref="共通_メール送信"/>
+    </SubRobots>
+</BizRoboRobot>

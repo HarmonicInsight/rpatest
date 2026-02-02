@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="評価入力_044" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="51"/>
+    </Settings>
+    <Variables>
+        <Variable name="filePath" type="String" default="C:\Data\評価入力_044.xlsx"/>
+        <Variable name="dataTable" type="DataTable" default=""/>
+        <Variable name="rowCount" type="Integer" default="0"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <ForEach collection="dataTable" itemVariable="row">
+            <If condition="row != null">
+                <ExcelWriteCell sheet="Sheet1" cell="A36"/>
+                <ExcelReadRange sheet="Sheet1" range="A1:Z100"/>
+                <ExcelReadRange sheet="Sheet1" range="A1:Z100"/>
+                <ExcelReadRange sheet="Sheet1" range="A1:Z100"/>
+                <ExcelOpen filePath="C:\Data\data.xlsx"/>
+                <Log message="処理完了" level="Info"/>
+                <Log message="処理完了" level="Info"/>
+                <ExcelWriteCell sheet="Sheet1" cell="A3"/>
+                <ExcelOpen filePath="C:\Data\output.xlsx"/>
+                <ExcelWriteCell sheet="Sheet1" cell="A70"/>
+                <ExcelOpen filePath="C:\Data\output.xlsx"/>
+                <Log message="処理完了" level="Info"/>
+            </If>
+        </ForEach>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+
+    </SubRobots>
+</BizRoboRobot>
