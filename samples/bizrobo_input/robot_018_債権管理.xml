@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="債権管理_018" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="95"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\債権管理_018.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\債権管理_018.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <GetText selector="#output_5"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <Click selector="#submit"/>
+        <CloseBrowser/>
+        <TypeInto selector="#input_2" text="${variable}"/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+        <SubRobot ref="共通_メール送信"/>
+    </SubRobots>
+</BizRoboRobot>

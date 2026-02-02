@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="設備点検_098" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="true"/>
+        <Timeout value="63"/>
+    </Settings>
+    <Variables>
+        <Variable name="imagePath" type="String" default="C:\Data\設備点検_098.xlsx"/>
+        <Variable name="ocrResult" type="String" default="C:\Data\設備点検_098.xlsx"/>
+        <Variable name="confidence" type="Double" default="0.0"/>
+        <Variable name="isValid" type="Boolean" default="false"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <If condition="row != null">
+            <Log message="処理完了" level="Info"/>
+            <ExcelWriteCell sheet="Sheet1" cell="A74"/>
+            <ImageRecognition/>
+            <Assign variable="result" value="processed"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <Navigate url="https://erp.example.com"/>
+            <OCRRead/>
+        </If>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+
+    </SubRobots>
+</BizRoboRobot>

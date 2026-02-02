@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="廃棄処理_100" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="true"/>
+        <Timeout value="105"/>
+    </Settings>
+    <Variables>
+        <Variable name="imagePath" type="String" default="C:\Data\廃棄処理_100.xlsx"/>
+        <Variable name="ocrResult" type="String" default="C:\Data\廃棄処理_100.xlsx"/>
+        <Variable name="confidence" type="Double" default="0.0"/>
+        <Variable name="isValid" type="Boolean" default="false"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <If condition="row != null">
+            <Log message="処理完了" level="Info"/>
+            <Assign variable="result" value="processed"/>
+            <ExcelWriteCell sheet="Sheet1" cell="A98"/>
+            <Navigate url="https://erp.example.com"/>
+            <ExcelWriteCell sheet="Sheet1" cell="A54"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <OCRRead/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <Assign variable="result" value="processed"/>
+            <Log message="処理完了" level="Info"/>
+            <ImageRecognition/>
+            <OCRRead/>
+            <Navigate url="https://erp.example.com"/>
+            <ImageRecognition/>
+        </If>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+
+    </SubRobots>
+</BizRoboRobot>

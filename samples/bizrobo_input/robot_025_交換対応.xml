@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="交換対応_025" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="105"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\交換対応_025.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\交換対応_025.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <TypeInto selector="#input_1" text="${variable}"/>
+        <GetText selector="#output_1"/>
+        <Click selector="#next"/>
+        <CloseBrowser/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <GetText selector="#output_3"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <GetText selector="#output_4"/>
+        <TypeInto selector="#input_4" text="${variable}"/>
+        <TypeInto selector="#input_4" text="${variable}"/>
+        <Click selector="#btn"/>
+        <CloseBrowser/>
+        <CloseBrowser/>
+        <Click selector="#btn"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+
+    </SubRobots>
+</BizRoboRobot>

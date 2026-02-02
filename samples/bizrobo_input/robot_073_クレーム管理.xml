@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="クレーム管理_073" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="106"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\クレーム管理_073.xlsx"/>
+        <Variable name="userId" type="String" default="C:\Data\クレーム管理_073.xlsx"/>
+        <Variable name="password" type="String" default="C:\Data\クレーム管理_073.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\クレーム管理_073.xlsx"/>
+        <Variable name="isSuccess" type="Boolean" default="false"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <If condition="row != null">
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <GetText selector="#output_4"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <WaitElement selector="#loading" timeout="20"/>
+            <TypeInto selector="#input_3" text="${variable}"/>
+            <WaitElement selector="#loading" timeout="30"/>
+            <Click selector="#next"/>
+            <Click selector="#login"/>
+            <CloseBrowser/>
+            <Navigate url="https://erp.example.com"/>
+            <CloseBrowser/>
+            <GetText selector="#output_5"/>
+            <Log message="処理完了" level="Info"/>
+            <TypeInto selector="#input_6" text="${variable}"/>
+            <Log message="処理完了" level="Info"/>
+            <Navigate url="https://erp.example.com"/>
+        </If>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+
+    </SubRobots>
+</BizRoboRobot>

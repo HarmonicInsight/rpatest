@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="経費精算_056" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="111"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\経費精算_056.xlsx"/>
+        <Variable name="userId" type="String" default="C:\Data\経費精算_056.xlsx"/>
+        <Variable name="password" type="String" default="C:\Data\経費精算_056.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\経費精算_056.xlsx"/>
+        <Variable name="isSuccess" type="Boolean" default="false"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <If condition="row != null">
+            <TypeInto selector="#input_3" text="${variable}"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <TypeInto selector="#input_5" text="${variable}"/>
+            <Log message="処理完了" level="Info"/>
+            <Navigate url="https://erp.example.com"/>
+            <GetText selector="#output_5"/>
+            <TypeInto selector="#input_10" text="${variable}"/>
+            <Log message="処理完了" level="Info"/>
+            <Log message="処理完了" level="Info"/>
+            <Click selector="#submit"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <CloseBrowser/>
+            <CloseBrowser/>
+            <GetText selector="#output_4"/>
+            <Click selector="#next"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <WaitElement selector="#loading" timeout="26"/>
+            <Click selector="#submit"/>
+            <Navigate url="https://erp.example.com"/>
+            <WaitElement selector="#loading" timeout="11"/>
+            <CloseBrowser/>
+            <GetText selector="#output_1"/>
+            <Navigate url="https://erp.example.com"/>
+            <WaitElement selector="#loading" timeout="11"/>
+        </If>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+        <SubRobot ref="共通_メール送信"/>
+    </SubRobots>
+</BizRoboRobot>

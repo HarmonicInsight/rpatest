@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="帳票出力_084" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="48"/>
+    </Settings>
+    <Variables>
+        <Variable name="inputPath" type="String" default="C:\Data\帳票出力_084.xlsx"/>
+        <Variable name="outputPath" type="String" default="C:\Data\帳票出力_084.xlsx"/>
+        <Variable name="dataTable" type="DataTable" default=""/>
+        <Variable name="count" type="Integer" default="0"/>
+        <Variable name="status" type="String" default="C:\Data\帳票出力_084.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <ForEach collection="dataTable" itemVariable="row">
+            <If condition="row != null">
+                <Switch/>
+                <ExcelOpen filePath="C:\Data\input.xlsx"/>
+                <ExcelWriteRange sheet="結果" range="A1"/>
+                <Log message="処理完了" level="Info"/>
+                <SendMail to="admin@example.com" subject="処理結果通知"/>
+                <Assign variable="result" value="processed"/>
+                <ExcelReadRange sheet="Sheet1" range="A1:Z100"/>
+            </If>
+        </ForEach>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+
+    </SubRobots>
+</BizRoboRobot>

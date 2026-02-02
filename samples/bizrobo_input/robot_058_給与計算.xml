@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="給与計算_058" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="85"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\給与計算_058.xlsx"/>
+        <Variable name="userId" type="String" default="C:\Data\給与計算_058.xlsx"/>
+        <Variable name="password" type="String" default="C:\Data\給与計算_058.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\給与計算_058.xlsx"/>
+        <Variable name="isSuccess" type="Boolean" default="false"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <If condition="row != null">
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <Log message="処理完了" level="Info"/>
+            <Navigate url="https://erp.example.com"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <Navigate url="https://erp.example.com"/>
+            <CloseBrowser/>
+            <Log message="処理完了" level="Info"/>
+            <WaitElement selector="#loading" timeout="30"/>
+            <TypeInto selector="#input_2" text="${variable}"/>
+            <GetText selector="#output_5"/>
+            <CloseBrowser/>
+            <WaitElement selector="#loading" timeout="18"/>
+            <GetText selector="#output_3"/>
+            <Click selector="#submit"/>
+            <Click selector="#next"/>
+            <TypeInto selector="#input_5" text="${variable}"/>
+        </If>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+        <SubRobot ref="共通_メール送信"/>
+    </SubRobots>
+</BizRoboRobot>

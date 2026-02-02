@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="顧客登録_071" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="69"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\顧客登録_071.xlsx"/>
+        <Variable name="userId" type="String" default="C:\Data\顧客登録_071.xlsx"/>
+        <Variable name="password" type="String" default="C:\Data\顧客登録_071.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\顧客登録_071.xlsx"/>
+        <Variable name="isSuccess" type="Boolean" default="false"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <If condition="row != null">
+            <Navigate url="https://erp.example.com"/>
+            <CloseBrowser/>
+            <CloseBrowser/>
+            <GetText selector="#output_5"/>
+            <WaitElement selector="#loading" timeout="16"/>
+            <Click selector="#next"/>
+            <TypeInto selector="#input_4" text="${variable}"/>
+            <TypeInto selector="#input_10" text="${variable}"/>
+            <Log message="処理完了" level="Info"/>
+            <Click selector="#submit"/>
+            <Log message="処理完了" level="Info"/>
+            <Navigate url="https://erp.example.com"/>
+            <GetText selector="#output_1"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <OpenBrowser url="https://example.com" browserType="Chrome"/>
+            <WaitElement selector="#loading" timeout="27"/>
+        </If>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+
+    </SubRobots>
+</BizRoboRobot>

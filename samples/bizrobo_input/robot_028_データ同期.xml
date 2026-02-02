@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="データ同期_028" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="57"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\データ同期_028.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\データ同期_028.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <CloseBrowser/>
+        <CloseBrowser/>
+        <Click selector="#next"/>
+        <GetText selector="#output_1"/>
+        <CloseBrowser/>
+        <TypeInto selector="#input_10" text="${variable}"/>
+        <Click selector="#submit"/>
+        <Click selector="#submit"/>
+        <TypeInto selector="#input_7" text="${variable}"/>
+        <GetText selector="#output_3"/>
+        <GetText selector="#output_3"/>
+        <TypeInto selector="#input_1" text="${variable}"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+        <SubRobot ref="共通_メール送信"/>
+    </SubRobots>
+</BizRoboRobot>

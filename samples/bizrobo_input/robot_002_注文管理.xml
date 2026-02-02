@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="注文管理_002" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="70"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\注文管理_002.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\注文管理_002.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <GetText selector="#output_5"/>
+        <CloseBrowser/>
+        <Click selector="#submit"/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        <TypeInto selector="#input_3" text="${variable}"/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+
+    </SubRobots>
+</BizRoboRobot>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="面接調整_092" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="true"/>
+        <Timeout value="40"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\面接調整_092.xlsx"/>
+        <Variable name="filePath" type="String" default="C:\Data\面接調整_092.xlsx"/>
+        <Variable name="outputPath" type="String" default="C:\Data\面接調整_092.xlsx"/>
+        <Variable name="dataTable" type="DataTable" default=""/>
+        <Variable name="rowCount" type="Integer" default="0"/>
+        <Variable name="isSuccess" type="Boolean" default="false"/>
+        <Variable name="errorMsg" type="String" default="C:\Data\面接調整_092.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <ForEach collection="dataTable" itemVariable="row">
+            <If condition="row != null">
+                <Click selector="#next"/>
+                <Assign variable="result" value="processed"/>
+                <Switch/>
+                <WaitElement selector="#loading" timeout="15"/>
+                <WaitElement selector="#loading" timeout="29"/>
+                <Assign variable="result" value="processed"/>
+                <TryCatch/>
+                <ExcelOpen filePath="C:\Data\data.xlsx"/>
+                <OpenBrowser url="https://example.com" browserType="Chrome"/>
+                <Delay duration="4121"/>
+                <Assign variable="result" value="processed"/>
+                <ExtractData/>
+                <Log message="処理完了" level="Info"/>
+                <Log message="処理完了" level="Info"/>
+                <OpenBrowser url="https://example.com" browserType="Chrome"/>
+                <SendMail to="admin@example.com" subject="処理結果通知"/>
+                <ExcelReadRange sheet="Sheet1" range="A1:Z100"/>
+                <Switch/>
+                <Delay duration="3302"/>
+                <ExcelReadRange sheet="Sheet1" range="A1:Z100"/>
+                <Switch/>
+                <Click selector="#next"/>
+                <ExtractData/>
+                <CopyFile source="C:\temp\in.txt" destination="C:\temp\out.txt"/>
+                <CopyFile source="C:\temp\in.txt" destination="C:\temp\out.txt"/>
+                <TryCatch/>
+                <CopyFile source="C:\temp\in.txt" destination="C:\temp\out.txt"/>
+                <OpenBrowser url="https://example.com" browserType="Chrome"/>
+                <Click selector="#btn"/>
+                <WaitElement selector="#loading" timeout="25"/>
+                <Log message="処理完了" level="Info"/>
+                <ExcelReadRange sheet="Sheet1" range="A1:Z100"/>
+                <SendMail to="admin@example.com" subject="処理結果通知"/>
+                <TypeInto selector="#input_10" text="${variable}"/>
+                <TypeInto selector="#input_9" text="${variable}"/>
+                <Navigate url="https://erp.example.com"/>
+                <ExcelOpen filePath="C:\Data\input.xlsx"/>
+                <Navigate url="https://erp.example.com"/>
+                <Delay duration="2824"/>
+                <Navigate url="https://erp.example.com"/>
+                <TryCatch/>
+                <ExtractData/>
+                <SendMail to="admin@example.com" subject="処理結果通知"/>
+                <TypeInto selector="#input_10" text="${variable}"/>
+                <ExcelOpen filePath="C:\Data\output.xlsx"/>
+            </If>
+        </ForEach>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+
+    </SubRobots>
+</BizRoboRobot>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="稟議処理_037" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="113"/>
+    </Settings>
+    <Variables>
+        <Variable name="filePath" type="String" default="C:\Data\稟議処理_037.xlsx"/>
+        <Variable name="dataTable" type="DataTable" default=""/>
+        <Variable name="rowCount" type="Integer" default="0"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <ForEach collection="dataTable" itemVariable="row">
+            <If condition="row != null">
+                <ExcelOpen filePath="C:\Data\output.xlsx"/>
+                <ExcelOpen filePath="C:\Data\data.xlsx"/>
+                <ExcelWriteCell sheet="Sheet1" cell="A90"/>
+                <Log message="処理完了" level="Info"/>
+                <ExcelReadRange sheet="Sheet1" range="A1:Z100"/>
+                <ExcelReadRange sheet="Sheet1" range="A1:Z100"/>
+                <ExcelWriteCell sheet="Sheet1" cell="A31"/>
+                <Log message="処理完了" level="Info"/>
+            </If>
+        </ForEach>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+
+        <SubRobot ref="共通_メール送信"/>
+    </SubRobots>
+</BizRoboRobot>

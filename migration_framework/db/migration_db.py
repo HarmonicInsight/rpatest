@@ -164,6 +164,35 @@ class MigrationDB:
             for r in rows
         ]
 
+    def delete_record(self, robot_name: str) -> None:
+        """レコードを削除する"""
+        self.conn.execute(
+            "DELETE FROM migration_records WHERE robot_name=?", (robot_name,)
+        )
+        self.conn.execute(
+            "DELETE FROM migration_logs WHERE robot_name=?", (robot_name,)
+        )
+        self.conn.execute(
+            "DELETE FROM test_results WHERE robot_name=?", (robot_name,)
+        )
+        self.conn.commit()
+
+    def get_logs(self, robot_name: str) -> list[dict[str, Any]]:
+        """ロボットのログを取得する"""
+        rows = self.conn.execute(
+            "SELECT * FROM migration_logs WHERE robot_name=? ORDER BY created_at DESC",
+            (robot_name,),
+        ).fetchall()
+        return [
+            {
+                "timestamp": r["created_at"],
+                "phase": r["phase"],
+                "level": r["level"],
+                "message": r["message"],
+            }
+            for r in rows
+        ]
+
     def get_summary(self) -> dict[str, Any]:
         """全体サマリーを取得する"""
         total = self.conn.execute(

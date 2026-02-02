@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizRoboRobot name="見積作成_012" version="10.7">
+    <Settings>
+        <DesktopAutomation enabled="false"/>
+        <Timeout value="53"/>
+    </Settings>
+    <Variables>
+        <Variable name="url" type="String" default="C:\Data\見積作成_012.xlsx"/>
+        <Variable name="result" type="String" default="C:\Data\見積作成_012.xlsx"/>
+    </Variables>
+    <Actions>
+        <TryCatch>
+        <TypeInto selector="#input_2" text="${variable}"/>
+        <Click selector="#submit"/>
+        <GetText selector="#output_3"/>
+        <CloseBrowser/>
+        <OpenBrowser url="https://example.com" browserType="Chrome"/>
+        </TryCatch>
+    </Actions>
+    <SubRobots>
+        <SubRobot ref="共通_ログイン処理"/>
+        <SubRobot ref="共通_メール送信"/>
+    </SubRobots>
+</BizRoboRobot>
