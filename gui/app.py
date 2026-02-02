@@ -101,6 +101,7 @@ with st.sidebar:
             "🔄 Phase 2: 変換",
             "✅ Phase 3: 検証",
             "🧪 Phase 4: テスト",
+            "🚀 Phase 5: デプロイ",
             "📋 ロボット一覧",
             "⚙️ 設定",
         ],
@@ -149,6 +150,10 @@ elif page == "✅ Phase 3: 検証":
 elif page == "🧪 Phase 4: テスト":
     from gui.pages import phase4_page
     phase4_page.render(get_config(), get_db())
+
+elif page == "🚀 Phase 5: デプロイ":
+    from gui.pages import phase5_page
+    phase5_page.render(get_config(), get_db())
 
 elif page == "📋 ロボット一覧":
     from gui.pages import robot_list
