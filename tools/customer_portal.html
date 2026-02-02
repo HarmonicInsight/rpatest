@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HMM 顧客ポータル — マイグレーション進捗確認</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Yu Gothic','Meiryo','Segoe UI',sans-serif; background:#f5f7fa; color:#1a1a2e; font-size:14px; }
+
+  /* Header */
+  .header {
+    background:linear-gradient(135deg,#0d1b2a,#1b2a4a);
+    color:#fff; padding:20px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+  }
+  .header h1 { font-size:20px; font-weight:700; }
+  .header h1 span { color:#64B5F6; }
+  .header-right { text-align:right; }
+  .header-meta { font-size:12px; color:#90a4ae; }
+  .user-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.1); padding:6px 16px; border-radius:20px; font-size:13px; }
+  .user-avatar { width:28px; height:28px; border-radius:50%; background:#1976D2; color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+
+  /* Navigation tabs */
+  .nav-tabs { display:flex; gap:0; padding:0 32px; background:#fff; border-bottom:2px solid #e0e0e0; }
+  .nav-tab {
+    padding:14px 24px; font-size:14px; font-weight:600; color:#546e7a; cursor:pointer;
+    border-bottom:3px solid transparent; margin-bottom:-2px; transition:all 0.15s;
+  }
+  .nav-tab:hover { color:#1976D2; }
+  .nav-tab.active { color:#1976D2; border-bottom-color:#1976D2; }
+  .nav-tab .count { background:#e0e0e0; color:#546e7a; font-size:11px; font-weight:700; padding:1px 8px; border-radius:10px; margin-left:6px; }
+  .nav-tab.active .count { background:#1976D2; color:#fff; }
+
+  .page { display:none; padding:24px 32px; }
+  .page.active { display:block; }
+
+  /* Dashboard overview cards */
+  .overview-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:24px; }
+  .o-card {
+    background:#fff; border-radius:14px; padding:24px; text-align:center;
+    box-shadow:0 2px 12px rgba(0,0,0,0.05); position:relative; overflow:hidden;
+  }
+  .o-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; }
+  .o-card.c-total::before { background:#1976D2; }
+  .o-card.c-progress::before { background:#F57C00; }
+  .o-card.c-review::before { background:#7B1FA2; }
+  .o-card.c-done::before { background:#2E7D32; }
+  .o-card .val { font-size:36px; font-weight:800; margin:8px 0; }
+  .o-card.c-total .val { color:#1976D2; }
+  .o-card.c-progress .val { color:#F57C00; }
+  .o-card.c-review .val { color:#7B1FA2; }
+  .o-card.c-done .val { color:#2E7D32; }
+  .o-card .lbl { font-size:12px; color:#546e7a; letter-spacing:0.5px; }
+
+  /* Progress ring */
+  .progress-ring-wrap { text-align:center; margin-bottom:24px; }
+  .progress-ring { display:inline-block; position:relative; width:120px; height:120px; }
+  .progress-ring svg { transform:rotate(-90deg); }
+  .progress-ring .ring-text { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:28px; font-weight:800; color:#1976D2; }
+
+  /* Bot list */
+  .bot-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:16px; }
+  .bot-card {
+    background:#fff; border-radius:14px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.05);
+    border-left:5px solid #e0e0e0; transition:all 0.15s; cursor:pointer;
+  }
+  .bot-card:hover { box-shadow:0 4px 20px rgba(0,0,0,0.1); transform:translateY(-1px); }
+  .bot-card.s-waiting { border-left-color:#bdbdbd; }
+  .bot-card.s-ipo { border-left-color:#7B1FA2; }
+  .bot-card.s-review { border-left-color:#F57C00; }
+  .bot-card.s-dev { border-left-color:#1565C0; }
+  .bot-card.s-test { border-left-color:#00838F; }
+  .bot-card.s-done { border-left-color:#2E7D32; }
+  .bot-card-header { display:flex; justify-content:space-between; align-items:start; margin-bottom:8px; }
+  .bot-card-name { font-size:15px; font-weight:700; color:#1b2a4a; }
+  .bot-card-id { font-size:11px; color:#90a4ae; }
+  .bot-card-dept { font-size:12px; color:#546e7a; margin-bottom:8px; }
+
+  .badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; }
+  .badge-waiting { background:#f5f5f5; color:#9e9e9e; }
+  .badge-ipo { background:#f3e5f5; color:#7B1FA2; }
+  .badge-review { background:#fff3e0; color:#E65100; }
+  .badge-dev { background:#e3f2fd; color:#1565C0; }
+  .badge-test { background:#e0f7fa; color:#00695C; }
+  .badge-done { background:#2E7D32; color:#fff; }
+
+  .mini-progress { background:#e0e0e0; border-radius:4px; height:6px; margin-top:8px; }
+  .mini-progress-fill { height:100%; border-radius:4px; transition:width 0.3s; }
+
+  /* Step indicator */
+  .steps { display:flex; gap:0; margin-top:12px; }
+  .step { flex:1; text-align:center; position:relative; }
+  .step-dot {
+    width:20px; height:20px; border-radius:50%; background:#e0e0e0; margin:0 auto 4px;
+    display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:700;
+  }
+  .step-dot.completed { background:#2E7D32; }
+  .step-dot.current { background:#1976D2; box-shadow:0 0 0 3px rgba(25,118,210,0.3); }
+  .step-label { font-size:9px; color:#90a4ae; }
+  .step-label.current { color:#1976D2; font-weight:600; }
+  .step-line { position:absolute; top:10px; left:50%; width:100%; height:2px; background:#e0e0e0; z-index:-1; }
+  .step-line.completed { background:#2E7D32; }
+
+  /* Review actions */
+  .review-needed { background:#fff3e0; border-radius:10px; padding:12px 16px; margin-top:10px; font-size:12px; color:#E65100; }
+  .review-needed strong { display:block; margin-bottom:4px; }
+
+  /* Filter bar */
+  .filter-bar { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
+  .filter-bar input, .filter-bar select {
+    padding:8px 14px; border:1px solid #d0d0d0; border-radius:8px; font-size:13px; background:#fff;
+  }
+  .filter-bar input:focus, .filter-bar select:focus { outline:none; border-color:#1976D2; }
+
+  .btn { padding:8px 18px; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
+  .btn-primary { background:#1976D2; color:#fff; }
+  .btn-primary:hover { background:#1565C0; }
+  .btn-outline { background:#fff; color:#1976D2; border:1px solid #1976D2; }
+  .btn-outline:hover { background:#e3f2fd; }
+  .btn-success { background:#2E7D32; color:#fff; }
+  .btn-warning { background:#F57C00; color:#fff; }
+
+  /* Detail panel */
+  .detail-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; }
+  .detail-overlay.active { display:flex; justify-content:center; align-items:flex-start; padding-top:40px; }
+  .detail-panel {
+    background:#fff; border-radius:16px; width:90%; max-width:700px; max-height:85vh; overflow-y:auto;
+    box-shadow:0 8px 40px rgba(0,0,0,0.2); padding:32px;
+  }
+  .detail-panel h2 { font-size:20px; color:#1b2a4a; margin-bottom:4px; }
+  .detail-section { margin-top:20px; }
+  .detail-section h3 { font-size:14px; color:#546e7a; letter-spacing:0.5px; text-transform:uppercase; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #e0e0e0; }
+  .ipo-block { border-radius:10px; padding:16px; margin-bottom:12px; }
+  .ipo-input { background:#e3f2fd; border-left:4px solid #1565C0; }
+  .ipo-process { background:#fff3e0; border-left:4px solid #F57C00; }
+  .ipo-output { background:#e8f5e9; border-left:4px solid #2E7D32; }
+  .ipo-block h4 { font-size:13px; font-weight:700; margin-bottom:8px; }
+  .ipo-block p { font-size:13px; color:#37474f; margin:0; line-height:1.7; }
+
+  /* Feedback form */
+  .feedback-form { background:#f8f9fa; border-radius:12px; padding:20px; margin-top:16px; }
+  .feedback-form label { display:block; font-size:13px; font-weight:600; color:#37474f; margin:8px 0 4px; }
+  .feedback-form select, .feedback-form textarea, .feedback-form input {
+    width:100%; padding:8px 12px; border:1px solid #d0d0d0; border-radius:8px; font-size:13px; font-family:inherit;
+  }
+  .feedback-form textarea { height:80px; resize:vertical; }
+  .feedback-history { margin-top:12px; }
+  .fb-entry { background:#fff; border-radius:8px; padding:12px; margin-bottom:8px; border-left:4px solid #e0e0e0; }
+  .fb-entry.fb-change { border-left-color:#F57C00; }
+  .fb-entry.fb-add { border-left-color:#1976D2; }
+  .fb-entry.fb-issue { border-left-color:#c62828; }
+  .fb-entry.fb-approve { border-left-color:#2E7D32; }
+  .fb-meta { font-size:11px; color:#90a4ae; margin-bottom:4px; }
+  .fb-text { font-size:13px; color:#37474f; }
+
+  /* UAT section */
+  .uat-actions { display:flex; gap:12px; margin:12px 0; }
+  .uat-result { background:#f8f9fa; border-radius:10px; padding:12px; margin-top:8px; font-size:13px; }
+
+  /* Notification banner */
+  .notification-bar {
+    background:#fff3e0; border-bottom:1px solid #FFB74D; padding:10px 32px; font-size:13px; color:#E65100;
+    display:flex; align-items:center; gap:12px;
+  }
+  .notification-bar.hidden { display:none; }
+
+  @media (max-width:768px) {
+    .header, .nav-tabs, .page { padding-left:16px; padding-right:16px; }
+    .bot-grid { grid-template-columns:1fr; }
+    .overview-cards { grid-template-columns:1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div>
+    <h1>Harmonic <span>Migration</span> Portal</h1>
+    <div class="header-meta">マイグレーション進捗確認ポータル</div>
+  </div>
+  <div class="header-right">
+    <div class="user-badge" id="currentUser">
+      <div class="user-avatar" id="userAvatar">田</div>
+      <span id="userName">田中 太郎</span>
+      <select id="userSwitch" onchange="switchUser()" style="background:transparent; border:none; color:#fff; font-size:12px; cursor:pointer;">
+        <option value="0">田中 太郎（経理部）</option>
+        <option value="1">鈴木 花子（営業部）</option>
+        <option value="2">山田 一郎（物流部）</option>
+        <option value="3">佐藤 恵子（人事部）</option>
+        <option value="4">高橋 健一（情シス）</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Notification banner -->
+<div class="notification-bar" id="notifBar">
+  <strong>お知らせ:</strong>
+  <span id="notifText">レビュー待ちのボットが <strong id="notifReviewCount">0</strong> 件あります。ご確認をお願いします。</span>
+  <button onclick="this.parentElement.classList.add('hidden')" style="margin-left:auto; background:none; border:none; font-size:16px; cursor:pointer; color:#E65100;">×</button>
+</div>
+
+<!-- ===== NAVIGATION ===== -->
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="showPage('overview')">全体進捗</div>
+  <div class="nav-tab" onclick="showPage('mybots')">担当ボット <span class="count" id="myBotCount">0</span></div>
+  <div class="nav-tab" onclick="showPage('review')">レビュー依頼 <span class="count" id="reviewCount">0</span></div>
+  <div class="nav-tab" onclick="showPage('uat')">UATテスト <span class="count" id="uatCount">0</span></div>
+  <div class="nav-tab" onclick="showPage('timeline')">タイムライン</div>
+</div>
+
+<!-- ===== PAGE: OVERVIEW ===== -->
+<div class="page active" id="page-overview">
+  <h2 style="font-size:18px; color:#1b2a4a; margin-bottom:20px;">プロジェクト全体の進捗状況</h2>
+
+  <div style="display:flex; gap:32px; align-items:center; flex-wrap:wrap; margin-bottom:24px;">
+    <div class="progress-ring-wrap">
+      <div class="progress-ring">
+        <svg width="120" height="120">
+          <circle cx="60" cy="60" r="50" stroke="#e0e0e0" stroke-width="10" fill="none"/>
+          <circle id="progressCircle" cx="60" cy="60" r="50" stroke="#1976D2" stroke-width="10" fill="none"
+            stroke-dasharray="314" stroke-dashoffset="314" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-text" id="overallPct">0%</div>
+      </div>
+    </div>
+    <div class="overview-cards" style="flex:1;">
+      <div class="o-card c-total"><div class="val" id="ovTotal">0</div><div class="lbl">全ボット</div></div>
+      <div class="o-card c-progress"><div class="val" id="ovActive">0</div><div class="lbl">進行中</div></div>
+      <div class="o-card c-review"><div class="val" id="ovReview">0</div><div class="lbl">レビュー待ち</div></div>
+      <div class="o-card c-done"><div class="val" id="ovDone">0</div><div class="lbl">完了</div></div>
+    </div>
+  </div>
+
+  <!-- All bots grid -->
+  <div class="filter-bar">
+    <input type="text" id="ovSearch" placeholder="ボット名で検索..." oninput="renderOverview()" style="width:240px;">
+    <select id="ovFilter" onchange="renderOverview()">
+      <option value="">全ステータス</option>
+      <option value="waiting">未着手</option>
+      <option value="ipo">IPO抽出中</option>
+      <option value="review">レビュー待ち</option>
+      <option value="dev">実装中</option>
+      <option value="test">テスト中</option>
+      <option value="done">完了</option>
+    </select>
+    <select id="ovDeptFilter" onchange="renderOverview()">
+      <option value="">全部門</option>
+    </select>
+  </div>
+  <div class="bot-grid" id="overviewGrid"></div>
+</div>
+
+<!-- ===== PAGE: MY BOTS ===== -->
+<div class="page" id="page-mybots">
+  <h2 style="font-size:18px; color:#1b2a4a; margin-bottom:20px;">あなたが担当するボット</h2>
+  <div class="bot-grid" id="myBotsGrid"></div>
+</div>
+
+<!-- ===== PAGE: REVIEW ===== -->
+<div class="page" id="page-review">
+  <h2 style="font-size:18px; color:#1b2a4a; margin-bottom:8px;">レビュー依頼</h2>
+  <p style="font-size:13px; color:#546e7a; margin-bottom:20px;">
+    AIが抽出したIPO定義をご確認いただき、フィードバックをお願いします。
+    内容に問題がなければ「承認」、変更が必要な場合は「変更要望」をお送りください。
+  </p>
+  <div class="bot-grid" id="reviewGrid"></div>
+  <div id="reviewEmpty" style="display:none; text-align:center; padding:40px; color:#90a4ae;">
+    現在レビュー依頼はありません。
+  </div>
+</div>
+
+<!-- ===== PAGE: UAT ===== -->
+<div class="page" id="page-uat">
+  <h2 style="font-size:18px; color:#1b2a4a; margin-bottom:8px;">UATテスト</h2>
+  <p style="font-size:13px; color:#546e7a; margin-bottom:20px;">
+    移行後のボットが正しく動作しているかご確認ください。
+    テスト結果（合格/不合格）と所感をお送りいただけます。
+  </p>
+  <div class="bot-grid" id="uatGrid"></div>
+  <div id="uatEmpty" style="display:none; text-align:center; padding:40px; color:#90a4ae;">
+    現在UATテスト対象のボットはありません。
+  </div>
+</div>
+
+<!-- ===== PAGE: TIMELINE ===== -->
+<div class="page" id="page-timeline">
+  <h2 style="font-size:18px; color:#1b2a4a; margin-bottom:20px;">更新タイムライン</h2>
+  <div id="timelineList" style="max-width:600px;"></div>
+</div>
+
+<!-- ===== DETAIL OVERLAY ===== -->
+<div class="detail-overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-panel" id="detailPanel"></div>
+</div>
+
+<script>
+// ===== DATA =====
+const USERS = [
+  { name:'田中 太郎', dept:'経理部', avatar:'田' },
+  { name:'鈴木 花子', dept:'営業部', avatar:'鈴' },
+  { name:'山田 一郎', dept:'物流部', avatar:'山' },
+  { name:'佐藤 恵子', dept:'人事部', avatar:'佐' },
+  { name:'高橋 健一', dept:'情報システム部', avatar:'高' },
+];
+let currentUserIdx = 0;
+
+const STATUS = {
+  waiting: { label:'未着手', cls:'badge-waiting', order:0 },
+  ipo:     { label:'IPO抽出中', cls:'badge-ipo', order:1 },
+  review:  { label:'レビュー待ち', cls:'badge-review', order:2 },
+  dev:     { label:'実装中', cls:'badge-dev', order:3 },
+  test:    { label:'テスト中', cls:'badge-test', order:4 },
+  done:    { label:'完了', cls:'badge-done', order:5 },
+};
+
+const STEPS = ['waiting','ipo','review','dev','test','done'];
+const STEP_LABELS = ['未着手','IPO抽出','レビュー','実装','テスト','完了'];
+
+// Generate customer-visible bot data
+const bots = generateBots();
+
+function generateBots() {
+  const depts = ['経理部','営業部','人事部','物流部','総務部','情報システム部','購買部','品質管理部'];
+  const owners = ['田中 太郎','鈴木 花子','佐藤 恵子','山田 一郎','高橋 健一','中村 雄太','小林 美咲','加藤 健二'];
+  const names = [
+    '売上日報生成','請求書照合','在庫アラート通知','勤怠データ集計','見積書作成',
+    '経費精算自動化','受注データ転記','出荷通知メール','仕入先マスタ更新','月次決算集計',
+    '給与明細配信','交通費精算','契約書PDF生成','顧客データ同期','入金消込処理',
+    '与信チェック','発注書作成','納品書照合','売掛金管理','固定資産台帳更新',
+    '有給残日数通知','採用応募者管理','社内報配信','検品結果登録','入出庫管理',
+    'クレーム管理転記','会議室予約集計','出張旅費精算','稟議書ステータス確認','予算実績比較',
+  ];
+
+  const statuses = ['waiting','ipo','review','dev','test','done'];
+  const list = [];
+  for (let i = 0; i < 60; i++) {
+    const si = Math.min(Math.floor(Math.random()*6.5), 5);
+    const st = statuses[si];
+    list.push({
+      id: 'BOT-' + String(i+1).padStart(3,'0'),
+      name: i < 30 ? names[i] : names[i%30] + '_v2',
+      department: depts[i % depts.length],
+      owner: owners[i % owners.length],
+      status: st,
+      description: 'このロボットは' + names[i%30] + 'を自動化します。',
+      ipo: {
+        input: '【入力元】' + ['SAP VA05 受注一覧','共有フォルダ CSV','Webポータル','Excel マスタ','メール添付ファイル'][i%5],
+        process: '【処理内容】' + ['日付フィルタ → 得意先別集計 → 通貨フォーマット変換','データ照合 → 差分検出 → エラー行抽出','条件判定 → 承認ルーティング → ステータス更新','データ変換 → バリデーション → マッピング','OCR読取 → テキスト抽出 → 項目分類'][i%5],
+        output: '【出力先】' + ['Excel レポート + メール配信','差分レポート（Excel）','基幹システム登録','CSV出力 + DB登録','PDF生成 + 共有フォルダ保存'][i%5],
+      },
+      feedbacks: i % 5 === 0 ? [{type:'approve',text:'内容に問題ありません。',author:'田中 太郎',date:'2026-01-28'}] :
+                 i % 7 === 0 ? [{type:'change',text:'出力フォーマットを変更してほしい。通貨表示を追加。',author:'鈴木 花子',date:'2026-01-29'}] : [],
+      uatResult: st === 'done' ? 'pass' : st === 'test' ? '' : null,
+      uatComment: st === 'done' ? '問題なく動作しています。' : '',
+      updated: '2026-02-0' + (1 + i%2),
+    });
+  }
+  return list;
+}
+
+const timeline = [
+  { date:'2026-02-02', text:'BOT-009 仕入先マスタ更新 のUATテストが完了しました', type:'done' },
+  { date:'2026-02-02', text:'BOT-015 入金消込処理 のIPO定義レビューを依頼しました', type:'review' },
+  { date:'2026-02-01', text:'BOT-001 売上日報生成 の移行が完了しました', type:'done' },
+  { date:'2026-02-01', text:'BOT-022 採用応募者管理 の実装を開始しました', type:'dev' },
+  { date:'2026-01-31', text:'BOT-003 在庫アラート通知 のレビュー回答を受領しました', type:'feedback' },
+  { date:'2026-01-31', text:'BOT-008 出荷通知メール のUATテストを依頼しました', type:'test' },
+  { date:'2026-01-30', text:'BOT-005 見積書作成 のIPO抽出が完了しました', type:'ipo' },
+  { date:'2026-01-30', text:'5件のボットのレビュー依頼を送信しました', type:'review' },
+  { date:'2026-01-29', text:'プロジェクトキックオフ — 60本の移行を開始', type:'info' },
+];
+
+// ===== NAVIGATION =====
+function showPage(page) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  event.target.closest('.nav-tab').classList.add('active');
+  document.getElementById('page-' + page).classList.add('active');
+  if (page === 'overview') renderOverview();
+  else if (page === 'mybots') renderMyBots();
+  else if (page === 'review') renderReview();
+  else if (page === 'uat') renderUAT();
+  else if (page === 'timeline') renderTimeline();
+}
+
+function switchUser() {
+  currentUserIdx = parseInt(document.getElementById('userSwitch').value);
+  const u = USERS[currentUserIdx];
+  document.getElementById('userName').textContent = u.name;
+  document.getElementById('userAvatar').textContent = u.avatar;
+  updateCounts();
+  // Re-render current page
+  const activePage = document.querySelector('.page.active');
+  if (activePage) {
+    const id = activePage.id.replace('page-','');
+    if (id === 'mybots') renderMyBots();
+    else if (id === 'review') renderReview();
+    else if (id === 'uat') renderUAT();
+  }
+}
+
+// ===== COUNTS =====
+function updateCounts() {
+  const user = USERS[currentUserIdx];
+  const myBots = bots.filter(b => b.owner === user.name);
+  const reviewBots = bots.filter(b => b.status === 'review' && b.owner === user.name);
+  const uatBots = bots.filter(b => b.status === 'test' && b.owner === user.name);
+  const done = bots.filter(b => b.status === 'done').length;
+  const total = bots.length;
+  const pct = Math.round(done/total*100);
+
+  document.getElementById('myBotCount').textContent = myBots.length;
+  document.getElementById('reviewCount').textContent = reviewBots.length;
+  document.getElementById('uatCount').textContent = uatBots.length;
+  document.getElementById('notifReviewCount').textContent = reviewBots.length;
+  document.getElementById('notifBar').classList.toggle('hidden', reviewBots.length === 0);
+
+  // Overview cards
+  document.getElementById('ovTotal').textContent = total;
+  document.getElementById('ovActive').textContent = bots.filter(b => !['waiting','done'].includes(b.status)).length;
+  document.getElementById('ovReview').textContent = bots.filter(b => b.status === 'review').length;
+  document.getElementById('ovDone').textContent = done;
+  document.getElementById('overallPct').textContent = pct + '%';
+
+  // Progress circle
+  const circle = document.getElementById('progressCircle');
+  const offset = 314 - (314 * pct / 100);
+  circle.style.strokeDashoffset = offset;
+
+  // Dept filter
+  const deptSel = document.getElementById('ovDeptFilter');
+  const curDept = deptSel.value;
+  const depts = [...new Set(bots.map(b => b.department))].sort();
+  deptSel.innerHTML = '<option value="">全部門</option>' + depts.map(d => `<option value="${d}">${d}</option>`).join('');
+  deptSel.value = curDept;
+}
+
+// ===== BOT CARD RENDERER =====
+function botCardHtml(b) {
+  const stepIdx = STEPS.indexOf(b.status);
+  const pct = Math.round(stepIdx / (STEPS.length-1) * 100);
+  const color = b.status === 'done' ? '#2E7D32' : '#1976D2';
+
+  const stepsHtml = STEPS.map((s, i) => {
+    const dotCls = i < stepIdx ? 'completed' : i === stepIdx ? 'current' : '';
+    const lineCls = i < stepIdx ? 'completed' : '';
+    const lblCls = i === stepIdx ? 'current' : '';
+    return `<div class="step">
+      ${i > 0 ? `<div class="step-line ${lineCls}"></div>` : ''}
+      <div class="step-dot ${dotCls}">${i < stepIdx ? '&#x2713;' : ''}</div>
+      <div class="step-label ${lblCls}">${STEP_LABELS[i]}</div>
+    </div>`;
+  }).join('');
+
+  const needsAction = (b.status === 'review' || b.status === 'test') && b.owner === USERS[currentUserIdx].name;
+
+  return `<div class="bot-card s-${b.status}" onclick="openDetail('${b.id}')">
+    <div class="bot-card-header">
+      <div>
+        <div class="bot-card-name">${b.name}</div>
+        <div class="bot-card-id">${b.id}</div>
+      </div>
+      <span class="badge ${STATUS[b.status].cls}">${STATUS[b.status].label}</span>
+    </div>
+    <div class="bot-card-dept">${b.department} / ${b.owner}</div>
+    <div class="mini-progress"><div class="mini-progress-fill" style="width:${pct}%;background:${color};"></div></div>
+    <div class="steps">${stepsHtml}</div>
+    ${needsAction ? `<div class="review-needed"><strong>${b.status === 'review' ? 'レビュー回答をお願いします' : 'UATテスト結果をお願いします'}</strong>タップして詳細を確認</div>` : ''}
+  </div>`;
+}
+
+// ===== RENDER PAGES =====
+function renderOverview() {
+  updateCounts();
+  const search = document.getElementById('ovSearch').value.toLowerCase();
+  const fStatus = document.getElementById('ovFilter').value;
+  const fDept = document.getElementById('ovDeptFilter').value;
+  const filtered = bots.filter(b => {
+    if (search && !b.name.toLowerCase().includes(search) && !b.id.toLowerCase().includes(search)) return false;
+    if (fStatus && b.status !== fStatus) return false;
+    if (fDept && b.department !== fDept) return false;
+    return true;
+  });
+  document.getElementById('overviewGrid').innerHTML = filtered.map(botCardHtml).join('');
+}
+
+function renderMyBots() {
+  const user = USERS[currentUserIdx];
+  const myBots = bots.filter(b => b.owner === user.name);
+  document.getElementById('myBotsGrid').innerHTML = myBots.length > 0 ?
+    myBots.map(botCardHtml).join('') :
+    '<div style="text-align:center; padding:40px; color:#90a4ae; grid-column:1/-1;">担当ボットはありません</div>';
+}
+
+function renderReview() {
+  const user = USERS[currentUserIdx];
+  const reviewBots = bots.filter(b => b.status === 'review' && b.owner === user.name);
+  document.getElementById('reviewGrid').innerHTML = reviewBots.map(botCardHtml).join('');
+  document.getElementById('reviewEmpty').style.display = reviewBots.length === 0 ? 'block' : 'none';
+}
+
+function renderUAT() {
+  const user = USERS[currentUserIdx];
+  const uatBots = bots.filter(b => b.status === 'test' && b.owner === user.name);
+  document.getElementById('uatGrid').innerHTML = uatBots.map(botCardHtml).join('');
+  document.getElementById('uatEmpty').style.display = uatBots.length === 0 ? 'block' : 'none';
+}
+
+function renderTimeline() {
+  const colors = { done:'#2E7D32', review:'#7B1FA2', dev:'#1565C0', test:'#00838F', ipo:'#F57C00', feedback:'#1976D2', info:'#546e7a' };
+  document.getElementById('timelineList').innerHTML = timeline.map(t =>
+    `<div style="display:flex; gap:16px; margin-bottom:16px; align-items:start;">
+      <div style="width:8px; height:8px; border-radius:50%; background:${colors[t.type]||'#90a4ae'}; margin-top:6px; flex-shrink:0;"></div>
+      <div>
+        <div style="font-size:11px; color:#90a4ae;">${t.date}</div>
+        <div style="font-size:13px; color:#37474f;">${t.text}</div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+// ===== DETAIL PANEL =====
+function openDetail(botId) {
+  const b = bots.find(x => x.id === botId);
+  if (!b) return;
+  const user = USERS[currentUserIdx];
+  const isOwner = b.owner === user.name;
+  const canReview = b.status === 'review' && isOwner;
+  const canUAT = b.status === 'test' && isOwner;
+
+  const feedbacksHtml = b.feedbacks.length > 0 ?
+    b.feedbacks.map(f => {
+      const typeCls = f.type === 'approve' ? 'fb-approve' : f.type === 'change' ? 'fb-change' : f.type === 'add' ? 'fb-add' : 'fb-issue';
+      const typeLabel = f.type === 'approve' ? '承認' : f.type === 'change' ? '変更要望' : f.type === 'add' ? '追加要望' : '問題報告';
+      return `<div class="fb-entry ${typeCls}">
+        <div class="fb-meta">${f.date} — ${f.author} — ${typeLabel}</div>
+        <div class="fb-text">${f.text}</div>
+      </div>`;
+    }).join('') : '<div style="color:#90a4ae; font-size:13px;">フィードバックはまだありません</div>';
+
+  let actionHtml = '';
+  if (canReview) {
+    actionHtml = `
+      <div class="detail-section">
+        <h3>フィードバック送信</h3>
+        <div class="feedback-form">
+          <label>種類</label>
+          <select id="detailFbType">
+            <option value="approve">承認（問題なし）</option>
+            <option value="change">変更要望</option>
+            <option value="add">追加要望</option>
+            <option value="issue">問題報告</option>
+          </select>
+          <label>コメント</label>
+          <textarea id="detailFbText" placeholder="詳細をご記入ください（承認の場合は任意）"></textarea>
+          <div style="margin-top:12px; display:flex; gap:12px;">
+            <button class="btn btn-success" onclick="submitFeedback('${b.id}','approve')">承認する</button>
+            <button class="btn btn-warning" onclick="submitFeedback('${b.id}','custom')">フィードバック送信</button>
+          </div>
+        </div>
+      </div>`;
+  }
+  if (canUAT) {
+    actionHtml = `
+      <div class="detail-section">
+        <h3>UATテスト結果</h3>
+        <p style="font-size:13px; color:#546e7a; margin-bottom:12px;">
+          移行後のボットが正しく動作しているかご確認ください。
+        </p>
+        <div class="uat-actions">
+          <button class="btn btn-success" onclick="submitUAT('${b.id}','pass')">合格</button>
+          <button class="btn" style="background:#c62828; color:#fff;" onclick="submitUAT('${b.id}','fail')">不合格</button>
+        </div>
+        <label style="font-size:13px; font-weight:600; color:#37474f;">所感・備考</label>
+        <textarea id="uatComment" placeholder="テスト結果の詳細（問題がある場合は具体的に記載）"
+          style="width:100%; padding:8px 12px; border:1px solid #d0d0d0; border-radius:8px; font-size:13px; height:80px; font-family:inherit;"></textarea>
+      </div>`;
+  }
+
+  document.getElementById('detailPanel').innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:start;">
+      <div>
+        <h2>${b.name}</h2>
+        <div style="font-size:13px; color:#90a4ae; margin-bottom:16px;">${b.id} / ${b.department} / ${b.owner}</div>
+      </div>
+      <button onclick="closeDetail()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#90a4ae;">×</button>
+    </div>
+
+    <span class="badge ${STATUS[b.status].cls}" style="font-size:13px; padding:4px 14px;">${STATUS[b.status].label}</span>
+
+    <div class="detail-section">
+      <h3>IPO定義</h3>
+      <div class="ipo-block ipo-input"><h4>INPUT（入力）</h4><p>${b.ipo.input}</p></div>
+      <div class="ipo-block ipo-process"><h4>PROCESS（処理）</h4><p>${b.ipo.process}</p></div>
+      <div class="ipo-block ipo-output"><h4>OUTPUT（出力）</h4><p>${b.ipo.output}</p></div>
+    </div>
+
+    <div class="detail-section">
+      <h3>フィードバック履歴</h3>
+      <div class="feedback-history">${feedbacksHtml}</div>
+    </div>
+
+    ${b.uatResult ? `<div class="detail-section">
+      <h3>UATテスト結果</h3>
+      <div class="uat-result" style="border-left:4px solid ${b.uatResult === 'pass' ? '#2E7D32' : '#c62828'};">
+        <strong style="color:${b.uatResult === 'pass' ? '#2E7D32' : '#c62828'};">${b.uatResult === 'pass' ? '合格' : '不合格'}</strong>
+        ${b.uatComment ? `<p style="margin-top:4px; font-size:13px; color:#37474f;">${b.uatComment}</p>` : ''}
+      </div>
+    </div>` : ''}
+
+    ${actionHtml}
+  `;
+
+  document.getElementById('detailOverlay').classList.add('active');
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('active');
+}
+
+function submitFeedback(botId, action) {
+  const b = bots.find(x => x.id === botId);
+  if (!b) return;
+  const user = USERS[currentUserIdx];
+  let type, text;
+
+  if (action === 'approve') {
+    type = 'approve';
+    text = document.getElementById('detailFbText').value.trim() || '内容に問題ありません。承認します。';
+  } else {
+    type = document.getElementById('detailFbType').value;
+    text = document.getElementById('detailFbText').value.trim();
+    if (!text) { alert('コメントを入力してください'); return; }
+  }
+
+  b.feedbacks.push({ type, text, author: user.name, date: new Date().toISOString().slice(0,10) });
+
+  if (type === 'approve') {
+    b.status = 'dev';
+    alert('承認しました。実装フェーズに進みます。');
+  } else {
+    alert('フィードバックを送信しました。担当コンサルタントが確認します。');
+  }
+
+  closeDetail();
+  updateCounts();
+  renderOverview();
+}
+
+function submitUAT(botId, result) {
+  const b = bots.find(x => x.id === botId);
+  if (!b) return;
+  const comment = document.getElementById('uatComment').value.trim();
+  b.uatResult = result;
+  b.uatComment = comment;
+
+  if (result === 'pass') {
+    b.status = 'done';
+    alert('テスト合格として記録しました。ありがとうございます。');
+  } else {
+    alert('不合格として記録しました。担当コンサルタントが修正対応します。');
+  }
+
+  closeDetail();
+  updateCounts();
+  renderOverview();
+}
+
+// ===== INIT =====
+updateCounts();
+renderOverview();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HMM Bot Management Sheet — ボット管理シート</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Yu Gothic','Meiryo','Segoe UI',sans-serif; background:#f0f2f5; color:#1a1a2e; font-size:14px; }
+
+  /* Header */
+  .header {
+    background:linear-gradient(135deg,#0d1b2a,#1b2a4a);
+    color:#fff; padding:20px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+  }
+  .header h1 { font-size:20px; font-weight:700; letter-spacing:1px; }
+  .header h1 span { color:#64B5F6; }
+  .header-meta { font-size:12px; color:#90a4ae; }
+
+  /* Dashboard cards */
+  .dashboard {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px;
+    padding:20px 32px;
+  }
+  .card {
+    background:#fff; border-radius:12px; padding:20px; text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06); border-top:4px solid #e0e0e0;
+  }
+  .card-value { font-size:32px; font-weight:800; margin:4px 0; }
+  .card-label { font-size:12px; color:#546e7a; letter-spacing:0.5px; }
+  .card-sub { font-size:11px; color:#90a4ae; margin-top:4px; }
+  .card.total { border-top-color:#1976D2; }
+  .card.total .card-value { color:#1976D2; }
+  .card.ipo { border-top-color:#7B1FA2; }
+  .card.ipo .card-value { color:#7B1FA2; }
+  .card.review { border-top-color:#F57C00; }
+  .card.review .card-value { color:#F57C00; }
+  .card.dev { border-top-color:#1565C0; }
+  .card.dev .card-value { color:#1565C0; }
+  .card.test { border-top-color:#00838F; }
+  .card.test .card-value { color:#00838F; }
+  .card.done { border-top-color:#2E7D32; }
+  .card.done .card-value { color:#2E7D32; }
+
+  /* Progress bar */
+  .progress-section { padding:0 32px 20px; }
+  .progress-bar-bg { background:#e0e0e0; border-radius:8px; height:24px; overflow:hidden; display:flex; }
+  .progress-bar-bg > div { height:100%; transition:width 0.3s; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:600; min-width:0; overflow:hidden; }
+  .pb-done { background:#2E7D32; }
+  .pb-test { background:#00838F; }
+  .pb-dev { background:#1565C0; }
+  .pb-review { background:#F57C00; }
+  .pb-ipo { background:#7B1FA2; }
+  .pb-wait { background:#bdbdbd; }
+  .progress-legend { display:flex; gap:16px; margin-top:8px; flex-wrap:wrap; }
+  .progress-legend span { font-size:11px; color:#546e7a; display:flex; align-items:center; gap:4px; }
+  .progress-legend span::before { content:''; width:10px; height:10px; border-radius:3px; display:inline-block; }
+  .legend-wait::before { background:#bdbdbd; }
+  .legend-ipo::before { background:#7B1FA2; }
+  .legend-review::before { background:#F57C00; }
+  .legend-dev::before { background:#1565C0; }
+  .legend-test::before { background:#00838F; }
+  .legend-done::before { background:#2E7D32; }
+
+  /* Toolbar */
+  .toolbar {
+    padding:0 32px 16px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;
+  }
+  .toolbar input, .toolbar select {
+    padding:8px 14px; border:1px solid #d0d0d0; border-radius:8px; font-size:13px; background:#fff;
+  }
+  .toolbar input:focus, .toolbar select:focus { outline:none; border-color:#1976D2; }
+  .toolbar input[type="text"] { width:260px; }
+  .btn {
+    padding:8px 18px; border:none; border-radius:8px; font-size:13px; font-weight:600;
+    cursor:pointer; transition:all 0.15s;
+  }
+  .btn-primary { background:#1976D2; color:#fff; }
+  .btn-primary:hover { background:#1565C0; }
+  .btn-success { background:#2E7D32; color:#fff; }
+  .btn-success:hover { background:#1B5E20; }
+  .btn-danger { background:#c62828; color:#fff; }
+  .btn-danger:hover { background:#b71c1c; }
+  .btn-outline { background:#fff; color:#1976D2; border:1px solid #1976D2; }
+  .btn-outline:hover { background:#e3f2fd; }
+  .btn-sm { padding:4px 10px; font-size:11px; border-radius:6px; }
+
+  /* Table */
+  .table-wrap { padding:0 32px 32px; overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); min-width:1100px; }
+  thead th {
+    background:#1b2a4a; color:#fff; padding:12px 14px; text-align:left; font-size:12px;
+    letter-spacing:0.5px; white-space:nowrap; position:sticky; top:0; cursor:pointer; user-select:none;
+  }
+  thead th:hover { background:#263d5e; }
+  tbody td { padding:10px 14px; border-bottom:1px solid #f0f0f0; font-size:13px; vertical-align:top; }
+  tbody tr:hover td { background:#f8f9ff; }
+  tbody tr.selected td { background:#e3f2fd; }
+
+  /* Status badges */
+  .badge {
+    display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; letter-spacing:0.3px; white-space:nowrap;
+  }
+  .badge-waiting { background:#f5f5f5; color:#9e9e9e; border:1px solid #e0e0e0; }
+  .badge-ipo { background:#f3e5f5; color:#7B1FA2; border:1px solid #CE93D8; }
+  .badge-review { background:#fff3e0; color:#E65100; border:1px solid #FFB74D; }
+  .badge-dev { background:#e3f2fd; color:#1565C0; border:1px solid #64B5F6; }
+  .badge-test { background:#e0f7fa; color:#00695C; border:1px solid #4DB6AC; }
+  .badge-uat { background:#e8f5e9; color:#2E7D32; border:1px solid #81C784; }
+  .badge-done { background:#2E7D32; color:#fff; }
+  .badge-blocked { background:#ffebee; color:#c62828; border:1px solid #ef9a9a; }
+
+  /* Rank badges */
+  .rank { display:inline-block; width:28px; height:28px; border-radius:50%; font-size:13px; font-weight:700; line-height:28px; text-align:center; color:#fff; }
+  .rank-a { background:#34a853; }
+  .rank-b { background:#1a73e8; }
+  .rank-c { background:#f9ab00; }
+  .rank-d { background:#ea4335; }
+
+  /* Modification log */
+  .mod-log { font-size:11px; color:#546e7a; line-height:1.6; max-height:60px; overflow-y:auto; }
+  .mod-log .mod-entry { padding:2px 0; border-bottom:1px dotted #e0e0e0; }
+  .mod-log .mod-date { color:#90a4ae; margin-right:4px; }
+  .mod-log .mod-type { font-weight:600; margin-right:4px; }
+  .mod-type-fix { color:#c62828; }
+  .mod-type-change { color:#F57C00; }
+  .mod-type-add { color:#1976D2; }
+  .mod-type-note { color:#546e7a; }
+
+  /* Modal */
+  .modal-overlay {
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5);
+    z-index:1000; justify-content:center; align-items:center;
+  }
+  .modal-overlay.active { display:flex; }
+  .modal {
+    background:#fff; border-radius:16px; padding:32px; width:90%; max-width:700px; max-height:90vh;
+    overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,0.2);
+  }
+  .modal h2 { font-size:18px; color:#1b2a4a; margin-bottom:20px; }
+  .modal label { display:block; font-size:13px; font-weight:600; color:#37474f; margin:12px 0 4px; }
+  .modal input, .modal select, .modal textarea {
+    width:100%; padding:8px 12px; border:1px solid #d0d0d0; border-radius:8px; font-size:13px; font-family:inherit;
+  }
+  .modal textarea { height:80px; resize:vertical; }
+  .modal-actions { display:flex; gap:12px; margin-top:24px; justify-content:flex-end; }
+
+  /* Export area */
+  .export-bar { padding:0 32px 16px; display:flex; gap:12px; flex-wrap:wrap; }
+
+  /* Tabs */
+  .tabs { display:flex; gap:0; padding:0 32px; border-bottom:2px solid #e0e0e0; margin-bottom:0; }
+  .tab {
+    padding:12px 24px; font-size:14px; font-weight:600; color:#546e7a; cursor:pointer;
+    border-bottom:3px solid transparent; margin-bottom:-2px; transition:all 0.15s;
+  }
+  .tab:hover { color:#1976D2; background:#f8f9ff; }
+  .tab.active { color:#1976D2; border-bottom-color:#1976D2; }
+  .tab .tab-count {
+    display:inline-block; background:#e0e0e0; color:#546e7a; font-size:11px; font-weight:700;
+    padding:1px 8px; border-radius:10px; margin-left:6px;
+  }
+  .tab.active .tab-count { background:#1976D2; color:#fff; }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
+  /* Issue cards */
+  .issues-toolbar { padding:16px 32px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .issues-list { padding:0 32px 32px; display:flex; flex-direction:column; gap:12px; }
+  .issue-card {
+    background:#fff; border-radius:12px; padding:20px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    border-left:5px solid #e0e0e0; cursor:pointer; transition:all 0.15s;
+  }
+  .issue-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.1); }
+  .issue-card.priority-high { border-left-color:#c62828; }
+  .issue-card.priority-medium { border-left-color:#F57C00; }
+  .issue-card.priority-low { border-left-color:#1976D2; }
+  .issue-card.issue-closed { opacity:0.6; border-left-color:#2E7D32; }
+  .issue-header { display:flex; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
+  .issue-id { font-size:12px; color:#90a4ae; font-weight:700; }
+  .issue-title { font-size:15px; font-weight:700; color:#1b2a4a; flex:1; }
+  .issue-meta { font-size:11px; color:#90a4ae; display:flex; gap:16px; flex-wrap:wrap; }
+  .issue-body { font-size:13px; color:#546e7a; margin-top:8px; line-height:1.7; }
+  .issue-tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+  .issue-tag {
+    font-size:10px; padding:2px 8px; border-radius:10px; font-weight:600;
+  }
+  .tag-bug { background:#ffebee; color:#c62828; }
+  .tag-feature { background:#e3f2fd; color:#1565C0; }
+  .tag-question { background:#f3e5f5; color:#7B1FA2; }
+  .tag-improvement { background:#e8f5e9; color:#2E7D32; }
+  .tag-uat { background:#fff3e0; color:#E65100; }
+  .badge-open { background:#e3f2fd; color:#1565C0; border:1px solid #64B5F6; }
+  .badge-inprogress { background:#fff3e0; color:#E65100; border:1px solid #FFB74D; }
+  .badge-resolved { background:#e8f5e9; color:#2E7D32; border:1px solid #81C784; }
+  .badge-closed { background:#f5f5f5; color:#757575; border:1px solid #bdbdbd; }
+
+  /* Issue comments */
+  .issue-comments { margin-top:12px; padding-top:12px; border-top:1px solid #f0f0f0; }
+  .comment { display:flex; gap:10px; margin-bottom:10px; }
+  .comment-avatar { width:28px; height:28px; border-radius:50%; background:#1976D2; color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .comment-body { flex:1; }
+  .comment-author { font-size:12px; font-weight:600; color:#1b2a4a; }
+  .comment-date { font-size:10px; color:#90a4ae; margin-left:8px; }
+  .comment-text { font-size:12px; color:#546e7a; margin-top:2px; line-height:1.6; }
+
+  /* Responsive */
+  @media (max-width:768px) {
+    .header { padding:16px; }
+    .dashboard, .toolbar, .table-wrap, .progress-section, .export-bar, .tabs, .issues-toolbar, .issues-list { padding-left:16px; padding-right:16px; }
+    .toolbar input[type="text"] { width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div>
+    <h1>HMM <span>Bot Management Sheet</span></h1>
+    <div class="header-meta">Harmonic Migration Method — ボット管理シート</div>
+  </div>
+  <div style="text-align:right;">
+    <div class="header-meta">プロジェクト: <strong id="projectName" contenteditable="true" style="color:#64B5F6;">サンプル社 BizRobo→aKaBot移行</strong></div>
+    <div class="header-meta">最終更新: <span id="lastUpdate"></span></div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="dashboard" id="dashboard"></div>
+
+<!-- ===== PROGRESS BAR ===== -->
+<div class="progress-section">
+  <div class="progress-bar-bg" id="progressBar"></div>
+  <div class="progress-legend">
+    <span class="legend-wait">未着手</span>
+    <span class="legend-ipo">IPO抽出中</span>
+    <span class="legend-review">レビュー中</span>
+    <span class="legend-dev">実装中</span>
+    <span class="legend-test">テスト中</span>
+    <span class="legend-done">完了</span>
+  </div>
+</div>
+
+<!-- ===== TABS ===== -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('bots')">
+    ボット一覧 <span class="tab-count" id="tabBotCount">120</span>
+  </div>
+  <div class="tab" onclick="switchTab('issues')">
+    チケット (Issues) <span class="tab-count" id="tabIssueCount">0</span>
+  </div>
+</div>
+
+<!-- ===== TAB: BOTS ===== -->
+<div class="tab-content active" id="tab-bots">
+
+<!-- ===== TOOLBAR ===== -->
+<div class="toolbar">
+  <input type="text" id="searchBox" placeholder="ボット名・担当者・部門で検索..." oninput="renderTable()">
+  <select id="filterStatus" onchange="renderTable()">
+    <option value="">全ステータス</option>
+    <option value="waiting">未着手</option>
+    <option value="ipo">IPO抽出中</option>
+    <option value="review">レビュー中</option>
+    <option value="dev">実装中</option>
+    <option value="test">テスト/UAT</option>
+    <option value="done">完了</option>
+    <option value="blocked">ブロック</option>
+  </select>
+  <select id="filterRank" onchange="renderTable()">
+    <option value="">全ランク</option>
+    <option value="A">Aランク</option>
+    <option value="B">Bランク</option>
+    <option value="C">Cランク</option>
+    <option value="D">Dランク</option>
+  </select>
+  <select id="filterConsultant" onchange="renderTable()">
+    <option value="">全担当者</option>
+  </select>
+  <button class="btn btn-primary" onclick="openAddModal()">+ ボット追加</button>
+</div>
+
+<!-- ===== EXPORT BAR ===== -->
+<div class="export-bar">
+  <button class="btn btn-outline" onclick="exportCSV()">CSV出力</button>
+  <button class="btn btn-outline" onclick="exportJSON()">JSON出力</button>
+  <button class="btn btn-outline" onclick="importJSON()">JSONインポート</button>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+</div>
+
+<!-- ===== TABLE ===== -->
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:36px;">#</th>
+        <th onclick="sortBy('rank')" style="width:50px;">ランク</th>
+        <th onclick="sortBy('name')">ボット名</th>
+        <th onclick="sortBy('department')">部門</th>
+        <th onclick="sortBy('pattern')">パターン</th>
+        <th onclick="sortBy('status')" style="width:110px;">ステータス</th>
+        <th onclick="sortBy('consultant')">担当</th>
+        <th style="width:80px;">進捗</th>
+        <th>修正ログ</th>
+        <th style="width:90px;">操作</th>
+      </tr>
+    </thead>
+    <tbody id="botTableBody"></tbody>
+  </table>
+</div>
+
+
+</div><!-- end tab-bots -->
+
+<!-- ===== TAB: ISSUES ===== -->
+<div class="tab-content" id="tab-issues">
+
+<div class="issues-toolbar">
+  <input type="text" id="issueSearch" placeholder="チケット検索..." style="padding:8px 14px; border:1px solid #d0d0d0; border-radius:8px; font-size:13px; width:260px;" oninput="renderIssues()">
+  <select id="issueFilterStatus" onchange="renderIssues()" style="padding:8px 14px; border:1px solid #d0d0d0; border-radius:8px; font-size:13px;">
+    <option value="">全ステータス</option>
+    <option value="open">Open</option>
+    <option value="inprogress">対応中</option>
+    <option value="resolved">解決済</option>
+    <option value="closed">クローズ</option>
+  </select>
+  <select id="issueFilterType" onchange="renderIssues()" style="padding:8px 14px; border:1px solid #d0d0d0; border-radius:8px; font-size:13px;">
+    <option value="">全タイプ</option>
+    <option value="bug">バグ</option>
+    <option value="feature">機能要望</option>
+    <option value="question">質問</option>
+    <option value="improvement">改善</option>
+    <option value="uat">UATフィードバック</option>
+  </select>
+  <select id="issueFilterBot" onchange="renderIssues()" style="padding:8px 14px; border:1px solid #d0d0d0; border-radius:8px; font-size:13px;">
+    <option value="">全ボット</option>
+  </select>
+  <button class="btn btn-primary" onclick="openIssueModal()">+ チケット作成</button>
+</div>
+
+<!-- Issue summary cards -->
+<div class="dashboard" id="issueDashboard" style="padding-top:0;"></div>
+
+<div class="issues-list" id="issuesList"></div>
+
+</div><!-- end tab-issues -->
+
+<!-- ===== ISSUE CREATE/EDIT MODAL ===== -->
+<div class="modal-overlay" id="issueModal">
+  <div class="modal">
+    <h2 id="issueModalTitle">チケット作成</h2>
+    <input type="hidden" id="issueEditIdx" value="-1">
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 16px;">
+      <div>
+        <label>タイトル *</label>
+        <input type="text" id="issueFTitle" placeholder="例: SAP接続でタイムアウトが発生">
+      </div>
+      <div>
+        <label>関連ボット</label>
+        <select id="issueFBot">
+          <option value="">（なし）</option>
+        </select>
+      </div>
+      <div>
+        <label>タイプ</label>
+        <select id="issueFType">
+          <option value="bug">バグ</option>
+          <option value="feature">機能要望</option>
+          <option value="question">質問</option>
+          <option value="improvement">改善</option>
+          <option value="uat">UATフィードバック</option>
+        </select>
+      </div>
+      <div>
+        <label>優先度</label>
+        <select id="issueFPriority">
+          <option value="low">低</option>
+          <option value="medium" selected>中</option>
+          <option value="high">高</option>
+        </select>
+      </div>
+      <div>
+        <label>ステータス</label>
+        <select id="issueFStatus">
+          <option value="open">Open</option>
+          <option value="inprogress">対応中</option>
+          <option value="resolved">解決済</option>
+          <option value="closed">クローズ</option>
+        </select>
+      </div>
+      <div>
+        <label>担当者</label>
+        <input type="text" id="issueFAssignee" placeholder="例: 山本">
+      </div>
+    </div>
+
+    <label>説明</label>
+    <textarea id="issueFBody" placeholder="詳細な説明、再現手順、期待される動作など" style="height:100px;"></textarea>
+
+    <div id="issueCommentSection" style="display:none;">
+      <label>コメント追加</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="issueFComment" placeholder="コメントを入力" style="flex:1;">
+        <button class="btn btn-sm btn-primary" onclick="addIssueComment()">送信</button>
+      </div>
+      <div id="issueCommentsPreview" style="margin-top:8px; max-height:200px; overflow-y:auto;"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeIssueModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveIssue()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADD/EDIT MODAL ===== -->
+<div class="modal-overlay" id="botModal">
+  <div class="modal">
+    <h2 id="modalTitle">ボット追加</h2>
+    <input type="hidden" id="editIndex" value="-1">
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 16px;">
+      <div>
+        <label>ボット名 *</label>
+        <input type="text" id="fName" placeholder="例: 売上日報生成">
+      </div>
+      <div>
+        <label>ボットID</label>
+        <input type="text" id="fBotId" placeholder="例: BOT-001">
+      </div>
+      <div>
+        <label>部門</label>
+        <input type="text" id="fDept" placeholder="例: 経理部">
+      </div>
+      <div>
+        <label>業務担当者</label>
+        <input type="text" id="fOwner" placeholder="例: 田中太郎">
+      </div>
+      <div>
+        <label>難易度ランク</label>
+        <select id="fRank">
+          <option value="A">A（簡単）</option>
+          <option value="B" selected>B（中程度）</option>
+          <option value="C">C（複雑）</option>
+          <option value="D">D（高難度）</option>
+        </select>
+      </div>
+      <div>
+        <label>業務パターン</label>
+        <select id="fPattern">
+          <option value="抽出型">抽出型 (Extract)</option>
+          <option value="変換型">変換型 (Transform)</option>
+          <option value="転記型" selected>転記型 (Load)</option>
+          <option value="照合型">照合型 (Validate)</option>
+          <option value="通知型">通知型 (Notify)</option>
+          <option value="複合型">複合型 (ETL)</option>
+        </select>
+      </div>
+      <div>
+        <label>ステータス</label>
+        <select id="fStatus">
+          <option value="waiting">未着手</option>
+          <option value="ipo">IPO抽出中</option>
+          <option value="review">レビュー中</option>
+          <option value="dev">実装中</option>
+          <option value="test">テスト/UAT</option>
+          <option value="done">完了</option>
+          <option value="blocked">ブロック</option>
+        </select>
+      </div>
+      <div>
+        <label>担当コンサルタント</label>
+        <input type="text" id="fConsultant" placeholder="例: 山本">
+      </div>
+      <div>
+        <label>対象システム</label>
+        <input type="text" id="fSystem" placeholder="例: SAP, Excel, Web">
+      </div>
+      <div>
+        <label>見積工数 (時間)</label>
+        <input type="number" id="fEstimate" placeholder="例: 8" min="0">
+      </div>
+    </div>
+
+    <label>備考</label>
+    <textarea id="fNotes" placeholder="特記事項、注意点など"></textarea>
+
+    <div id="modLogSection" style="display:none;">
+      <label>修正ログ追加</label>
+      <div style="display:flex; gap:8px;">
+        <select id="fModType" style="width:120px;">
+          <option value="fix">修正</option>
+          <option value="change">変更</option>
+          <option value="add">追加</option>
+          <option value="note">メモ</option>
+        </select>
+        <input type="text" id="fModText" placeholder="修正内容を記入" style="flex:1;">
+        <button class="btn btn-sm btn-primary" onclick="addModLog()">追加</button>
+      </div>
+      <div id="fModPreview" class="mod-log" style="margin-top:8px; max-height:120px;"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveBot()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== STATUS CHANGE MODAL ===== -->
+<div class="modal-overlay" id="statusModal">
+  <div class="modal" style="max-width:450px;">
+    <h2>ステータス変更</h2>
+    <input type="hidden" id="statusIdx" value="-1">
+    <p style="margin-bottom:12px; font-size:13px; color:#546e7a;">
+      <strong id="statusBotName"></strong> のステータスを変更します。
+    </p>
+    <label>新しいステータス</label>
+    <select id="newStatus">
+      <option value="waiting">未着手</option>
+      <option value="ipo">IPO抽出中</option>
+      <option value="review">レビュー中</option>
+      <option value="dev">実装中</option>
+      <option value="test">テスト/UAT</option>
+      <option value="done">完了</option>
+      <option value="blocked">ブロック</option>
+    </select>
+    <label>コメント（任意）</label>
+    <input type="text" id="statusComment" placeholder="ステータス変更の理由">
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeStatusModal()">キャンセル</button>
+      <button class="btn btn-success" onclick="applyStatus()">変更</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const STATUS_MAP = {
+  waiting:  { label:'未着手',     cls:'badge-waiting', order:0 },
+  ipo:     { label:'IPO抽出中',  cls:'badge-ipo',     order:1 },
+  review:  { label:'レビュー中', cls:'badge-review',   order:2 },
+  dev:     { label:'実装中',     cls:'badge-dev',      order:3 },
+  test:    { label:'テスト/UAT', cls:'badge-test',     order:4 },
+  done:    { label:'完了',       cls:'badge-done',     order:5 },
+  blocked: { label:'ブロック',   cls:'badge-blocked',  order:6 },
+};
+
+const RANK_CLS = { A:'rank-a', B:'rank-b', C:'rank-c', D:'rank-d' };
+
+// Sample data (120-bot project)
+let bots = generateSampleBots();
+
+function generateSampleBots() {
+  const depts = ['経理部','営業部','人事部','物流部','総務部','情報システム部','購買部','品質管理部'];
+  const owners = ['田中','鈴木','佐藤','山田','高橋','中村','小林','加藤','吉田','渡辺','伊藤','松本'];
+  const consultants = ['山本','李','グエン','佐々木'];
+  const patterns = ['抽出型','変換型','転記型','照合型','通知型','複合型'];
+  const systems = ['Excel','Web','SAP','Oracle','Windows','メール','OCR','PDF'];
+  const botNames = [
+    '売上日報生成','請求書照合','在庫アラート通知','勤怠データ集計','見積書作成',
+    '経費精算自動化','受注データ転記','出荷通知メール','仕入先マスタ更新','月次決算集計',
+    '給与明細配信','交通費精算','契約書PDF生成','顧客データ同期','入金消込処理',
+    '与信チェック','発注書作成','納品書照合','売掛金管理','固定資産台帳更新',
+    '有給残日数通知','採用応募者管理','社内報配信','検品結果登録','入出庫管理',
+    'クレーム管理転記','会議室予約集計','出張旅費精算','稟議書ステータス確認','予算実績比較',
+  ];
+
+  const list = [];
+  const statuses = ['waiting','ipo','review','dev','test','done'];
+  const modTypes = ['fix','change','add','note'];
+  const modTexts = [
+    'セレクタ修正（画面変更対応）','Excel出力フォーマット変更','エラーハンドリング追加',
+    '条件分岐ロジック修正','API接続方式に変更','テストデータ追加','タイムアウト値調整',
+    '顧客要望により出力項目追加','SAP接続パラメータ修正','OCR認識率改善のため前処理追加'
+  ];
+
+  for (let i = 0; i < 120; i++) {
+    const rank = i < 40 ? 'A' : i < 90 ? 'B' : i < 110 ? 'C' : 'D';
+    const statusIdx = Math.min(Math.floor(Math.random() * 6), 5);
+    const status = statuses[Math.min(statusIdx, rank === 'A' ? 5 : rank === 'B' ? 4 : rank === 'C' ? 3 : 2)];
+    const name = i < 30 ? botNames[i % botNames.length] : botNames[i % botNames.length] + '_' + (Math.floor(i/30)+1);
+
+    const mods = [];
+    if (status !== 'waiting') {
+      const modCount = Math.floor(Math.random() * 3);
+      for (let m = 0; m < modCount; m++) {
+        const d = new Date(2026, 1, 1 + Math.floor(Math.random()*28));
+        mods.push({
+          date: d.toISOString().slice(0,10),
+          type: modTypes[Math.floor(Math.random()*modTypes.length)],
+          text: modTexts[Math.floor(Math.random()*modTexts.length)]
+        });
+      }
+      mods.sort((a,b) => b.date.localeCompare(a.date));
+    }
+
+    const est = rank==='A' ? 3+Math.floor(Math.random()*3) : rank==='B' ? 6+Math.floor(Math.random()*5) : rank==='C' ? 13+Math.floor(Math.random()*10) : 25+Math.floor(Math.random()*20);
+
+    list.push({
+      id: 'BOT-' + String(i+1).padStart(3,'0'),
+      name: name,
+      department: depts[i % depts.length],
+      owner: owners[i % owners.length],
+      rank: rank,
+      pattern: patterns[Math.floor(Math.random()*patterns.length)],
+      status: status,
+      consultant: consultants[i % consultants.length],
+      system: [systems[Math.floor(Math.random()*systems.length)], systems[Math.floor(Math.random()*systems.length)]].filter((v,j,a)=>a.indexOf(v)===j).join(', '),
+      estimate: est,
+      notes: '',
+      mods: mods,
+      created: '2026-01-15',
+      updated: new Date().toISOString().slice(0,10),
+    });
+  }
+  return list;
+}
+
+let sortKey = '';
+let sortAsc = true;
+
+// ===== RENDER =====
+function updateDashboard() {
+  const total = bots.length;
+  const counts = {};
+  Object.keys(STATUS_MAP).forEach(k => counts[k] = 0);
+  bots.forEach(b => counts[b.status]++);
+  const active = total - counts.waiting - counts.done;
+  const pct = total > 0 ? Math.round(counts.done / total * 100) : 0;
+
+  document.getElementById('dashboard').innerHTML = `
+    <div class="card total"><div class="card-value">${total}</div><div class="card-label">総ボット数</div><div class="card-sub">進捗率 ${pct}%</div></div>
+    <div class="card ipo"><div class="card-value">${counts.ipo}</div><div class="card-label">IPO抽出中</div></div>
+    <div class="card review"><div class="card-value">${counts.review}</div><div class="card-label">レビュー中</div></div>
+    <div class="card dev"><div class="card-value">${counts.dev}</div><div class="card-label">実装中</div></div>
+    <div class="card test"><div class="card-value">${counts.test}</div><div class="card-label">テスト/UAT</div></div>
+    <div class="card done"><div class="card-value">${counts.done}</div><div class="card-label">完了</div><div class="card-sub">${counts.blocked > 0 ? counts.blocked + '件ブロック中' : ''}</div></div>
+  `;
+
+  // Progress bar
+  const bar = document.getElementById('progressBar');
+  const segs = [
+    { key:'done', cls:'pb-done' },
+    { key:'test', cls:'pb-test' },
+    { key:'dev',  cls:'pb-dev' },
+    { key:'review', cls:'pb-review' },
+    { key:'ipo',  cls:'pb-ipo' },
+    { key:'waiting', cls:'pb-wait' },
+  ];
+  bar.innerHTML = segs.map(s => {
+    const w = total > 0 ? (counts[s.key] / total * 100) : 0;
+    return w > 0 ? `<div class="${s.cls}" style="width:${w}%">${counts[s.key] > 0 && w > 3 ? counts[s.key] : ''}</div>` : '';
+  }).join('');
+
+  // Consultant filter
+  const cSet = new Set(bots.map(b => b.consultant).filter(Boolean));
+  const cSel = document.getElementById('filterConsultant');
+  const curVal = cSel.value;
+  cSel.innerHTML = '<option value="">全担当者</option>' + [...cSet].sort().map(c => `<option value="${c}">${c}</option>`).join('');
+  cSel.value = curVal;
+
+  document.getElementById('lastUpdate').textContent = new Date().toLocaleString('ja-JP');
+}
+
+function getFilteredBots() {
+  const search = document.getElementById('searchBox').value.toLowerCase();
+  const fStatus = document.getElementById('filterStatus').value;
+  const fRank = document.getElementById('filterRank').value;
+  const fConsultant = document.getElementById('filterConsultant').value;
+
+  return bots.filter(b => {
+    if (search && !(b.name.toLowerCase().includes(search) || b.department.toLowerCase().includes(search) || b.consultant.toLowerCase().includes(search) || b.id.toLowerCase().includes(search) || b.owner.toLowerCase().includes(search))) return false;
+    if (fStatus && b.status !== fStatus) return false;
+    if (fRank && b.rank !== fRank) return false;
+    if (fConsultant && b.consultant !== fConsultant) return false;
+    return true;
+  });
+}
+
+function renderTable() {
+  let filtered = getFilteredBots();
+
+  if (sortKey) {
+    filtered.sort((a, b) => {
+      let va = a[sortKey], vb = b[sortKey];
+      if (sortKey === 'status') { va = STATUS_MAP[va].order; vb = STATUS_MAP[vb].order; }
+      if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+      if (va < vb) return sortAsc ? -1 : 1;
+      if (va > vb) return sortAsc ? 1 : -1;
+      return 0;
+    });
+  }
+
+  const tbody = document.getElementById('botTableBody');
+  tbody.innerHTML = filtered.map((b, i) => {
+    const realIdx = bots.indexOf(b);
+    const steps = ['waiting','ipo','review','dev','test','done'];
+    const currentStep = steps.indexOf(b.status === 'blocked' ? 'waiting' : b.status);
+    const progressPct = Math.round((currentStep / (steps.length - 1)) * 100);
+    const progressColor = b.status === 'blocked' ? '#c62828' : b.status === 'done' ? '#2E7D32' : '#1976D2';
+
+    const modHtml = b.mods.length > 0 ? b.mods.map(m =>
+      `<div class="mod-entry"><span class="mod-date">${m.date.slice(5)}</span><span class="mod-type mod-type-${m.type}">[${m.type==='fix'?'修正':m.type==='change'?'変更':m.type==='add'?'追加':'メモ'}]</span>${m.text}</div>`
+    ).join('') : '<span style="color:#bdbdbd;">—</span>';
+
+    return `<tr>
+      <td style="color:#90a4ae; font-size:11px;">${b.id}</td>
+      <td><span class="rank ${RANK_CLS[b.rank]}">${b.rank}</span></td>
+      <td><strong style="font-size:13px;">${b.name}</strong><br><span style="font-size:11px; color:#90a4ae;">${b.system || ''}</span></td>
+      <td>${b.department}<br><span style="font-size:11px; color:#90a4ae;">${b.owner}</span></td>
+      <td style="font-size:12px;">${b.pattern}</td>
+      <td><span class="badge ${STATUS_MAP[b.status].cls}">${STATUS_MAP[b.status].label}</span></td>
+      <td>${b.consultant}</td>
+      <td>
+        <div style="background:#e0e0e0; border-radius:4px; height:6px; width:60px;">
+          <div style="background:${progressColor}; height:100%; border-radius:4px; width:${progressPct}%;"></div>
+        </div>
+        <span style="font-size:10px; color:#90a4ae;">${progressPct}%</span>
+      </td>
+      <td><div class="mod-log">${modHtml}</div></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-sm btn-outline" onclick="openStatusModal(${realIdx})" title="ステータス変更">&#x25B6;</button>
+        <button class="btn btn-sm btn-outline" onclick="openEditModal(${realIdx})" title="編集">&#x270E;</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteBot(${realIdx})" title="削除" style="padding:4px 7px;">&#x2715;</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function sortBy(key) {
+  if (sortKey === key) { sortAsc = !sortAsc; }
+  else { sortKey = key; sortAsc = true; }
+  renderTable();
+}
+
+// ===== MODAL: ADD/EDIT =====
+function openAddModal() {
+  document.getElementById('editIndex').value = '-1';
+  document.getElementById('modalTitle').textContent = 'ボット追加';
+  document.getElementById('fName').value = '';
+  document.getElementById('fBotId').value = 'BOT-' + String(bots.length+1).padStart(3,'0');
+  document.getElementById('fDept').value = '';
+  document.getElementById('fOwner').value = '';
+  document.getElementById('fRank').value = 'B';
+  document.getElementById('fPattern').value = '転記型';
+  document.getElementById('fStatus').value = 'waiting';
+  document.getElementById('fConsultant').value = '';
+  document.getElementById('fSystem').value = '';
+  document.getElementById('fEstimate').value = '';
+  document.getElementById('fNotes').value = '';
+  document.getElementById('modLogSection').style.display = 'none';
+  document.getElementById('botModal').classList.add('active');
+}
+
+function openEditModal(idx) {
+  const b = bots[idx];
+  document.getElementById('editIndex').value = idx;
+  document.getElementById('modalTitle').textContent = 'ボット編集: ' + b.name;
+  document.getElementById('fName').value = b.name;
+  document.getElementById('fBotId').value = b.id;
+  document.getElementById('fDept').value = b.department;
+  document.getElementById('fOwner').value = b.owner;
+  document.getElementById('fRank').value = b.rank;
+  document.getElementById('fPattern').value = b.pattern;
+  document.getElementById('fStatus').value = b.status;
+  document.getElementById('fConsultant').value = b.consultant;
+  document.getElementById('fSystem').value = b.system || '';
+  document.getElementById('fEstimate').value = b.estimate || '';
+  document.getElementById('fNotes').value = b.notes || '';
+
+  // Show mod log section for editing
+  document.getElementById('modLogSection').style.display = 'block';
+  document.getElementById('fModText').value = '';
+  renderModPreview(idx);
+
+  document.getElementById('botModal').classList.add('active');
+}
+
+function renderModPreview(idx) {
+  const b = bots[idx];
+  document.getElementById('fModPreview').innerHTML = b.mods.length > 0 ?
+    b.mods.map(m => `<div class="mod-entry"><span class="mod-date">${m.date}</span><span class="mod-type mod-type-${m.type}">[${m.type==='fix'?'修正':m.type==='change'?'変更':m.type==='add'?'追加':'メモ'}]</span>${m.text}</div>`).join('') :
+    '<span style="color:#bdbdbd;">修正ログなし</span>';
+}
+
+function addModLog() {
+  const idx = parseInt(document.getElementById('editIndex').value);
+  if (idx < 0) return;
+  const text = document.getElementById('fModText').value.trim();
+  if (!text) return;
+  const type = document.getElementById('fModType').value;
+  bots[idx].mods.unshift({
+    date: new Date().toISOString().slice(0,10),
+    type: type,
+    text: text
+  });
+  document.getElementById('fModText').value = '';
+  renderModPreview(idx);
+}
+
+function closeModal() {
+  document.getElementById('botModal').classList.remove('active');
+}
+
+function saveBot() {
+  const idx = parseInt(document.getElementById('editIndex').value);
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { alert('ボット名を入力してください'); return; }
+
+  const data = {
+    id: document.getElementById('fBotId').value.trim() || 'BOT-' + String(bots.length+1).padStart(3,'0'),
+    name: name,
+    department: document.getElementById('fDept').value.trim(),
+    owner: document.getElementById('fOwner').value.trim(),
+    rank: document.getElementById('fRank').value,
+    pattern: document.getElementById('fPattern').value,
+    status: document.getElementById('fStatus').value,
+    consultant: document.getElementById('fConsultant').value.trim(),
+    system: document.getElementById('fSystem').value.trim(),
+    estimate: parseInt(document.getElementById('fEstimate').value) || 0,
+    notes: document.getElementById('fNotes').value.trim(),
+    updated: new Date().toISOString().slice(0,10),
+  };
+
+  if (idx >= 0) {
+    data.mods = bots[idx].mods;
+    data.created = bots[idx].created;
+    bots[idx] = data;
+  } else {
+    data.mods = [];
+    data.created = new Date().toISOString().slice(0,10);
+    bots.push(data);
+  }
+
+  closeModal();
+  refresh();
+  saveToStorage();
+}
+
+function deleteBot(idx) {
+  if (!confirm('「' + bots[idx].name + '」を削除しますか？')) return;
+  bots.splice(idx, 1);
+  refresh();
+  saveToStorage();
+}
+
+// ===== MODAL: STATUS CHANGE =====
+function openStatusModal(idx) {
+  document.getElementById('statusIdx').value = idx;
+  document.getElementById('statusBotName').textContent = bots[idx].name + ' (' + bots[idx].id + ')';
+  document.getElementById('newStatus').value = bots[idx].status;
+  document.getElementById('statusComment').value = '';
+  document.getElementById('statusModal').classList.add('active');
+}
+
+function closeStatusModal() {
+  document.getElementById('statusModal').classList.remove('active');
+}
+
+function applyStatus() {
+  const idx = parseInt(document.getElementById('statusIdx').value);
+  const newSt = document.getElementById('newStatus').value;
+  const comment = document.getElementById('statusComment').value.trim();
+  const oldSt = bots[idx].status;
+
+  if (oldSt !== newSt) {
+    bots[idx].status = newSt;
+    bots[idx].updated = new Date().toISOString().slice(0,10);
+    const logText = STATUS_MAP[oldSt].label + ' → ' + STATUS_MAP[newSt].label + (comment ? ' / ' + comment : '');
+    bots[idx].mods.unshift({
+      date: new Date().toISOString().slice(0,10),
+      type: 'note',
+      text: logText
+    });
+  }
+
+  closeStatusModal();
+  refresh();
+  saveToStorage();
+}
+
+// ===== EXPORT/IMPORT =====
+function exportCSV() {
+  const filtered = getFilteredBots();
+  const headers = ['ID','ボット名','部門','業務担当者','ランク','パターン','ステータス','担当コンサルタント','対象システム','見積工数(h)','備考','修正ログ'];
+  const rows = filtered.map(b => [
+    b.id, b.name, b.department, b.owner, b.rank, b.pattern,
+    STATUS_MAP[b.status].label, b.consultant, b.system, b.estimate, b.notes,
+    b.mods.map(m => m.date+' ['+m.type+'] '+m.text).join(' | ')
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(c => '"' + String(c||'').replace(/"/g,'""') + '"').join(',')).join('\n');
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + csv], { type:'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'hmm_bot_management_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+function exportJSON() {
+  const data = { project: document.getElementById('projectName').textContent, exported: new Date().toISOString(), bots: bots };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'hmm_bot_management_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+function importJSON() {
+  document.getElementById('importFile').click();
+}
+
+function handleImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.bots && Array.isArray(data.bots)) {
+        if (confirm(data.bots.length + '件のボットデータをインポートします。現在のデータは上書きされます。よろしいですか？')) {
+          bots = data.bots;
+          if (data.project) document.getElementById('projectName').textContent = data.project;
+          refresh();
+          saveToStorage();
+        }
+      } else {
+        alert('有効なボットデータが見つかりません。');
+      }
+    } catch(err) {
+      alert('JSONの読み込みに失敗しました: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ===== LOCAL STORAGE =====
+function saveToStorage() {
+  try {
+    localStorage.setItem('hmm_bots', JSON.stringify(bots));
+    localStorage.setItem('hmm_project', document.getElementById('projectName').textContent);
+  } catch(e) {}
+}
+
+function loadFromStorage() {
+  try {
+    const saved = localStorage.getItem('hmm_bots');
+    if (saved) {
+      bots = JSON.parse(saved);
+      const proj = localStorage.getItem('hmm_project');
+      if (proj) document.getElementById('projectName').textContent = proj;
+    }
+  } catch(e) {}
+}
+
+// ===== INIT =====
+function refresh() {
+  updateDashboard();
+  renderTable();
+}
+
+// ===== ISSUES DATA =====
+let issues = generateSampleIssues();
+let issueIdCounter = 30;
+
+function generateSampleIssues() {
+  const samples = [
+    { title:'SAP接続でタイムアウトが頻発', bot:'BOT-091', type:'bug', priority:'high', status:'open', assignee:'山本',
+      body:'CランクのSAP連携ボットでRFC接続が30秒でタイムアウトする。ネットワーク環境の問題か、接続パラメータの調整が必要。',
+      comments:[{author:'山本',date:'2026-02-01',text:'SAP側の接続プールを確認中。タイムアウト値を60秒に延長して再テストします。'}]},
+    { title:'Excel出力のフォーマットが崩れる', bot:'BOT-005', type:'bug', priority:'medium', status:'inprogress', assignee:'李',
+      body:'見積書作成ボットの出力Excelで、金額列の通貨フォーマットが反映されない。openpyxlのnumber_format設定を確認。',
+      comments:[{author:'李',date:'2026-01-30',text:'number_formatの設定を修正。テンプレートのセル書式と競合していた。再テスト中。'}]},
+    { title:'OCR認識率が80%以下', bot:'BOT-115', type:'bug', priority:'high', status:'open', assignee:'山本',
+      body:'請求書OCRの認識率が低い。特に手書き部分と印影部分で誤認識が多い。前処理（二値化、傾き補正）の追加を検討。',
+      comments:[]},
+    { title:'月次レポートに前年比カラムを追加したい', bot:'BOT-010', type:'feature', priority:'low', status:'open', assignee:'グエン',
+      body:'顧客（経理部 田中さん）より、月次決算集計の出力に前年同月比のカラムを追加してほしいとの要望。IPO定義の変更が必要。',
+      comments:[{author:'グエン',date:'2026-02-01',text:'IPO定義にYoY計算を追加。レビュー依頼済み。'}]},
+    { title:'在庫アラートの閾値を変更可能にしたい', bot:'BOT-003', type:'feature', priority:'medium', status:'resolved', assignee:'佐々木',
+      body:'物流部より、在庫アラートの閾値をロボット設定から変更できるようにしたいとの要望。現在はハードコーディング。',
+      comments:[{author:'佐々木',date:'2026-01-28',text:'設定ファイルから閾値を読み込む形に変更。UATテスト待ち。'},{author:'山田',date:'2026-01-29',text:'テストOK。問題なく動作しています。'}]},
+    { title:'勤怠データのCSVエンコーディングが不正', bot:'BOT-004', type:'bug', priority:'medium', status:'closed', assignee:'李',
+      body:'勤怠データ集計で出力するCSVがUTF-8 BOMなしで出力され、Excelで開くと文字化けする。BOM付きに修正。',
+      comments:[{author:'李',date:'2026-01-25',text:'UTF-8 BOM付きに修正。確認済み。'}]},
+    { title:'承認フローにメール通知を追加', bot:'BOT-029', type:'improvement', priority:'low', status:'open', assignee:'',
+      body:'稟議書ステータス確認ボットに、承認完了時のメール通知機能を追加してほしい。現在はポータル上での確認のみ。',
+      comments:[]},
+    { title:'テスト環境のOrchestrator URLが変更', bot:'', type:'question', priority:'medium', status:'resolved', assignee:'山本',
+      body:'情シスよりテスト環境のOrchestrator URLが変更になったとの連絡。全ボットの接続設定を更新する必要あり。',
+      comments:[{author:'山本',date:'2026-02-01',text:'環境設定ファイルを一括更新済み。影響のある30本を再テスト中。'}]},
+    { title:'UATで出荷通知の宛先が間違っている', bot:'BOT-008', type:'uat', priority:'high', status:'inprogress', assignee:'グエン',
+      body:'物流部 山田さんのUATフィードバック: 出荷通知メールのCC宛先が旧部署のメーリングリストのまま。更新が必要。',
+      comments:[{author:'グエン',date:'2026-02-02',text:'配信リストをマスタテーブルから取得するように変更。再テスト依頼中。'}]},
+    { title:'入金消込の照合ロジックに例外パターン', bot:'BOT-015', type:'uat', priority:'high', status:'open', assignee:'山本',
+      body:'経理部 佐藤さんのUATフィードバック: 分割払いの入金で照合が失敗する。1対Nの照合パターンに対応が必要。',
+      comments:[]},
+  ];
+
+  return samples.map((s, i) => ({
+    id: 'ISSUE-' + String(i+1).padStart(3,'0'),
+    title: s.title,
+    botId: s.bot,
+    type: s.type,
+    priority: s.priority,
+    status: s.status,
+    assignee: s.assignee,
+    body: s.body,
+    comments: s.comments.map(c => ({...c})),
+    reporter: ['田中','鈴木','山田','佐藤','高橋'][i % 5],
+    created: '2026-01-' + String(20 + i).padStart(2,'0'),
+    updated: '2026-02-0' + Math.min(i+1, 2),
+  }));
+}
+
+const ISSUE_STATUS_MAP = {
+  open:       { label:'Open',    cls:'badge-open' },
+  inprogress: { label:'対応中',   cls:'badge-inprogress' },
+  resolved:   { label:'解決済',   cls:'badge-resolved' },
+  closed:     { label:'クローズ', cls:'badge-closed' },
+};
+const ISSUE_TYPE_MAP = {
+  bug:         { label:'バグ',           cls:'tag-bug' },
+  feature:     { label:'機能要望',       cls:'tag-feature' },
+  question:    { label:'質問',           cls:'tag-question' },
+  improvement: { label:'改善',           cls:'tag-improvement' },
+  uat:         { label:'UATフィードバック', cls:'tag-uat' },
+};
+const PRIORITY_MAP = { high:'高', medium:'中', low:'低' };
+
+// ===== TABS =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'issues') renderIssues();
+}
+
+// ===== ISSUE RENDERING =====
+function updateIssueDashboard() {
+  const total = issues.length;
+  const open = issues.filter(i => i.status === 'open').length;
+  const inprog = issues.filter(i => i.status === 'inprogress').length;
+  const resolved = issues.filter(i => i.status === 'resolved').length;
+  const closed = issues.filter(i => i.status === 'closed').length;
+  const highP = issues.filter(i => i.priority === 'high' && i.status !== 'closed').length;
+
+  document.getElementById('issueDashboard').innerHTML = `
+    <div class="card" style="border-top-color:#1976D2;"><div class="card-value" style="color:#1976D2;">${total}</div><div class="card-label">全チケット</div></div>
+    <div class="card" style="border-top-color:#1565C0;"><div class="card-value" style="color:#1565C0;">${open}</div><div class="card-label">Open</div></div>
+    <div class="card" style="border-top-color:#F57C00;"><div class="card-value" style="color:#F57C00;">${inprog}</div><div class="card-label">対応中</div></div>
+    <div class="card" style="border-top-color:#2E7D32;"><div class="card-value" style="color:#2E7D32;">${resolved + closed}</div><div class="card-label">解決済/クローズ</div></div>
+    <div class="card" style="border-top-color:#c62828;"><div class="card-value" style="color:#c62828;">${highP}</div><div class="card-label">高優先度 (未解決)</div></div>
+  `;
+
+  document.getElementById('tabIssueCount').textContent = open + inprog;
+  document.getElementById('tabBotCount').textContent = bots.length;
+
+  // Bot filter for issues
+  const sel = document.getElementById('issueFilterBot');
+  const curVal = sel.value;
+  const botIds = [...new Set(issues.map(i => i.botId).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">全ボット</option>' + botIds.map(id => {
+    const b = bots.find(b => b.id === id);
+    return `<option value="${id}">${id}${b ? ' ' + b.name : ''}</option>`;
+  }).join('');
+  sel.value = curVal;
+
+  // Bot select for issue modal
+  const msel = document.getElementById('issueFBot');
+  msel.innerHTML = '<option value="">（なし）</option>' + bots.map(b => `<option value="${b.id}">${b.id} ${b.name}</option>`).join('');
+}
+
+function getFilteredIssues() {
+  const search = document.getElementById('issueSearch').value.toLowerCase();
+  const fStatus = document.getElementById('issueFilterStatus').value;
+  const fType = document.getElementById('issueFilterType').value;
+  const fBot = document.getElementById('issueFilterBot').value;
+
+  return issues.filter(iss => {
+    if (search && !(iss.title.toLowerCase().includes(search) || iss.body.toLowerCase().includes(search) || iss.id.toLowerCase().includes(search) || iss.assignee.toLowerCase().includes(search))) return false;
+    if (fStatus && iss.status !== fStatus) return false;
+    if (fType && iss.type !== fType) return false;
+    if (fBot && iss.botId !== fBot) return false;
+    return true;
+  });
+}
+
+function renderIssues() {
+  updateIssueDashboard();
+  const filtered = getFilteredIssues();
+  const list = document.getElementById('issuesList');
+
+  list.innerHTML = filtered.map((iss, _) => {
+    const realIdx = issues.indexOf(iss);
+    const botInfo = iss.botId ? (() => { const b = bots.find(b => b.id === iss.botId); return b ? iss.botId + ' ' + b.name : iss.botId; })() : '';
+    const closedCls = (iss.status === 'closed') ? ' issue-closed' : '';
+
+    const commentsHtml = iss.comments.length > 0 ?
+      `<div class="issue-comments">${iss.comments.slice(0,3).map(c =>
+        `<div class="comment">
+          <div class="comment-avatar">${c.author[0]}</div>
+          <div class="comment-body">
+            <span class="comment-author">${c.author}</span><span class="comment-date">${c.date}</span>
+            <div class="comment-text">${c.text}</div>
+          </div>
+        </div>`
+      ).join('')}${iss.comments.length > 3 ? `<div style="font-size:11px; color:#90a4ae; text-align:center;">他 ${iss.comments.length - 3} 件のコメント</div>` : ''}</div>` : '';
+
+    return `<div class="issue-card priority-${iss.priority}${closedCls}" onclick="openEditIssue(${realIdx})">
+      <div class="issue-header">
+        <span class="issue-id">${iss.id}</span>
+        <span class="issue-title">${iss.title}</span>
+        <span class="badge ${ISSUE_STATUS_MAP[iss.status].cls}">${ISSUE_STATUS_MAP[iss.status].label}</span>
+      </div>
+      <div class="issue-meta">
+        <span>優先度: <strong>${PRIORITY_MAP[iss.priority]}</strong></span>
+        ${botInfo ? `<span>ボット: <strong>${botInfo}</strong></span>` : ''}
+        ${iss.assignee ? `<span>担当: <strong>${iss.assignee}</strong></span>` : '<span style="color:#F57C00;">未アサイン</span>'}
+        <span>報告: ${iss.reporter} (${iss.created})</span>
+        <span>コメント: ${iss.comments.length}</span>
+      </div>
+      <div class="issue-tags">
+        <span class="issue-tag ${ISSUE_TYPE_MAP[iss.type].cls}">${ISSUE_TYPE_MAP[iss.type].label}</span>
+        ${iss.priority === 'high' ? '<span class="issue-tag tag-bug" style="background:#c62828; color:#fff;">緊急</span>' : ''}
+      </div>
+      ${iss.body ? `<div class="issue-body">${iss.body.length > 150 ? iss.body.slice(0,150) + '...' : iss.body}</div>` : ''}
+      ${commentsHtml}
+    </div>`;
+  }).join('');
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="text-align:center; padding:40px; color:#90a4ae;">チケットがありません</div>';
+  }
+}
+
+// ===== ISSUE MODAL =====
+function openIssueModal() {
+  document.getElementById('issueEditIdx').value = '-1';
+  document.getElementById('issueModalTitle').textContent = 'チケット作成';
+  document.getElementById('issueFTitle').value = '';
+  document.getElementById('issueFBot').value = '';
+  document.getElementById('issueFType').value = 'bug';
+  document.getElementById('issueFPriority').value = 'medium';
+  document.getElementById('issueFStatus').value = 'open';
+  document.getElementById('issueFAssignee').value = '';
+  document.getElementById('issueFBody').value = '';
+  document.getElementById('issueCommentSection').style.display = 'none';
+  updateIssueDashboard(); // refresh bot select
+  document.getElementById('issueModal').classList.add('active');
+}
+
+function openEditIssue(idx) {
+  const iss = issues[idx];
+  document.getElementById('issueEditIdx').value = idx;
+  document.getElementById('issueModalTitle').textContent = 'チケット編集: ' + iss.id;
+  document.getElementById('issueFTitle').value = iss.title;
+  document.getElementById('issueFBot').value = iss.botId;
+  document.getElementById('issueFType').value = iss.type;
+  document.getElementById('issueFPriority').value = iss.priority;
+  document.getElementById('issueFStatus').value = iss.status;
+  document.getElementById('issueFAssignee').value = iss.assignee;
+  document.getElementById('issueFBody').value = iss.body;
+  document.getElementById('issueCommentSection').style.display = 'block';
+  document.getElementById('issueFComment').value = '';
+  renderIssueCommentsPreview(idx);
+  updateIssueDashboard();
+  document.getElementById('issueModal').classList.add('active');
+}
+
+function renderIssueCommentsPreview(idx) {
+  const iss = issues[idx];
+  document.getElementById('issueCommentsPreview').innerHTML = iss.comments.length > 0 ?
+    iss.comments.map(c =>
+      `<div class="comment" style="margin-bottom:8px;">
+        <div class="comment-avatar">${c.author[0]}</div>
+        <div class="comment-body">
+          <span class="comment-author">${c.author}</span><span class="comment-date">${c.date}</span>
+          <div class="comment-text">${c.text}</div>
+        </div>
+      </div>`).join('') : '<span style="color:#bdbdbd; font-size:12px;">コメントなし</span>';
+}
+
+function addIssueComment() {
+  const idx = parseInt(document.getElementById('issueEditIdx').value);
+  if (idx < 0) return;
+  const text = document.getElementById('issueFComment').value.trim();
+  if (!text) return;
+  issues[idx].comments.push({
+    author: document.getElementById('issueFAssignee').value.trim() || 'システム',
+    date: new Date().toISOString().slice(0,10),
+    text: text
+  });
+  document.getElementById('issueFComment').value = '';
+  renderIssueCommentsPreview(idx);
+}
+
+function closeIssueModal() {
+  document.getElementById('issueModal').classList.remove('active');
+}
+
+function saveIssue() {
+  const idx = parseInt(document.getElementById('issueEditIdx').value);
+  const title = document.getElementById('issueFTitle').value.trim();
+  if (!title) { alert('タイトルを入力してください'); return; }
+
+  const data = {
+    title: title,
+    botId: document.getElementById('issueFBot').value,
+    type: document.getElementById('issueFType').value,
+    priority: document.getElementById('issueFPriority').value,
+    status: document.getElementById('issueFStatus').value,
+    assignee: document.getElementById('issueFAssignee').value.trim(),
+    body: document.getElementById('issueFBody').value.trim(),
+    updated: new Date().toISOString().slice(0,10),
+  };
+
+  if (idx >= 0) {
+    Object.assign(issues[idx], data);
+  } else {
+    issueIdCounter++;
+    issues.unshift({
+      id: 'ISSUE-' + String(issueIdCounter).padStart(3,'0'),
+      ...data,
+      comments: [],
+      reporter: data.assignee || 'システム',
+      created: new Date().toISOString().slice(0,10),
+    });
+  }
+
+  closeIssueModal();
+  renderIssues();
+  saveToStorage();
+}
+
+// Override saveToStorage to include issues
+const _origSave = saveToStorage;
+saveToStorage = function() {
+  try {
+    localStorage.setItem('hmm_bots', JSON.stringify(bots));
+    localStorage.setItem('hmm_issues', JSON.stringify(issues));
+    localStorage.setItem('hmm_project', document.getElementById('projectName').textContent);
+  } catch(e) {}
+};
+
+const _origLoad = loadFromStorage;
+loadFromStorage = function() {
+  try {
+    const savedBots = localStorage.getItem('hmm_bots');
+    if (savedBots) bots = JSON.parse(savedBots);
+    const savedIssues = localStorage.getItem('hmm_issues');
+    if (savedIssues) issues = JSON.parse(savedIssues);
+    const proj = localStorage.getItem('hmm_project');
+    if (proj) document.getElementById('projectName').textContent = proj;
+  } catch(e) {}
+};
+
+loadFromStorage();
+refresh();
+renderIssues();
+</script>
+
+</body>
+</html>
