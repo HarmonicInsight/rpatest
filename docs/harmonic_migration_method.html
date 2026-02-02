@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harmonic Migration Method — 次世代マイグレーション方式</title>
+<style>
+  @media print {
+    body { background: #fff !important; }
+    .page-break { page-break-before: always; }
+    .no-print { display: none; }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Yu Gothic', 'Meiryo', 'Segoe UI', sans-serif; background: #f5f7fa; color: #1a1a2e; line-height: 1.8; }
+
+  /* Cover */
+  .cover {
+    background: linear-gradient(135deg, #0d1b2a 0%, #1b2a4a 40%, #162447 100%);
+    color: #fff; min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; text-align: center; padding: 60px 40px;
+    position: relative; overflow: hidden;
+  }
+  .cover::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle at 30% 40%, rgba(33,150,243,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(100,181,246,0.06) 0%, transparent 50%);
+  }
+  .cover * { position: relative; z-index: 1; }
+  .cover .label { font-size: 14px; letter-spacing: 6px; text-transform: uppercase; color: #64B5F6; margin-bottom: 24px; }
+  .cover h1 { font-size: 48px; font-weight: 800; letter-spacing: 2px; margin-bottom: 8px; }
+  .cover h1 span { color: #64B5F6; }
+  .cover .subtitle { font-size: 22px; color: #90CAF9; margin-bottom: 40px; font-weight: 300; }
+  .cover .meta { font-size: 14px; color: #546e7a; line-height: 2; }
+  .cover .version-badge { display: inline-block; background: rgba(33,150,243,0.2); border: 1px solid rgba(33,150,243,0.3); padding: 4px 16px; border-radius: 20px; font-size: 13px; color: #90CAF9; margin-bottom: 32px; }
+  .cover .divider { width: 80px; height: 3px; background: linear-gradient(90deg, #1976D2, #64B5F6); margin: 32px auto; border-radius: 2px; }
+
+  /* Content */
+  .content { max-width: 880px; margin: 0 auto; padding: 60px 40px; }
+
+  h2 { font-size: 28px; color: #0d1b2a; margin: 48px 0 8px 0; padding-bottom: 12px; border-bottom: 3px solid #1976D2; }
+  h2 .num { color: #1976D2; margin-right: 8px; }
+  h3 { font-size: 20px; color: #1b2a4a; margin: 32px 0 12px 0; }
+  h4 { font-size: 16px; color: #37474f; margin: 20px 0 8px 0; }
+  p { margin-bottom: 16px; font-size: 15px; }
+  ul, ol { margin: 12px 0 20px 24px; font-size: 15px; }
+  li { margin-bottom: 6px; }
+
+  /* Callout boxes */
+  .callout { border-radius: 10px; padding: 24px 28px; margin: 24px 0; }
+  .callout-insight { background: #e3f2fd; border-left: 5px solid #1976D2; }
+  .callout-warning { background: #fff3e0; border-left: 5px solid #F57C00; }
+  .callout-success { background: #e8f5e9; border-left: 5px solid #2E7D32; }
+  .callout-dark { background: #0d1b2a; color: #e0e0e0; border-left: 5px solid #64B5F6; }
+  .callout .callout-title { font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .callout-insight .callout-title { color: #1565C0; }
+  .callout-warning .callout-title { color: #E65100; }
+  .callout-success .callout-title { color: #1B5E20; }
+  .callout-dark .callout-title { color: #64B5F6; }
+
+  /* Diagram boxes */
+  .diagram { background: #0d1b2a; border-radius: 12px; padding: 32px; margin: 28px 0; color: #e0e0e0; overflow-x: auto; }
+  .diagram pre { font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; line-height: 1.6; white-space: pre; }
+
+  /* Comparison table */
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+  th { background: #1b2a4a; color: #fff; padding: 12px 16px; text-align: left; font-size: 13px; letter-spacing: 0.5px; }
+  td { padding: 12px 16px; border-bottom: 1px solid #e0e0e0; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  tr:hover td { background: #e3f2fd; }
+
+  /* Flow steps */
+  .flow { display: flex; gap: 0; margin: 28px 0; flex-wrap: wrap; justify-content: center; }
+  .flow-step { background: #fff; border: 2px solid #e0e0e0; border-radius: 12px; padding: 20px; width: 160px; text-align: center; position: relative; }
+  .flow-step.active { border-color: #1976D2; background: #e3f2fd; }
+  .flow-step .step-num { display: inline-block; background: #1976D2; color: #fff; width: 28px; height: 28px; border-radius: 50%; font-size: 14px; font-weight: 700; line-height: 28px; margin-bottom: 8px; }
+  .flow-step .step-title { font-size: 14px; font-weight: 700; color: #1b2a4a; }
+  .flow-step .step-desc { font-size: 12px; color: #546e7a; margin-top: 4px; }
+  .flow-arrow-h { display: flex; align-items: center; color: #1976D2; font-size: 24px; padding: 0 4px; }
+
+  /* IPO visual */
+  .ipo-visual { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+  .ipo-box { border-radius: 12px; padding: 24px; min-height: 120px; }
+  .ipo-box.ipo-in { background: linear-gradient(135deg, #0D47A1, #1565C0); color: #fff; }
+  .ipo-box.ipo-out { background: linear-gradient(135deg, #1B5E20, #2E7D32); color: #fff; }
+  .ipo-box.ipo-proc { background: linear-gradient(135deg, #E65100, #F57C00); color: #fff; grid-column: 1 / -1; }
+  .ipo-box h4 { color: #fff; margin: 0 0 12px 0; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; }
+  .ipo-box ul { margin: 0; padding-left: 20px; }
+  .ipo-box li { margin-bottom: 4px; font-size: 14px; opacity: 0.95; }
+
+  /* Principle cards */
+  .principles { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+  .principle-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 24px; }
+  .principle-card:hover { border-color: #1976D2; box-shadow: 0 4px 20px rgba(25,118,210,0.1); }
+  .principle-card .pc-num { font-size: 32px; font-weight: 800; color: #1976D2; margin-bottom: 8px; }
+  .principle-card .pc-title { font-size: 16px; font-weight: 700; color: #1b2a4a; margin-bottom: 8px; }
+  .principle-card .pc-desc { font-size: 13px; color: #546e7a; }
+
+  /* Quote */
+  blockquote { border-left: 4px solid #1976D2; padding: 16px 24px; margin: 24px 0; background: #f8f9fa; font-style: italic; font-size: 16px; color: #37474f; }
+
+  /* Footer */
+  .footer { text-align: center; padding: 40px; color: #90a4ae; font-size: 13px; border-top: 1px solid #e0e0e0; margin-top: 60px; }
+</style>
+</head>
+<body>
+
+<!-- ===== COVER ===== -->
+<div class="cover">
+  <div class="label">HarmonicInsight Technical Methodology</div>
+  <div class="version-badge">v1.0 — 2026.02</div>
+  <h1>Harmonic <span>Migration</span> Method</h1>
+  <div class="subtitle">IPO抽象化による次世代マイグレーション方式</div>
+  <div class="divider"></div>
+  <div class="meta">
+    HarmonicInsight / FPT Consulting Japan<br>
+    Confidential — Internal Use
+  </div>
+</div>
+
+<!-- ===== CONTENT ===== -->
+<div class="content">
+
+<!-- ==================== Section 1 ==================== -->
+<h2><span class="num">01</span> エグゼクティブサマリー</h2>
+
+<blockquote>
+  マイグレーションとは「翻訳」ではない。「理解して再設計する」ことである。
+</blockquote>
+
+<p>
+  Harmonic Migration Method（以下HMM）は、HarmonicInsightが提唱する次世代のシステム移行手法です。
+  従来のマイグレーションツールが採用する「関数マッピング型」のアプローチではなく、
+  ソースコードを一度 <strong>IPO（Input / Process / Output）</strong> レベルに抽象化し、
+  移行先の設計思想に適した形で再実装する方式です。
+</p>
+
+<p>
+  この手法により、言語・プラットフォームに依存しない<strong>汎用的かつ高精度なマイグレーション</strong>を実現します。
+</p>
+
+<div class="callout callout-insight">
+  <div class="callout-title">Key Message</div>
+  コードの「構文」を変換するのではなく、コードの「意味」を理解し、ターゲット環境にネイティブな形で再構築する。
+  これがAI時代のマイグレーションの本質です。
+</div>
+
+<!-- ==================== Section 2 ==================== -->
+<h2><span class="num">02</span> 従来手法の課題</h2>
+
+<h3>2.1 マッピング型マイグレーションの限界</h3>
+
+<p>
+  従来のマイグレーションツールは、旧言語の関数・構文を新言語の対応する関数・構文に
+  1:1でマッピング（翻訳）する手法を採用しています。
+</p>
+
+<div class="diagram">
+<pre>
+  【従来型: マッピング方式】
+
+  旧システム                    新システム
+  ┌──────────┐    1:1 変換     ┌──────────┐
+  │ Action A │ ──────────→   │ Activity A'│
+  │ Action B │ ──────────→   │ Activity B'│
+  │ Action C │ ──── ??? ──→  │    ???     │  ← 対応なし → 破綻
+  │ Action D │ ──────────→   │ Activity D'│
+  └──────────┘                └──────────┘
+
+  変換率: 60-80%（残り20-40%は手動対応）
+  品質:   旧言語の癖が残る「翻訳調」のコード
+</pre>
+</div>
+
+<h3>2.2 過去の教訓</h3>
+
+<table>
+  <tr><th>移行事例</th><th>手法</th><th>結果</th></tr>
+  <tr><td>VB6 → VB.NET</td><td>構文変換ツール</td><td>変換後のコードが.NETの設計思想に合わず、大規模な手動修正が発生</td></tr>
+  <tr><td>COBOL → Java</td><td>自動変換ツール</td><td>COBOLの構造がそのままJavaに持ち込まれ、保守困難なコードに</td></tr>
+  <tr><td>BizRobo → UiPath</td><td>アクションマッピング</td><td>独自アクションの対応が困難、共通化思想の違いで再設計が必要</td></tr>
+</table>
+
+<div class="callout callout-warning">
+  <div class="callout-title">根本原因</div>
+  言語が変わるということは、設計思想が変わるということ。
+  構文レベルの変換では、旧言語の「癖」がそのまま新言語に持ち込まれる。
+  共通化の粒度、エラーハンドリングの流儀、データ構造の設計——これらは言語ごとに最適解が異なる。
+  マッピングでは、ここに対応できない。
+</div>
+
+<!-- ==================== Section 3 ==================== -->
+<h2 class="page-break"><span class="num">03</span> Harmonic Migration Method の原理</h2>
+
+<h3>3.1 基本コンセプト</h3>
+
+<blockquote>
+  ソースコードを「読む」のではなく「理解する」。<br>
+  そして、理解した内容を新しい言語の作法で「書き直す」。
+</blockquote>
+
+<p>
+  HMMの核心は、移行対象のソースコードから<strong>業務的な意味</strong>を抽出し、
+  言語非依存の中間表現（IPO定義）に変換することです。
+  この中間表現をもとに、ターゲット環境にネイティブな設計で再実装します。
+</p>
+
+<div class="diagram">
+<pre>
+  【Harmonic Migration Method】
+
+  任意の旧システム          IPO抽象化層              任意の新システム
+  ┌──────────┐        ┌──────────────┐        ┌──────────┐
+  │ BizRobo  │        │              │        │ aKaBot   │
+  │ VB6      │  ───→  │   INPUT      │  ───→  │ C# .NET  │
+  │ COBOL    │  理解   │   PROCESS    │  再設計 │ Python   │
+  │ Java     │        │   OUTPUT     │        │ 何でも    │
+  │ 何でも    │        │              │        │          │
+  └──────────┘        └──────────────┘        └──────────┘
+
+    ソースコード          業務関数定義             ネイティブ実装
+    (言語依存)          (言語非依存)            (最適設計)
+</pre>
+</div>
+
+<h3>3.2 四原則</h3>
+
+<div class="principles">
+  <div class="principle-card">
+    <div class="pc-num">01</div>
+    <div class="pc-title">意味の抽出 (Semantic Extraction)</div>
+    <div class="pc-desc">
+      構文ではなく「このコードは何をしているのか」を抽出する。
+      変数名やループ構造ではなく、業務的なInput / Process / Outputを特定する。
+    </div>
+  </div>
+  <div class="principle-card">
+    <div class="pc-num">02</div>
+    <div class="pc-title">中間抽象化 (IPO Abstraction)</div>
+    <div class="pc-desc">
+      言語非依存のIPO定義を中間表現として確立する。
+      この層があることで、ソース言語とターゲット言語の組み合わせを自由にできる。
+    </div>
+  </div>
+  <div class="principle-card">
+    <div class="pc-num">03</div>
+    <div class="pc-title">ネイティブ再設計 (Native Redesign)</div>
+    <div class="pc-desc">
+      ターゲット言語の設計思想・ベストプラクティスに従って再実装する。
+      「翻訳調」のコードではなく、最初からその言語で書いたかのような品質を目指す。
+    </div>
+  </div>
+  <div class="principle-card">
+    <div class="pc-num">04</div>
+    <div class="pc-title">等価性検証 (Equivalence Verification)</div>
+    <div class="pc-desc">
+      旧システムと新システムのIPO定義が等価であることを検証する。
+      構文の一致ではなく、同じInputに対して同じOutputが得られることを保証する。
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Section 4 ==================== -->
+<h2><span class="num">04</span> IPO — 業務関数の定義</h2>
+
+<h3>4.1 業務関数とは</h3>
+
+<p>
+  あらゆるプログラム・ロボット・スクリプトは、突き詰めれば
+  「何かを受け取り（Input）」「何かを処理し（Process）」「何かを出す（Output）」
+  という構造に分解できます。HMMではこれを<strong>業務関数</strong>と呼びます。
+</p>
+
+<div class="ipo-visual">
+  <div class="ipo-box ipo-in">
+    <h4>INPUT（入力）</h4>
+    <ul>
+      <li>どこから何のデータを取得するか</li>
+      <li>データ形式（CSV, JSON, Excel, DB, API, 画面）</li>
+      <li>トリガー条件（時刻、イベント、手動）</li>
+      <li>認証・接続情報</li>
+    </ul>
+  </div>
+  <div class="ipo-box ipo-out">
+    <h4>OUTPUT（出力）</h4>
+    <ul>
+      <li>どこに何のデータを出力するか</li>
+      <li>出力形式（ファイル, DB登録, API送信, メール）</li>
+      <li>正常系・異常系の出力先</li>
+      <li>通知・ログ出力</li>
+    </ul>
+  </div>
+  <div class="ipo-box ipo-proc">
+    <h4>PROCESS（処理）</h4>
+    <ul>
+      <li>データ変換ルール（フォーマット変換、集計、フィルタリング）</li>
+      <li>業務ロジック（条件分岐、計算、照合）</li>
+      <li>エラーハンドリング方針</li>
+      <li>処理順序の依存関係</li>
+    </ul>
+  </div>
+</div>
+
+<h3>4.2 業務パターン分類</h3>
+
+<p>IPOの組み合わせにより、RPA・システム連携の業務は以下のパターンに分類されます。</p>
+
+<table>
+  <tr><th>パターン</th><th>Input</th><th>Process</th><th>Output</th><th>代表例</th></tr>
+  <tr><td><strong>抽出型 (Extract)</strong></td><td>Web / DB / ファイル</td><td>フィルタ・整形</td><td>CSV / Excel</td><td>Webスクレイピング、DB抽出</td></tr>
+  <tr><td><strong>変換型 (Transform)</strong></td><td>CSV / Excel</td><td>型変換・集計・加工</td><td>Excel / JSON</td><td>フォーマット変換、集計</td></tr>
+  <tr><td><strong>転記型 (Load)</strong></td><td>Excel / CSV</td><td>マッピング・検証</td><td>SAP / Oracle / Web</td><td>基幹システム入力</td></tr>
+  <tr><td><strong>照合型 (Validate)</strong></td><td>複数データソース</td><td>突き合わせ・差分検出</td><td>差分レポート</td><td>請求書照合、在庫チェック</td></tr>
+  <tr><td><strong>通知型 (Notify)</strong></td><td>条件トリガー</td><td>条件判定</td><td>Email / Slack</td><td>承認依頼、アラート</td></tr>
+  <tr><td><strong>複合型 (ETL)</strong></td><td>複数ソース</td><td>ETLパイプライン</td><td>複数ターゲット</td><td>日次バッチ処理</td></tr>
+</table>
+
+<h3>4.3 対象システム分類</h3>
+
+<table>
+  <tr><th>カテゴリ</th><th>接続方式</th><th>API有無</th><th>移行時の推奨</th></tr>
+  <tr><td>Web アプリケーション</td><td>ブラウザ操作 / REST API</td><td>多い</td><td>API優先、UI操作は最終手段</td></tr>
+  <tr><td>Windows デスクトップ</td><td>UI Automation / COM</td><td>少ない</td><td>UI操作が主、COM可能なら活用</td></tr>
+  <tr><td>SAP</td><td>SAP GUI / RFC / BAPI</td><td>あり</td><td>RFC/BAPI優先</td></tr>
+  <tr><td>Oracle / DB</td><td>ODBC / SQL / PL/SQL</td><td>あり</td><td>SQL直接が最速・最安定</td></tr>
+  <tr><td>Office (Excel等)</td><td>VBA / COM / openpyxl</td><td>-</td><td>ライブラリ操作推奨</td></tr>
+  <tr><td>OCR / 画像認識</td><td>OCRエンジン / AI</td><td>あり</td><td>API型OCR推奨</td></tr>
+</table>
+
+<div class="callout callout-insight">
+  <div class="callout-title">HMMの重要な判断基準</div>
+  APIが提供されているシステムに対してUI操作(RPA)で接続するのは本来非効率。
+  移行を機にAPI接続に切り替えることで、速度・安定性・保守性が向上する。
+  IPO抽象化によりこの判断が可能になる——Inputの「取得元」は変えずに「取得方法」だけを最適化できる。
+</div>
+
+<!-- ==================== Section 5 ==================== -->
+<h2 class="page-break"><span class="num">05</span> 移行プロセス</h2>
+
+<h3>5.1 全体フロー</h3>
+
+<div class="flow">
+  <div class="flow-step">
+    <div class="step-num">1</div>
+    <div class="step-title">理解</div>
+    <div class="step-desc">ソースコード解析<br>業務要件の把握</div>
+  </div>
+  <div class="flow-arrow-h">→</div>
+  <div class="flow-step active">
+    <div class="step-num">2</div>
+    <div class="step-title">抽象化</div>
+    <div class="step-desc">IPO分解<br>業務関数定義</div>
+  </div>
+  <div class="flow-arrow-h">→</div>
+  <div class="flow-step">
+    <div class="step-num">3</div>
+    <div class="step-title">再設計</div>
+    <div class="step-desc">ターゲット設計<br>最適化判断</div>
+  </div>
+  <div class="flow-arrow-h">→</div>
+  <div class="flow-step">
+    <div class="step-num">4</div>
+    <div class="step-title">実装</div>
+    <div class="step-desc">ネイティブ実装<br>コード生成</div>
+  </div>
+  <div class="flow-arrow-h">→</div>
+  <div class="flow-step">
+    <div class="step-num">5</div>
+    <div class="step-title">検証</div>
+    <div class="step-desc">IPO等価性テスト<br>品質保証</div>
+  </div>
+</div>
+
+<h3>5.2 各ステップの詳細</h3>
+
+<h4>Step 1: 理解 — ソースコードからの業務要件抽出</h4>
+
+<p>
+  旧システムのソースコード（BizRobo XML, VB6, COBOL等）をAIが解析し、
+  「このプログラムは業務的に何をしているのか」を自然言語で抽出します。
+</p>
+
+<div class="callout callout-dark">
+  <div class="callout-title">AIの役割</div>
+  <p style="margin:0">
+    LLM（大規模言語モデル）がソースコードを「読んで理解する」。<br>
+    変数名、コメント、処理構造から業務的な意味を推定する。<br>
+    これは従来の構文解析ツールでは不可能だった能力。
+  </p>
+</div>
+
+<h4>Step 2: 抽象化 — IPO業務関数定義の生成</h4>
+
+<p>
+  抽出した業務要件を、言語非依存のIPO形式に構造化します。
+  ここが <strong>HMMの最も重要なステップ</strong> です。
+  この中間表現が存在することで、ソース言語とターゲット言語の組み合わせが自由になります。
+</p>
+
+<div class="diagram">
+<pre>
+  【IPO業務関数定義の例】
+
+  業務関数: 日次売上レポート生成
+  ──────────────────────────────────
+  INPUT:
+    - source: SAP (T-code: VA05)
+      format: テーブル形式
+      fields: [受注番号, 得意先, 金額, 日付]
+      trigger: 毎日 09:00 JST
+
+  PROCESS:
+    - filter: 日付 = 前営業日
+    - group_by: 得意先コード
+    - aggregate: SUM(金額)
+    - sort: 金額 DESC
+    - format: 通貨形式 (¥#,###)
+
+  OUTPUT:
+    - target: Excel ファイル
+      template: 売上日報テンプレート.xlsx
+      path: \\server\reports\daily\
+    - target: Email
+      to: 部門長配布リスト
+      subject: "【日報】売上レポート {date}"
+      attachment: 上記Excelファイル
+</pre>
+</div>
+
+<h4>Step 3: 再設計 — ターゲット環境に最適な設計判断</h4>
+
+<p>IPO定義をもとに、ターゲット環境での最適な実装方式を決定します。</p>
+
+<table>
+  <tr><th>IPO要素</th><th>旧実装 (BizRobo)</th><th>最適化判断</th><th>新実装 (推奨)</th></tr>
+  <tr><td>SAPからデータ取得</td><td>SAP GUI 画面操作</td><td>APIあり → API化</td><td>SAP RFC/BAPI</td></tr>
+  <tr><td>データ加工</td><td>BizRobo変数操作</td><td>言語ネイティブ化</td><td>Python pandas</td></tr>
+  <tr><td>Excel出力</td><td>BizRobo Excel操作</td><td>ライブラリ化</td><td>openpyxl</td></tr>
+  <tr><td>メール送信</td><td>BizRobo メールアクション</td><td>APIあり → API化</td><td>SMTP / Graph API</td></tr>
+</table>
+
+<div class="callout callout-success">
+  <div class="callout-title">最適化の本質</div>
+  HMMでは移行を「同じことを別の言語で書く」ではなく「同じ業務成果をより良い方法で実現する」と捉える。
+  API化できるものはAPI化し、ライブラリ化できるものはライブラリ化する。
+  移行は改善のチャンスである。
+</div>
+
+<h4>Step 4: 実装 — ネイティブコード生成</h4>
+
+<p>
+  IPO定義とアーキテクチャ設計をもとに、ターゲット言語でコードを生成します。
+  AIがターゲット言語のベストプラクティスに従ったコードを生成し、
+  人間がレビュー・調整を行います。
+</p>
+
+<h4>Step 5: 検証 — IPO等価性テスト</h4>
+
+<p>
+  旧システムと新システムが「同じInputに対して同じOutputを返すか」を検証します。
+  構文の一致ではなく、業務的な等価性を確認します。
+</p>
+
+<div class="diagram">
+<pre>
+  【IPO等価性テスト】
+
+  テストデータ (Input)
+       │
+       ├──→ 旧システム実行 ──→ Output A (期待値)
+       │
+       └──→ 新システム実行 ──→ Output B (実測値)
+
+  検証: Output A ≒ Output B
+  ※ 完全一致ではなく、業務的に等価であることを確認
+     (例: 日付フォーマットの差異は許容、金額の差異は不許容)
+</pre>
+</div>
+
+<!-- ==================== Section 6 ==================== -->
+<h2 class="page-break"><span class="num">06</span> 従来手法との比較</h2>
+
+<table>
+  <tr>
+    <th>観点</th>
+    <th>従来型（マッピング方式）</th>
+    <th>Harmonic Migration Method</th>
+  </tr>
+  <tr>
+    <td><strong>原理</strong></td>
+    <td>構文レベルの1:1変換</td>
+    <td>意味理解 → IPO抽象化 → 再設計</td>
+  </tr>
+  <tr>
+    <td><strong>変換精度</strong></td>
+    <td>60-80%（残りは手動）</td>
+    <td>理論上100%（IPO等価性で保証）</td>
+  </tr>
+  <tr>
+    <td><strong>移行後の品質</strong></td>
+    <td>旧言語の癖が残る</td>
+    <td>ターゲット言語にネイティブ</td>
+  </tr>
+  <tr>
+    <td><strong>汎用性</strong></td>
+    <td>A→B 専用（言語ペアごとに開発）</td>
+    <td>任意の言語間で適用可能</td>
+  </tr>
+  <tr>
+    <td><strong>マッピング機能</strong></td>
+    <td>コア機能（マッピングが全て）</td>
+    <td>チェック機能のみ（本質ではない）</td>
+  </tr>
+  <tr>
+    <td><strong>AI適性</strong></td>
+    <td>低い（ルールベース）</td>
+    <td>高い（LLMの理解力を最大活用）</td>
+  </tr>
+  <tr>
+    <td><strong>設計改善</strong></td>
+    <td>不可能（そのまま変換）</td>
+    <td>可能（API化・最適化の判断）</td>
+  </tr>
+  <tr>
+    <td><strong>テスト</strong></td>
+    <td>構文一致の確認</td>
+    <td>IPO等価性テスト（業務レベル）</td>
+  </tr>
+</table>
+
+<!-- ==================== Section 7 ==================== -->
+<h2><span class="num">07</span> なぜ今この手法が可能になったのか</h2>
+
+<p>HMMのアプローチは以前から概念としては存在しましたが、実用化できなかった理由があります。</p>
+
+<h3>7.1 従来の壁</h3>
+
+<ul>
+  <li><strong>IPO抽出の自動化が不可能だった</strong> — ソースコードから業務的意味を抽出する作業は、熟練エンジニアの手動作業でしかできなかった</li>
+  <li><strong>コスト</strong> — 全ロボットのIPO分析を人手で行うと、移行コストの大半がここに費やされる</li>
+  <li><strong>属人性</strong> — 分析品質がエンジニアのスキルに依存する</li>
+</ul>
+
+<h3>7.2 AI（LLM）が変えたこと</h3>
+
+<div class="callout callout-success">
+  <div class="callout-title">ブレークスルー</div>
+  <p style="margin:0">
+    大規模言語モデル（LLM）は「コードを読んで業務的に何をしているかを理解する」能力を持つ。<br>
+    これにより、IPO抽出の自動化が現実的になった。<br><br>
+    <strong>つまり：</strong><br>
+    ・従来: 人間がコードを読む → 業務要件を理解 → IPO整理 → 再設計（数日/本）<br>
+    ・HMM: AIがコードを読む → IPO自動抽出 → 人間がレビュー・調整（数時間/本）
+  </p>
+</div>
+
+<!-- ==================== Section 8 ==================== -->
+<h2><span class="num">08</span> ツール体系</h2>
+
+<h3>8.1 InsightMigration — HMM実装ツール</h3>
+
+<p>
+  HMMを実装した具体的なツールが <strong>InsightMigration</strong> です。
+  HarmonicInsightの知的財産として、以下の機能を提供します。
+</p>
+
+<table>
+  <tr><th>フェーズ</th><th>機能</th><th>HMMにおける役割</th></tr>
+  <tr><td>Phase 1: 解析</td><td>ソースコード解析、複雑度スコアリング</td><td>Step 1 (理解)</td></tr>
+  <tr><td>Phase 2: IPO抽出・変換</td><td>AI IPO分解、業務関数定義生成</td><td>Step 2-3 (抽象化・再設計)</td></tr>
+  <tr><td>Phase 3: 検証</td><td>構文チェック、ベストプラクティス検証</td><td>Step 4 (実装品質)</td></tr>
+  <tr><td>Phase 4: テスト</td><td>IPO等価性テスト、結果比較</td><td>Step 5 (検証)</td></tr>
+  <tr><td>Phase 5: デプロイ</td><td>パッケージ配布、環境構成</td><td>運用移行</td></tr>
+  <tr><td>業務関数設計ツール</td><td>IPO可視化、アーキテクチャ設計</td><td>Step 2-3 のUI</td></tr>
+</table>
+
+<h3>8.2 スコープ境界</h3>
+
+<div class="diagram">
+<pre>
+  ┌──────────────────────────────────────────────────────┐
+  │  HarmonicInsight 知的財産                              │
+  │  ┌────────────────────────────────────────────────┐  │
+  │  │  InsightMigration (HMM実装)                     │  │
+  │  │  ├─ IPO抽出エンジン (AI)                         │  │
+  │  │  ├─ 業務関数定義フォーマット                       │  │
+  │  │  ├─ 等価性検証フレームワーク                       │  │
+  │  │  ├─ 解析・変換・検証・テスト・デプロイ パイプライン  │  │
+  │  │  ├─ GUI ダッシュボード                            │  │
+  │  │  └─ 業務関数設計ツール                            │  │
+  │  └────────────────────────────────────────────────┘  │
+  ├──────────────────────────────────────────────────────┤
+  │  外部プラットフォーム（公開APIを通じて連携）             │
+  │  ├─ aKaBot: Orchestrator API, Robot, Studio          │
+  │  ├─ UiPath: Orchestrator API, Robot, Studio          │
+  │  └─ その他: 任意のRPA/自動化プラットフォーム             │
+  └──────────────────────────────────────────────────────┘
+</pre>
+</div>
+
+<!-- ==================== Section 9 ==================== -->
+<h2 class="page-break"><span class="num">09</span> まとめ</h2>
+
+<div class="callout callout-dark">
+  <div class="callout-title">Harmonic Migration Method — 3つの要点</div>
+  <p style="margin:0; line-height: 2.2;">
+    <strong>1. マッピングは補助、IPO抽象化が本質</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;関数の1:1マッピングはチェック機能に過ぎない。本質はソースコードからIPOを抽出し再設計すること。<br><br>
+    <strong>2. 言語非依存の中間表現が鍵</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;IPO定義という抽象層があることで、任意の言語間移行が可能になり、移行時の最適化判断もできる。<br><br>
+    <strong>3. AIがこの手法を現実的にした</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;LLMの「コードを理解する力」により、従来は人手でしかできなかったIPO抽出が自動化された。
+  </p>
+</div>
+
+<blockquote>
+  すべてのマイグレーションツールは、こうあるべきだ。<br>
+  コードの「構文」を変換するのではなく、コードの「意味」を理解し、再設計する。<br>
+  これが Harmonic Migration Method の思想であり、AI時代のマイグレーションの標準となる。
+</blockquote>
+
+</div>
+
+<!-- ===== FOOTER ===== -->
+<div class="footer">
+  <strong>Harmonic Migration Method v1.0</strong><br>
+  Copyright &copy; 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.<br>
+  Confidential — Unauthorized reproduction prohibited.
+</div>
+
+</body>
+</html>
