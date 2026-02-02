@@ -288,6 +288,88 @@ export function generateTickets(bots: Bot[]): Ticket[] {
   }));
 }
 
+// Demo source code (BizRobo XML)
+export function getDemoSourceCode(botId: string): string {
+  const botNum = parseInt(botId.replace("BOT-", ""));
+  const names = [
+    "請求書処理","注文管理","在庫確認","出荷通知","入金消込",
+    "経費精算","勤怠集計","給与計算","社員登録","退職処理",
+  ];
+  const botName = names[(botNum - 1) % names.length];
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<robot name="${botName}" version="10.4" type="Standard">
+  <variables>
+    <variable name="inputFile" type="String" default=""/>
+    <variable name="outputPath" type="String" default=""/>
+    <variable name="resultStatus" type="String" default=""/>
+    <variable name="errorMessage" type="String" default=""/>
+    <variable name="rowCount" type="Integer" default="0"/>
+    <variable name="processedCount" type="Integer" default="0"/>
+  </variables>
+
+  <steps>
+    <!-- Step 1: 初期化 -->
+    <step name="初期化" type="Initialize">
+      <action type="Log" message="ロボット開始: ${botName}"/>
+      <action type="SetVariable" name="resultStatus" value="RUNNING"/>
+    </step>
+
+    <!-- Step 2: データ取得 -->
+    <step name="データ取得" type="DataAccess">
+      <action type="OpenBrowser" url="https://system.example.com/login"/>
+      <action type="Wait" timeout="5000"/>
+      <action type="InputText" selector="#username" value="\${credentials.user}"/>
+      <action type="InputText" selector="#password" value="\${credentials.pass}"/>
+      <action type="Click" selector="#loginBtn"/>
+      <action type="Wait" timeout="3000"/>
+      <action type="Navigate" url="https://system.example.com/data/export"/>
+      <action type="Click" selector="#exportBtn"/>
+      <action type="Download" path="\${inputFile}"/>
+    </step>
+
+    <!-- Step 3: データ処理 -->
+    <step name="データ処理" type="Process">
+      <action type="OpenExcel" path="\${inputFile}"/>
+      <action type="Loop" target="Sheet1" startRow="2">
+        <action type="ReadCell" column="A" variable="itemCode"/>
+        <action type="ReadCell" column="B" variable="itemName"/>
+        <action type="ReadCell" column="C" variable="amount"/>
+        <action type="Condition" expression="\${amount} > 0">
+          <action type="Transform" variable="processedAmount"
+                  expression="ROUND(\${amount} * 1.1, 0)"/>
+          <action type="WriteCell" column="D" value="\${processedAmount}"/>
+          <action type="Increment" variable="processedCount"/>
+        </action>
+      </action>
+      <action type="SaveExcel" path="\${outputPath}"/>
+    </step>
+
+    <!-- Step 4: 結果出力 -->
+    <step name="結果出力" type="Output">
+      <action type="SendEmail"
+              to="tanaka@example.com"
+              subject="${botName}完了通知"
+              body="処理件数: \${processedCount}件\\n出力先: \${outputPath}"
+              attachment="\${outputPath}"/>
+      <action type="SetVariable" name="resultStatus" value="SUCCESS"/>
+      <action type="Log" message="ロボット完了: 処理\${processedCount}件"/>
+    </step>
+
+    <!-- エラーハンドリング -->
+    <errorHandler>
+      <action type="Screenshot" path="error_\${timestamp}.png"/>
+      <action type="SetVariable" name="resultStatus" value="ERROR"/>
+      <action type="SetVariable" name="errorMessage" value="\${lastError}"/>
+      <action type="SendEmail"
+              to="admin@example.com"
+              subject="[ERROR] ${botName}"
+              body="エラー発生: \${errorMessage}"/>
+      <action type="Log" level="ERROR" message="\${errorMessage}"/>
+    </errorHandler>
+  </steps>
+</robot>`;
+}
+
 // Chat demo messages
 export const demoChatMessages = [
   { role: "user" as const, content: "今日の進捗状況を教えて" },
