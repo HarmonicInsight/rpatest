@@ -1,4 +1,5 @@
 """Migration DB - SQLiteベースの移行進捗・結果管理"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

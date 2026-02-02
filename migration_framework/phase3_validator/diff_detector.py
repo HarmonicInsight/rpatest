@@ -1,4 +1,5 @@
 """差分検出 - BizRoboソースとaKaBot変換結果の差分レポート生成"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

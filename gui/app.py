@@ -1,4 +1,6 @@
-"""BizRobo → aKaBot 移行自動化ダッシュボード - メインアプリ"""
+"""InsightMigration - RPA移行自動化ダッシュボード
+Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
+"""
 from __future__ import annotations
 
 import sys
@@ -34,8 +36,8 @@ def get_db() -> MigrationDB:
 
 # --- ページ設定 ---
 st.set_page_config(
-    page_title="BizRobo → aKaBot 移行ダッシュボード",
-    page_icon="🔄",
+    page_title="InsightMigration - RPA移行ダッシュボード",
+    page_icon="🔷",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -89,8 +91,9 @@ st.markdown("""
 
 # --- サイドバー ---
 with st.sidebar:
-    st.markdown("## 🔄 Migration Tool")
-    st.markdown("**BizRobo → aKaBot**")
+    st.markdown("## 🔷 InsightMigration")
+    st.markdown("**RPA Migration Platform**")
+    st.markdown("*BizRobo → aKaBot*")
     st.markdown("---")
 
     page = st.radio(
@@ -126,8 +129,8 @@ with st.sidebar:
         st.warning("DB未初期化")
 
     st.markdown("---")
-    st.caption("FPT Consulting Japan")
-    st.caption("v1.0.0")
+    st.caption("InsightMigration v1.0.0")
+    st.caption("© HarmonicInsight / FPT Consulting Japan")
 
 
 # --- ページルーティング ---

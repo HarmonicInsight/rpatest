@@ -1,4 +1,5 @@
 """Phase 2 統合 Converter - AST変換 → マッピング → XAML生成"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

@@ -1,4 +1,5 @@
 """依存関係マッピング - 外部接続検出・ファイルパス抽出・API呼び出し一覧"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

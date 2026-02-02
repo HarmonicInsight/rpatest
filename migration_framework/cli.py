@@ -1,4 +1,5 @@
 """CLI エントリーポイント - コマンドラインインターフェース"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

@@ -1,4 +1,5 @@
 """Phase 5 統合 Deployer - パッケージング・配布・環境設定・ヘルスチェック"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

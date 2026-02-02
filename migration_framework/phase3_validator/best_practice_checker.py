@@ -1,4 +1,5 @@
 """ベストプラクティスチェック - aKaBotの推奨パターンへの準拠検証"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

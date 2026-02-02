@@ -1,4 +1,5 @@
 """Phase 5: デプロイ画面 - パッケージング・端末配布・ヘルスチェック"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 from pathlib import Path

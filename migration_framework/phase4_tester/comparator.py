@@ -1,4 +1,5 @@
 """比較エンジン - CSV/Excel比較・JSON差分検出・画像類似度判定"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import csv

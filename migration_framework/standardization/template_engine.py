@@ -1,4 +1,5 @@
 """テンプレートエンジン - 基本テンプレート・業務テンプレートの適用"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

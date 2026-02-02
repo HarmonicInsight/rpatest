@@ -1,4 +1,5 @@
 """Phase 1 統合 Analyzer - 全サブコンポーネントを統合した解析エンジン"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

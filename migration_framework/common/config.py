@@ -1,4 +1,5 @@
 """設定ファイル読み込み"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 from pathlib import Path

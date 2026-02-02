@@ -1,4 +1,5 @@
 """複雑度分析 - ステップ数カウント・分岐/ループ深度・スコア算出"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

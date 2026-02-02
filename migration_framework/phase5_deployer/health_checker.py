@@ -1,4 +1,5 @@
 """ヘルスチェッカー - デプロイ後の起動確認・接続確認・スモークテスト"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

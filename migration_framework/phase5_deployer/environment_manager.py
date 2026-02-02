@@ -1,4 +1,5 @@
 """環境マネージャー - 端末別の環境設定・認証情報・パスの適用"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

@@ -1,4 +1,5 @@
 """Phase 3 統合 Validator - 構文チェック・命名規則・ベストプラクティス・差分検出"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

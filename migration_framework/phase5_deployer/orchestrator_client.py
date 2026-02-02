@@ -1,4 +1,5 @@
 """Orchestrator API クライアント - パッケージ管理・プロセス管理・マシン管理"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

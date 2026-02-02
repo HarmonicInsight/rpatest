@@ -1,4 +1,5 @@
 """共通部品ライブラリ - ログイン・Excel・メール・エラーハンドラ等の再利用可能コンポーネント"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

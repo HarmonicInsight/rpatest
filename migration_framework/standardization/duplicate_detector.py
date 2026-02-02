@@ -1,4 +1,5 @@
 """重複検出・統合 - コード類似度分析・共通処理抽出・統合候補提示"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import logging

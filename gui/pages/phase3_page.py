@@ -1,4 +1,5 @@
 """Phase 3: 検証画面 - 構文チェック・命名規則・ベストプラクティス"""
+# Copyright (c) 2025-2026 HarmonicInsight / FPT Consulting Japan. All rights reserved.
 from __future__ import annotations
 
 import pandas as pd
