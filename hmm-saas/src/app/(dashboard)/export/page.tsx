@@ -61,7 +61,7 @@ export default function ExportPage() {
 
 ## 全体サマリー
 - 総ボット数: ${bots.length}
-- 移行元分析完了 (IPO確定): ${srcDone} / ${bots.length} (${Math.round((srcDone / bots.length) * 100)}%)
+- 分析完了 (入出力確定): ${srcDone} / ${bots.length} (${Math.round((srcDone / bots.length) * 100)}%)
 - 移行先開発完了: ${dstDone} / ${bots.length} (${Math.round((dstDone / bots.length) * 100)}%)
 - オープンチケット: ${openTickets}件
 

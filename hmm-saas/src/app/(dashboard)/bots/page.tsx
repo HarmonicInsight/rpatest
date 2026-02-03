@@ -79,9 +79,9 @@ export default function BotMasterPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>ボットマスタ管理</h2>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>ボット一覧</h2>
           <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--text-secondary)" }}>
-            ボットの担当者・部署・ランクの割当と管理
+            ボットの担当者・部署・ランクの一覧管理
           </p>
         </div>
         <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
@@ -223,7 +223,7 @@ export default function BotMasterPage() {
             </div>
 
             <div style={{ marginBottom: 12 }}>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 600, marginBottom: 4 }}>業務担当者（オーナー）</label>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, marginBottom: 4 }}>業務担当者</label>
               <select value={editOwner} onChange={(e) => setEditOwner(e.target.value)} style={{ width: "100%", padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 6, fontSize: 13 }}>
                 {owners.map((o) => <option key={o.id} value={o.name.split(" ")[0]}>{o.name} ({o.department})</option>)}
               </select>

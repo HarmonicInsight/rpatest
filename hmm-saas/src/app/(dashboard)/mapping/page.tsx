@@ -77,7 +77,7 @@ export default function MappingPage() {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>マッピングビュー</h2>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>入出力 対応表</h2>
         <div style={{ display: "flex", gap: 8 }}>
           <input
             placeholder="検索..."
@@ -131,7 +131,7 @@ export default function MappingPage() {
             <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>機能要件</h4>
             <p style={{ margin: "0 0 12px", fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{selected.funcReq}</p>
             <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "12px 0" }} />
-            <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>IPO定義</h4>
+            <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>入出力定義</h4>
             <div style={{ fontSize: 12, marginBottom: 6 }}><strong>Input:</strong> {selected.ipoInput}</div>
             <div style={{ fontSize: 12, marginBottom: 6 }}><strong>Process:</strong> {selected.ipoProcess}</div>
             <div style={{ fontSize: 12, marginBottom: 6 }}><strong>Output:</strong> {selected.ipoOutput}</div>

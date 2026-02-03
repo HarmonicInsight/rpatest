@@ -139,9 +139,9 @@ export default function SourcePage() {
               <div>
                 <FieldEditor label="業務要件" value={editData.bizReq} onChange={(v) => setEditData({ ...editData, bizReq: v })} />
                 <FieldEditor label="機能要件" value={editData.funcReq} onChange={(v) => setEditData({ ...editData, funcReq: v })} />
-                <FieldEditor label="IPO Input" value={editData.ipoInput} onChange={(v) => setEditData({ ...editData, ipoInput: v })} />
-                <FieldEditor label="IPO Process" value={editData.ipoProcess} onChange={(v) => setEditData({ ...editData, ipoProcess: v })} />
-                <FieldEditor label="IPO Output" value={editData.ipoOutput} onChange={(v) => setEditData({ ...editData, ipoOutput: v })} />
+                <FieldEditor label="入力 (Input)" value={editData.ipoInput} onChange={(v) => setEditData({ ...editData, ipoInput: v })} />
+                <FieldEditor label="処理 (Process)" value={editData.ipoProcess} onChange={(v) => setEditData({ ...editData, ipoProcess: v })} />
+                <FieldEditor label="出力 (Output)" value={editData.ipoOutput} onChange={(v) => setEditData({ ...editData, ipoOutput: v })} />
                 <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
                   <button onClick={saveEdit} style={{ padding: "6px 16px", borderRadius: 4, border: "none", background: "var(--success)", color: "#fff", cursor: "pointer", fontSize: 13 }}>保存</button>
                   <button onClick={() => setEditMode(false)} style={{ padding: "6px 16px", borderRadius: 4, border: "1px solid var(--border)", background: "var(--card)", cursor: "pointer", fontSize: 13 }}>キャンセル</button>
@@ -152,7 +152,7 @@ export default function SourcePage() {
                 <Section title="業務要件" text={detail.bizReq} />
                 <Section title="機能要件" text={detail.funcReq} />
                 <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "12px 0" }} />
-                <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>IPO定義</h4>
+                <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>入出力定義</h4>
                 <div style={{ fontSize: 12, marginBottom: 6 }}><strong>Input:</strong> {detail.ipoInput}</div>
                 <div style={{ fontSize: 12, marginBottom: 6 }}><strong>Process:</strong> {detail.ipoProcess}</div>
                 <div style={{ fontSize: 12, marginBottom: 6 }}><strong>Output:</strong> {detail.ipoOutput}</div>

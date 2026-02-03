@@ -42,7 +42,7 @@ export default function UATPage() {
   return (
     <div>
       <div style={{ marginBottom: 20 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>UAT（ユーザー受入テスト）</h2>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>受入テスト（UAT）</h2>
         <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--text-secondary)" }}>
           テスト中のボットに対してフィードバックや不具合報告を送信できます。
         </p>
@@ -72,7 +72,7 @@ export default function UATPage() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <span style={{ fontFamily: "monospace", fontSize: 12, color: "var(--text-muted)" }}>{b.id}</span>
                   {submitted.includes(b.id) && (
-                    <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 600 }}>FB送信済</span>
+                    <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 600 }}>送信済</span>
                   )}
                 </div>
                 <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 6 }}>{b.name}</div>
@@ -92,7 +92,7 @@ export default function UATPage() {
                 <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: "var(--text-muted)" }}>×</button>
               </div>
 
-              <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>実装仕様（IPO）</h4>
+              <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>実装仕様（入出力）</h4>
               <div style={{ fontSize: 12, marginBottom: 6, padding: "6px 10px", background: "#e3f2fd", borderRadius: 4 }}><strong>Input:</strong> {selected.ipoInput}</div>
               <div style={{ fontSize: 12, marginBottom: 6, padding: "6px 10px", background: "#fff3e0", borderRadius: 4 }}><strong>Process:</strong> {selected.ipoProcess}</div>
               <div style={{ fontSize: 12, marginBottom: 12, padding: "6px 10px", background: "#e8f5e9", borderRadius: 4 }}><strong>Output:</strong> {selected.ipoOutput}</div>

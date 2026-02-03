@@ -78,11 +78,11 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <h2 style={{ margin: "0 0 20px", fontSize: 20, fontWeight: 700 }}>プロジェクト概要</h2>
+      <h2 style={{ margin: "0 0 20px", fontSize: 20, fontWeight: 700 }}>ダッシュボード</h2>
 
       {/* KPI Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 24 }}>
-        <StatCard label="総ボット数" value={bots.length} color="var(--primary)" sub={`ランクA: ${rankCounts.A} / B: ${rankCounts.B} / C: ${rankCounts.C} / D: ${rankCounts.D}`} />
+        <StatCard label="総ボット数" value={bots.length} color="var(--primary)" sub={`A: ${rankCounts.A} / B: ${rankCounts.B} / C: ${rankCounts.C} / D: ${rankCounts.D}`} />
         <StatCard label="移行完了" value={`${done}本`} color="var(--success)" sub={`全体の${pctComplete}%`} />
         <StatCard label="オープンチケット" value={openTickets} color="var(--warning)" sub={`全${tickets.length}件中`} />
         <StatCard label="レビュー待ち" value={reviewPending} color="var(--purple)" sub="顧客確認待ち" />
@@ -91,11 +91,11 @@ export default function DashboardPage() {
       {/* Progress Bars */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
         <div style={{ background: "var(--card)", borderRadius: 8, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
-          <h3 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 600 }}>移行元分析 進捗</h3>
+          <h3 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 600 }}>移行元 分析状況</h3>
           <ProgressBar items={srcCounts} map={SRC_STATUS_MAP} />
         </div>
         <div style={{ background: "var(--card)", borderRadius: 8, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
-          <h3 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 600 }}>移行先開発 進捗</h3>
+          <h3 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 600 }}>移行先 開発状況</h3>
           <ProgressBar items={dstCounts} map={DST_STATUS_MAP} />
         </div>
       </div>

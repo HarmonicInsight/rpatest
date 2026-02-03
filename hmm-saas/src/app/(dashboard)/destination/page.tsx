@@ -51,7 +51,7 @@ export default function DestinationPage() {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>移行先開発</h2>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>変換結果</h2>
         <div style={{ display: "flex", gap: 8 }}>
           <input
             placeholder="検索..."
@@ -164,14 +164,14 @@ export default function DestinationPage() {
             <div style={{ fontSize: 12, marginBottom: 6 }}><strong>見積工数:</strong> {detail.estimateHours}h</div>
             <div style={{ fontSize: 12, marginBottom: 6 }}><strong>移行元:</strong> {detail.srcPlatform} → <strong>移行先:</strong> {detail.dstPlatform}</div>
             <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "12px 0" }} />
-            <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>IPO定義（実装仕様）</h4>
-            <div style={{ fontSize: 12, marginBottom: 6, padding: "6px 8px", background: "#f5f5f5", borderRadius: 4 }}><strong>I:</strong> {detail.ipoInput}</div>
-            <div style={{ fontSize: 12, marginBottom: 6, padding: "6px 8px", background: "#f5f5f5", borderRadius: 4 }}><strong>P:</strong> {detail.ipoProcess}</div>
-            <div style={{ fontSize: 12, marginBottom: 6, padding: "6px 8px", background: "#f5f5f5", borderRadius: 4 }}><strong>O:</strong> {detail.ipoOutput}</div>
+            <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>入出力定義（実装仕様）</h4>
+            <div style={{ fontSize: 12, marginBottom: 6, padding: "6px 8px", background: "#f5f5f5", borderRadius: 4 }}><strong>Input:</strong> {detail.ipoInput}</div>
+            <div style={{ fontSize: 12, marginBottom: 6, padding: "6px 8px", background: "#f5f5f5", borderRadius: 4 }}><strong>Process:</strong> {detail.ipoProcess}</div>
+            <div style={{ fontSize: 12, marginBottom: 6, padding: "6px 8px", background: "#f5f5f5", borderRadius: 4 }}><strong>Output:</strong> {detail.ipoOutput}</div>
             {detail.mods.length > 0 && (
               <>
                 <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "12px 0" }} />
-                <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>実装変更履歴</h4>
+                <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>変更履歴</h4>
                 {detail.mods.map((m, i) => (
                   <div key={i} style={{ fontSize: 11, marginBottom: 6, padding: "4px 8px", background: "#f5f5f5", borderRadius: 4 }}>
                     <span style={{ color: "var(--text-muted)" }}>{m.date}</span> [{m.type}] {m.text}

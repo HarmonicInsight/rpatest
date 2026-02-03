@@ -63,28 +63,28 @@ export type Member = {
 
 export const SRC_STATUS_MAP: Record<SrcStatus, { label: string; color: string; order: number; pct: number }> = {
   not_started:    { label: "未着手",         color: "#9e9e9e", order: 0, pct: 0 },
-  biz_analyzing:  { label: "業務要件分析中", color: "#7B1FA2", order: 1, pct: 20 },
-  biz_done:       { label: "業務要件完了",   color: "#512DA8", order: 2, pct: 40 },
-  func_analyzing: { label: "機能要件分析中", color: "#1565C0", order: 3, pct: 50 },
-  func_done:      { label: "機能要件完了",   color: "#0D47A1", order: 4, pct: 75 },
-  ipo_done:       { label: "IPO確定",        color: "#2E7D32", order: 5, pct: 100 },
+  biz_analyzing:  { label: "業務要件 分析中", color: "#7B1FA2", order: 1, pct: 20 },
+  biz_done:       { label: "業務要件 完了",   color: "#512DA8", order: 2, pct: 40 },
+  func_analyzing: { label: "機能要件 分析中", color: "#1565C0", order: 3, pct: 50 },
+  func_done:      { label: "機能要件 完了",   color: "#0D47A1", order: 4, pct: 75 },
+  ipo_done:       { label: "入出力 確定",     color: "#2E7D32", order: 5, pct: 100 },
 };
 
 export const DST_STATUS_MAP: Record<DstStatus, { label: string; color: string; order: number; pct: number }> = {
-  pending:       { label: "待機中",    color: "#9e9e9e", order: 0, pct: 0 },
+  pending:       { label: "未着手",    color: "#9e9e9e", order: 0, pct: 0 },
   designing:     { label: "設計中",    color: "#1565C0", order: 1, pct: 20 },
-  implementing:  { label: "実装中",    color: "#F57C00", order: 2, pct: 50 },
-  testing:       { label: "テスト/UAT",color: "#00838F", order: 3, pct: 75 },
+  implementing:  { label: "変換中",    color: "#F57C00", order: 2, pct: 50 },
+  testing:       { label: "テスト中",  color: "#00838F", order: 3, pct: 75 },
   done:          { label: "完了",      color: "#2E7D32", order: 4, pct: 100 },
   blocked:       { label: "ブロック",  color: "#c62828", order: 5, pct: 0 },
 };
 
 export const REVIEW_STATUS_MAP: Record<ReviewStatus, { label: string; color: string }> = {
   none:      { label: "未レビュー", color: "#9e9e9e" },
-  pending:   { label: "依頼中",    color: "#F57C00" },
-  in_review: { label: "レビュー中",color: "#1976D2" },
-  approved:  { label: "承認済",    color: "#2E7D32" },
-  rejected:  { label: "差戻し",    color: "#c62828" },
+  pending:   { label: "確認依頼中", color: "#F57C00" },
+  in_review: { label: "確認中",     color: "#1976D2" },
+  approved:  { label: "承認済",     color: "#2E7D32" },
+  rejected:  { label: "差戻し",     color: "#c62828" },
 };
 
 // Members (Master data)

@@ -78,7 +78,7 @@ export default function MonitoringPage() {
         <div>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>稼働モニタリング</h2>
           <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--text-secondary)" }}>
-            デプロイ済みボットのリアルタイム稼働状況・実行履歴・リソース使用量
+            デプロイ済みボットの稼働状況・実行履歴・リソース使用量
           </p>
         </div>
         <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
@@ -220,10 +220,10 @@ export default function MonitoringPage() {
                   <div style={{ height: "100%", borderRadius: 3, background: detail.memory > 70 ? "var(--danger)" : detail.memory > 40 ? "var(--warning)" : "var(--success)", width: `${detail.memory}%` }} />
                 </div>
               </div>
-              <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>処理内容（IPO）</h4>
-              <div style={{ fontSize: 11, marginBottom: 4, padding: "4px 8px", background: "#e3f2fd", borderRadius: 4 }}><strong>I:</strong> {detail.bot.ipoInput}</div>
-              <div style={{ fontSize: 11, marginBottom: 4, padding: "4px 8px", background: "#fff3e0", borderRadius: 4 }}><strong>P:</strong> {detail.bot.ipoProcess}</div>
-              <div style={{ fontSize: 11, padding: "4px 8px", background: "#e8f5e9", borderRadius: 4 }}><strong>O:</strong> {detail.bot.ipoOutput}</div>
+              <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>処理内容（入出力）</h4>
+              <div style={{ fontSize: 11, marginBottom: 4, padding: "4px 8px", background: "#e3f2fd", borderRadius: 4 }}><strong>Input:</strong> {detail.bot.ipoInput}</div>
+              <div style={{ fontSize: 11, marginBottom: 4, padding: "4px 8px", background: "#fff3e0", borderRadius: 4 }}><strong>Process:</strong> {detail.bot.ipoProcess}</div>
+              <div style={{ fontSize: 11, padding: "4px 8px", background: "#e8f5e9", borderRadius: 4 }}><strong>Output:</strong> {detail.bot.ipoOutput}</div>
             </div>
           )}
         </div>
