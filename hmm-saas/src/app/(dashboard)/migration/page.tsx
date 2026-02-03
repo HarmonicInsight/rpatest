@@ -47,7 +47,7 @@ export default function MigrationPage() {
 
     const processNext = () => {
       if (current >= total) {
-        setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString("ja-JP"), message: `全${total}本の移行処理が完了しました`, type: "success" }]);
+        setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString("ja-JP"), message: `全${total}本の変換処理が完了しました`, type: "success" }]);
         setRunning(false);
         return;
       }
@@ -60,19 +60,19 @@ export default function MigrationPage() {
       setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString("ja-JP"), message: `[${bot.id}] ${bot.name} - ソースコード解析中...`, type: "info" }]);
 
       setTimeout(() => {
-        setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString("ja-JP"), message: `[${bot.id}] IPO定義を読み込み: I=${bot.ipoInput.slice(0, 20)}...`, type: "info" }]);
+        setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString("ja-JP"), message: `[${bot.id}] 入出力定義を読込: I=${bot.ipoInput.slice(0, 20)}...`, type: "info" }]);
 
         setTimeout(() => {
           // Step 2: Convert
-          setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString("ja-JP"), message: `[${bot.id}] BizRobo→aKaBot 変換実行中（Claude Opus）...`, type: "info" }]);
+          setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString("ja-JP"), message: `[${bot.id}] BizRobo→aKaBot AI変換実行中（Claude Opus）...`, type: "info" }]);
 
           setTimeout(() => {
             const steps = Math.floor(3 + Math.random() * 5);
-            setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString("ja-JP"), message: `[${bot.id}] ${steps}ステップのアクションを変換完了`, type: "success" }]);
+            setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString("ja-JP"), message: `[${bot.id}] ${steps}ステップの変換を完了`, type: "success" }]);
 
             // Step 3: Generate
             setTimeout(() => {
-              setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString("ja-JP"), message: `[${bot.id}] aKabotプロジェクトファイルを生成...`, type: "info" }]);
+              setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString("ja-JP"), message: `[${bot.id}] aKaBotプロジェクトファイルを生成中...`, type: "info" }]);
 
               setTimeout(() => {
                 if (Math.random() < 0.1) {
@@ -82,7 +82,7 @@ export default function MigrationPage() {
                 setCompleted((prev) => [...prev, botId]);
                 current++;
                 setProgress(Math.round((current / total) * 100));
-                setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString("ja-JP"), message: `[${bot.id}] 移行完了 ✓ (${current}/${total})`, type: "success" }]);
+                setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString("ja-JP"), message: `[${bot.id}] 変換完了 ✓ (${current}/${total})`, type: "success" }]);
 
                 setTimeout(processNext, 300);
               }, 400 + Math.random() * 400);
@@ -92,7 +92,7 @@ export default function MigrationPage() {
       }, 200 + Math.random() * 300);
     };
 
-    setLogs([{ time: new Date().toLocaleTimeString("ja-JP"), message: `${total}本のボットの移行を開始します...`, type: "info" }]);
+    setLogs([{ time: new Date().toLocaleTimeString("ja-JP"), message: `${total}本のボットの変換を開始します...`, type: "info" }]);
     setTimeout(processNext, 500);
   };
 
@@ -100,13 +100,13 @@ export default function MigrationPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>AI移行実行</h2>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>AI変換 実行</h2>
           <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--text-secondary)" }}>
-            IPO確定・レビュー承認済みのボットをAI（Claude Opus）で一括変換
+            入出力確定・レビュー承認済みのボットをAI（Claude Opus）で一括変換
           </p>
         </div>
         <div style={{ display: "flex", gap: 12, fontSize: 12 }}>
-          <span style={{ color: "var(--success)" }}>移行可能: {ready.length}本</span>
+          <span style={{ color: "var(--success)" }}>変換可能: {ready.length}本</span>
           <span style={{ color: "var(--warning)" }}>変換中: {inProgress.length}本</span>
           <span style={{ color: "var(--primary)" }}>完了: {done.length}本</span>
         </div>
@@ -115,11 +115,11 @@ export default function MigrationPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
         {/* Pipeline Diagram */}
         <div style={{ background: "var(--card)", borderRadius: 8, padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
-          <h3 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 600 }}>移行パイプライン</h3>
+          <h3 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 600 }}>変換パイプライン</h3>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             {[
               { label: "ソース解析", desc: "BizRobo XML読込", color: "#7B1FA2" },
-              { label: "IPOマッピング", desc: "I/P/O抽出", color: "#1565C0" },
+              { label: "入出力抽出", desc: "I/P/O抽出", color: "#1565C0" },
               { label: "AI変換", desc: "Claude Opus", color: "#F57C00" },
               { label: "コード生成", desc: "aKaBot出力", color: "#00838F" },
               { label: "検証", desc: "構文チェック", color: "#2E7D32" },
@@ -174,7 +174,7 @@ export default function MigrationPage() {
                   fontSize: 14, fontWeight: 700,
                 }}
               >
-                AI移行を実行
+                AI変換を実行
               </button>
             </div>
           )}
@@ -185,7 +185,7 @@ export default function MigrationPage() {
         {/* Bot Selection */}
         <div style={{ background: "var(--card)", borderRadius: 8, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", overflow: "hidden" }}>
           <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>移行可能ボット（IPO確定・承認済）</h3>
+            <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>変換可能ボット（入出力確定・承認済）</h3>
             <button onClick={selectAll} style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid var(--border)", background: "var(--card)", cursor: "pointer", fontSize: 11 }}>
               {selected.length === ready.length ? "全解除" : "全選択"}
             </button>
@@ -193,7 +193,7 @@ export default function MigrationPage() {
           <div style={{ maxHeight: 400, overflow: "auto" }}>
             {ready.length === 0 ? (
               <div style={{ padding: 20, textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
-                移行可能なボットはありません。<br />IPO確定・レビュー承認が必要です。
+                変換可能なボットはありません。<br />入出力の確定とレビュー承認が必要です。
               </div>
             ) : (
               ready.map((b) => (
@@ -230,7 +230,7 @@ export default function MigrationPage() {
           </div>
           <div style={{ flex: 1, maxHeight: 400, overflow: "auto", padding: "8px 16px", fontFamily: "'Consolas', monospace", fontSize: 12, lineHeight: 1.8 }}>
             {logs.length === 0 ? (
-              <div style={{ color: "#555", padding: 20, textAlign: "center" }}>ボットを選択して「AI移行を実行」をクリック</div>
+              <div style={{ color: "#555", padding: 20, textAlign: "center" }}>ボットを選択して「AI変換を実行」をクリック</div>
             ) : (
               logs.map((log, i) => (
                 <div key={i} style={{ color: log.type === "success" ? "#4ec9b0" : log.type === "warning" ? "#dcdcaa" : log.type === "error" ? "#f44747" : "#d4d4d4" }}>

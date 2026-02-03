@@ -64,9 +64,9 @@ export default function ActivityPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>アクティビティログ</h2>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>操作履歴</h2>
           <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--text-secondary)" }}>
-            プロジェクト全体の操作履歴・AI Agentの活動記録
+            プロジェクト全体の操作履歴
           </p>
         </div>
       </div>

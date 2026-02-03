@@ -25,7 +25,7 @@ const TEST_NAMES = [
   "エラーハンドリングテスト",
   "境界値テスト",
   "パフォーマンステスト",
-  "回帰テスト（移行元比較）",
+  "回帰テスト（変換前比較）",
 ];
 
 export default function TestingPage() {
@@ -119,7 +119,7 @@ export default function TestingPage() {
         <div>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>テスト実行</h2>
           <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--text-secondary)" }}>
-            移行後ボットの自動テスト実行・結果確認（移行元との比較検証含む）
+            変換後ボットの自動テスト実行・結果確認
           </p>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -162,7 +162,7 @@ export default function TestingPage() {
         {/* Bot Selection */}
         <div style={{ background: "var(--card)", borderRadius: 8, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", overflow: "hidden" }}>
           <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)" }}>
-            <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>テスト対象（実装中・テスト中）</h3>
+            <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>テスト対象ボット</h3>
           </div>
           <div style={{ maxHeight: 500, overflow: "auto" }}>
             {testable.length === 0 ? (

@@ -46,14 +46,14 @@ function generateResponse(query: string): { content: string; actions?: ActionBut
 **全体状況:** ${total}本中、移行完了 ${dstDone}本（${Math.round((dstDone / total) * 100)}%）
 
 ### 移行元分析
-- IPO確定: ${srcDone}本
+- 入出力確定: ${srcDone}本
 - 機能要件分析中/完了: ${bots.filter((b) => b.srcStatus === "func_analyzing" || b.srcStatus === "func_done").length}本
 - 業務要件分析中/完了: ${bots.filter((b) => b.srcStatus === "biz_analyzing" || b.srcStatus === "biz_done").length}本
 - 未着手: ${bots.filter((b) => b.srcStatus === "not_started").length}本
 
 ### 移行先開発
 - 完了: ${dstDone}本 / テスト中: ${testing}本 / 実装中: ${implementing}本 / 設計中: ${designing}本
-${blocked > 0 ? `- ⚠️ ブロック中: ${blocked}本` : "- ブロック: なし"}
+${blocked > 0 ? `- ⚠️ ブロック中: ${blocked}本` : "- ブロック中のボット: なし"}
 
 ### 要注意事項
 ${highTickets.length > 0 ? highTickets.map((t) => `- ⚠️ **${t.botId}** ${t.title}（高優先）`).join("\n") : "- 高優先チケットなし"}
@@ -120,7 +120,7 @@ ${bots.map((b) => `- ${b}`).join("\n")}
     return {
       content: `## ランク別進捗
 
-| ランク | 本数 | IPO確定 | 開発完了 | 完了率 |
+| ランク | 本数 | 入出力確定 | 開発完了 | 完了率 |
 |--------|------|---------|----------|--------|
 | A（単純移行） | ${rankA.length} | ${rankA.filter((b) => b.srcStatus === "ipo_done").length} | ${rankA.filter((b) => b.dstStatus === "done").length} | ${Math.round((rankA.filter((b) => b.dstStatus === "done").length / rankA.length) * 100)}% |
 | B（軽微変更） | ${rankB.length} | ${rankB.filter((b) => b.srcStatus === "ipo_done").length} | ${rankB.filter((b) => b.dstStatus === "done").length} | ${Math.round((rankB.filter((b) => b.dstStatus === "done").length / rankB.length) * 100)}% |
@@ -162,7 +162,7 @@ ${tickets.filter((t) => !t.assignee && t.status !== "closed").map((t) => `- **${
 
 ### 今週の成果
 - 移行完了: +3本（累計 ${dstDone}本）
-- IPO確定: +5本（累計 ${srcDone}本）
+- 入出力確定: +5本（累計 ${srcDone}本）
 - チケット解決: 2件
 
 ### 来週の予定
@@ -269,7 +269,7 @@ export default function ChatPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 104px)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>AI アシスタント</h2>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>AIアシスタント</h2>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--success)", display: "inline-block" }} />
           <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>オンライン（デモ）</span>

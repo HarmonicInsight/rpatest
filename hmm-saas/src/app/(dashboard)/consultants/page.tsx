@@ -80,7 +80,7 @@ export default function ConsultantsPage() {
               {assigned.length > 0 ? (
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>
-                    担当ボット: {assigned.length}本 （完了: {doneCount} / IPO確定: {ipoCount}）
+                    担当ボット: {assigned.length}本 （完了: {doneCount} / 入出力確定: {ipoCount}）
                   </div>
                   <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden", marginBottom: 8, background: "#e0e0e0" }}>
                     {doneCount > 0 && (

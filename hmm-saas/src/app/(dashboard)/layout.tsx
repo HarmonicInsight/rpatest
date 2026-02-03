@@ -7,28 +7,28 @@ import { useState } from "react";
 type NavItem = { href: string; label: string; icon: string; section?: string };
 
 const nav: NavItem[] = [
-  // --- 全体把握 ---
-  { href: "/dashboard", label: "ダッシュボード", icon: "📊", section: "全体把握" },
-  { href: "/bots", label: "ボットマスタ", icon: "🤖", section: "全体把握" },
-  { href: "/consultants", label: "メンバー管理", icon: "👥", section: "全体把握" },
-  // --- Step 1-2: 分析 ---
+  // --- 概要 ---
+  { href: "/dashboard", label: "ダッシュボード", icon: "📊", section: "概要" },
+  { href: "/bots", label: "ボット一覧", icon: "🤖", section: "概要" },
+  { href: "/consultants", label: "メンバー管理", icon: "👥", section: "概要" },
+  // --- Step 1: 分析 ---
   { href: "/source", label: "移行元分析", icon: "🔍", section: "① 分析" },
   { href: "/source-code", label: "ソースコード", icon: "</>", section: "① 分析" },
-  { href: "/mapping", label: "マッピング", icon: "🔗", section: "① 分析" },
-  // --- Step 3: レビュー ---
-  { href: "/portal/review", label: "仕様レビュー", icon: "📝", section: "② レビュー" },
-  // --- Step 4: AI移行 ---
-  { href: "/migration", label: "AI移行実行", icon: "🚀", section: "③ AI移行" },
-  { href: "/destination", label: "移行先コード", icon: "🛠", section: "③ AI移行" },
-  // --- Step 5: テスト ---
+  { href: "/mapping", label: "入出力 対応表", icon: "🔗", section: "① 分析" },
+  // --- Step 2: レビュー ---
+  { href: "/portal/review", label: "顧客レビュー", icon: "📝", section: "② レビュー" },
+  // --- Step 3: AI変換 ---
+  { href: "/migration", label: "AI変換 実行", icon: "🚀", section: "③ AI変換" },
+  { href: "/destination", label: "変換結果", icon: "🛠", section: "③ AI変換" },
+  // --- Step 4: テスト ---
   { href: "/testing", label: "テスト実行", icon: "🧪", section: "④ テスト" },
-  { href: "/portal/uat", label: "UAT", icon: "✅", section: "④ テスト" },
-  // --- Step 6-7: 運用 ---
+  { href: "/portal/uat", label: "受入テスト", icon: "✅", section: "④ テスト" },
+  // --- Step 5: 運用 ---
   { href: "/monitoring", label: "稼働モニタ", icon: "📡", section: "⑤ 運用" },
-  { href: "/tickets", label: "チケット", icon: "🎫", section: "⑤ 運用" },
-  { href: "/activity", label: "アクティビティ", icon: "📋", section: "⑤ 運用" },
+  { href: "/tickets", label: "問い合わせ", icon: "🎫", section: "⑤ 運用" },
+  { href: "/activity", label: "操作履歴", icon: "📋", section: "⑤ 運用" },
   // --- ツール ---
-  { href: "/chat", label: "AIチャット", icon: "💬", section: "ツール" },
+  { href: "/chat", label: "AIアシスタント", icon: "💬", section: "ツール" },
   { href: "/export", label: "エクスポート", icon: "📥", section: "ツール" },
   { href: "/settings", label: "設定", icon: "⚙️", section: "ツール" },
 ];
@@ -63,7 +63,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {!collapsed && (
             <div>
               <div style={{ fontWeight: 700, fontSize: 16 }}>HMM Tracker</div>
-              <div style={{ fontSize: 11, opacity: 0.6 }}>Migration Management</div>
+              <div style={{ fontSize: 11, opacity: 0.6 }}>ボット移行管理</div>
             </div>
           )}
           <button

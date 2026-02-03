@@ -63,9 +63,9 @@ export default function PortalReviewPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>顧客ポータル - 仕様確認・要望</h2>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>顧客レビュー</h2>
           <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--text-secondary)" }}>
-            ボットの分析結果を確認し、承認または差戻しを行えます。新しい業務要件の追加も可能です。
+            ボットの分析結果を確認し、承認または差戻しを行えます。新しい要望の追加も可能です。
           </p>
         </div>
         <select value={ownerFilter} onChange={(e) => setOwnerFilter(e.target.value)} style={{ padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 6, fontSize: 13 }}>
@@ -114,7 +114,7 @@ export default function PortalReviewPage() {
                 <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{b.department}</span>
               </div>
               <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{b.name}</div>
-              <div style={{ fontSize: 11, color: "var(--text-muted)" }}>担当: {b.owner} / コンサルタント: {b.consultant}</div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)" }}>担当: {b.owner} / コンサルタント:{b.consultant}</div>
             </div>
           ))}
         </div>
@@ -139,7 +139,7 @@ export default function PortalReviewPage() {
             <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>機能要件</h4>
             <p style={{ margin: "0 0 12px", fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, padding: "8px 10px", background: "#f5f5f5", borderRadius: 4 }}>{selected.funcReq}</p>
 
-            <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>IPO定義</h4>
+            <h4 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>入出力定義</h4>
             <div style={{ fontSize: 12, marginBottom: 6, padding: "6px 10px", background: "#e3f2fd", borderRadius: 4 }}><strong>Input:</strong> {selected.ipoInput}</div>
             <div style={{ fontSize: 12, marginBottom: 6, padding: "6px 10px", background: "#fff3e0", borderRadius: 4 }}><strong>Process:</strong> {selected.ipoProcess}</div>
             <div style={{ fontSize: 12, marginBottom: 12, padding: "6px 10px", background: "#e8f5e9", borderRadius: 4 }}><strong>Output:</strong> {selected.ipoOutput}</div>

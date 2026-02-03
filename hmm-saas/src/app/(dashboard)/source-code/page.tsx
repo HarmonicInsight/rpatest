@@ -24,9 +24,9 @@ export default function SourceCodePage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>ソースコード閲覧</h2>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>ソースコード</h2>
           <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--text-secondary)" }}>
-            移行元ボットのソースコード（BizRobo XML）とIPOマッピングを確認
+            移行元ボットのソースコード（BizRobo XML）と入出力の対応表
           </p>
         </div>
       </div>
@@ -91,7 +91,7 @@ export default function SourceCodePage() {
                       cursor: "pointer", fontSize: 12, fontWeight: 600,
                     }}
                   >
-                    {t === "source" ? "ソースXML" : t === "ipo" ? "IPO定義" : "変換マッピング"}
+                    {t === "source" ? "ソースXML" : t === "ipo" ? "入出力定義" : "変換対応表"}
                   </button>
                 ))}
               </div>
@@ -117,7 +117,7 @@ export default function SourceCodePage() {
 
               {tab === "ipo" && (
                 <div style={{ padding: 20 }}>
-                  <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 600 }}>IPO定義 - {selected.name}</h3>
+                  <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 600 }}>入出力定義 - {selected.name}</h3>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
                     <IpoSection title="Input（入力）" content={selected.ipoInput} color="#1565C0" bg="#e3f2fd" />
                     <IpoSection title="Process（処理）" content={selected.ipoProcess} color="#F57C00" bg="#fff3e0" />
@@ -133,7 +133,7 @@ export default function SourceCodePage() {
 
               {tab === "mapping" && (
                 <div style={{ padding: 20 }}>
-                  <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 600 }}>変換マッピング - {selected.name}</h3>
+                  <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 600 }}>変換対応表 - {selected.name}</h3>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                     <thead>
                       <tr style={{ borderBottom: "2px solid var(--border)" }}>
